@@ -1,16 +1,17 @@
 package ru.emkn.kotlin.sms
+import log.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-import mu.KotlinLogging
 
-val logger = KotlinLogging.logger { }
-
+val logger1: Logger = LoggerFactory.getLogger("asdad")
 fun main(args: Array<String>) {
-    logger.info { "Hello world" }
-    logger.debug { "Something expensive to compute" }
+    logger1.infoC("Hello world")
+    logger1.debugC ("Something expensive to compute")
     try {
         println(1/0)
     } catch(exc: Exception) {
-        logger.error { exc.message }
+        logger1.error (exc.message)
     }
 
 }
