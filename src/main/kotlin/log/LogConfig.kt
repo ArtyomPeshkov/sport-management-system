@@ -3,6 +3,7 @@ package log
 import org.slf4j.Logger
 
 const val RESET: String = "\u001B[0m"
+const val RED: String = "\u001B[31m"
 const val GREEN: String = "\u001B[32m"
 const val YELLOW: String = "\u001B[33m"
 const val BLUE: String = "\u001B[34m"
