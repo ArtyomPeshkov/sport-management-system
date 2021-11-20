@@ -11,3 +11,7 @@ enum class Sex {
 enum class Rank {
     MS, CMS, ADULT_FIRST, ADULT_SECOND, ADULT_THIRD, JUNIOR_FIRST, JUNIOR_SECOND, JUNIOR_THIRD
 }
+
+enum class Groups { //список групп
+    M18, MF9, F14, F12, M12, M14, F21, M60, M16, F60, F16
+}
