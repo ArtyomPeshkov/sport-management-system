@@ -1,5 +1,6 @@
 package ru.emkn.kotlin.sms
 
-fun main() {
-    println("${Event.name}: ${Event.date}")
+fun main(args: Array<String>) {
+    val event = Event(args[0])
+    println("${event.name}: ${event.date}")
 }
