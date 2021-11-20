@@ -2,7 +2,7 @@ package ru.emkn.kotlin.sms
 import java.util.*
 
 enum class Gender { //пол
-    Male, Female
+    MALE, FEMALE
 }
 
 enum class Rank{ //спортивные разряды
@@ -32,6 +32,8 @@ class Collective (val name: String) {
 }
 
 abstract class Protocol
+
+class startProtocol: Protocol()
 
 fun main(args: Array<String>) {
     TODO()
