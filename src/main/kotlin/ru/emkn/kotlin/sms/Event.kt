@@ -13,4 +13,8 @@ class Event(path: String) {
             date = it.second
         }
     }
+
+    override fun toString(): String {
+        return "$name: $date"
+    }
 }

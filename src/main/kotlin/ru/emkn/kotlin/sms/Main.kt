@@ -1,6 +1,6 @@
 package ru.emkn.kotlin.sms
 
 fun main(args: Array<String>) {
-    val event = Event(args[0])
-    println("${event.name}: ${event.date}")
+    val event = Event("csvFiles/event.csv")
+    println(event.toString())
 }
