@@ -1,5 +1,5 @@
 package ru.emkn.kotlin.sms
 
-fun main(args: Array<String>) {
-    TODO()
+fun main() {
+    println("${Event.name}: ${Event.date}")
 }
