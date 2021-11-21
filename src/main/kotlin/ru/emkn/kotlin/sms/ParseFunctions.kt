@@ -1,7 +1,10 @@
 package ru.emkn.kotlin.sms
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import exceptions.*
+import exceptions.CollectiveFileStringException
+import exceptions.ProblemWithCSV
+import exceptions.ProblemWithFilePath
+import exceptions.SexException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -31,33 +34,51 @@ fun eventParser(path: String): Pair<String, LocalDate> {
 }
 
 fun chooseSex(sex: String): Sex {
-    return when(sex) {
+    return when (sex) {
         "М", "M", "m", "м" -> Sex.MALE
         "Ж", "F", "ж", "f" -> Sex.FEMALE
         else -> throw SexException(sex)
     }
 }
 
-fun makeParticipant(param: List<String>, index: Int,path: String): Participant {
-    parseLogger.debug("Reading participant number ${index+1} from $path")
+fun makeParticipant(param: Map<String, String>, index: Int, path: String): Participant {
+    parseLogger.debug("Reading participant number ${index + 1} from $path")
     try {
-        return Participant(param[0], param[1], chooseSex(param[2]), param[3].toInt(), param[4], param[5])
+        return Participant(
+            param["Фамилия"]!!,
+            param["Имя"]!!,
+            chooseSex(param["Пол"]!!),
+            param["Год рождения"]!!.toInt(),
+            param["Разряд"]!!,
+            param["Группа"]!!
+        )
     } catch (e: Exception) {
-        throw CollectiveFileStringException(path,index)
+        throw CollectiveFileStringException(path, index)
     }
 }
 
-fun collectiveParser(path: String): Pair<String, List<Participant>>{
+fun collectiveParser(path: String): Pair<String, List<Participant>> {
     parseLogger.debug("Parsing collective file: $path")
     val file = readFile(path)
-    val name = csvReader().readAll(file.readText().substringBefore('\n')).let {
-        if (it.isEmpty()) ""
-        else if (it[0].size != 6 || it[0].drop(1).any { el -> el.isNotEmpty() }
-        ) throw CollectiveFileStringException(path)
-        else it[0][0]
+    val name = csvReader().readAll(file.readText().substringBefore("\n"))[0].let {
+        if (it.size != 6 || it.drop(1).any { el -> el.isNotEmpty() })
+            throw CollectiveFileStringException(path)
+        else it[0]
     }
     parseLogger.debug("Started reading participants from $path")
     val lines = file.readLines()
+    if (csvReader().readAll(lines.drop(1).first())[0] != listOf(
+            "Фамилия",
+            "Имя",
+            "Пол",
+            "Год рождения",
+            "Разряд",
+            "Группа"
+        )
+    ) throw TODO() // Надо класс.
     // Не знаю, стоит ли так делать, но я передаю файл в makeParticipant, чтобы указать файл в котором получена ошибка
-    return Pair(name, csvReader().readAll(lines.subList(1, lines.size).joinToString("\n")).mapIndexed() { index, it -> makeParticipant(it, index,path) })
+    return Pair(
+        name,
+        csvReader().readAllWithHeader(lines.drop(1).joinToString("\n"))
+            .mapIndexed() { index, it -> makeParticipant(it, index, path) })
 }
