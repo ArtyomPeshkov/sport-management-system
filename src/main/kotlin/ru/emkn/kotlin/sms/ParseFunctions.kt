@@ -2,6 +2,7 @@ package ru.emkn.kotlin.sms
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import exceptions.*
+import log.debugC
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -10,7 +11,7 @@ import java.time.LocalDate
 val parseLogger: Logger = LoggerFactory.getLogger("Parse")
 
 fun readFile(path: String): File {
-    parseLogger.debug("Reading file: $path")
+    parseLogger.debugC("Reading file: $path")
     try {
         return File(path)
     } catch (e: Exception) {
@@ -19,7 +20,7 @@ fun readFile(path: String): File {
 }
 
 fun eventParser(path: String): Pair<String, LocalDate> {
-    parseLogger.debug("Parsing event file: $path")
+    parseLogger.debugC("Parsing event file: $path")
     val file = readFile(path)
     val rows = csvReader().readAllWithHeader(file)
     if (rows.size != 1)
@@ -39,7 +40,7 @@ fun chooseSex(sex: String): Sex {
 }
 
 fun makeParticipant(param: List<String>, index: Int,path: String): Participant {
-    parseLogger.debug("Reading participant number ${index+1} from $path")
+    parseLogger.debugC("Reading participant number ${index+1} from $path")
     try {
         return Participant(param[0], param[1], chooseSex(param[2]), param[3].toInt(), param[4], param[5])
     } catch (e: Exception) {
@@ -48,7 +49,7 @@ fun makeParticipant(param: List<String>, index: Int,path: String): Participant {
 }
 
 fun collectiveParser(path: String): Pair<String, List<Participant>>{
-    parseLogger.debug("Parsing collective file: $path")
+    parseLogger.debugC("Parsing collective file: $path")
     val file = readFile(path)
     val name = csvReader().readAll(file.readText().substringBefore('\n')).let {
         if (it.isEmpty()) ""
@@ -56,7 +57,7 @@ fun collectiveParser(path: String): Pair<String, List<Participant>>{
         ) throw CollectiveFileStringException(path)
         else it[0][0]
     }
-    parseLogger.debug("Started reading participants from $path")
+    parseLogger.debugC("Started reading participants from $path")
     val lines = file.readLines()
     // Не знаю, стоит ли так делать, но я передаю файл в makeParticipant, чтобы указать файл в котором получена ошибка
     return Pair(name, csvReader().readAll(lines.subList(1, lines.size).joinToString("\n")).mapIndexed() { index, it -> makeParticipant(it, index,path) })
