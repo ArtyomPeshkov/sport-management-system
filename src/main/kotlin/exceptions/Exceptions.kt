@@ -11,6 +11,11 @@ class ProblemWithCSV(path: String) :
 class SexException(sex: String) :
     Exception("Неправильно уложен пол!:$YELLOW $sex$RESET") {}
 
-class CollectiveFileStringException(path: String, index: Int = -1) :
-    Exception(if (index == -1) "Неправильный формат первой строки с именем коллектива в файле:$YELLOW $path$RESET" else
-        "Неправильный формат строки номер $index в файле:$YELLOW $path$RESET") {}
+class CSVFileStringWithNameException(path: String) :
+    Exception("Неправильный формат первой строки (только первый столбец должен быть не пустым) в файле:$YELLOW $path$RESET")
+
+class CSVFileExceptionWithFieldNames(path: String) :
+    Exception("Неправильно указаны названия столбцов в файле:$YELLOW $path$RESET") {}
+
+class CollectiveFileStringException(path: String, index: Int) :
+    Exception("Неправильный формат строки номер $index в файле:$YELLOW $path$RESET") {}

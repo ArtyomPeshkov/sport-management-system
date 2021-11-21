@@ -1,11 +1,8 @@
 package ru.emkn.kotlin.sms
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
+import exceptions.*
 import log.debugC
-import exceptions.CollectiveFileStringException
-import exceptions.ProblemWithCSV
-import exceptions.ProblemWithFilePath
-import exceptions.SexException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -65,7 +62,7 @@ fun collectiveParser(path: String): Pair<String, List<Participant>>{
     val file = readFile(path)
     val name = csvReader().readAll(file.readText().substringBefore("\n"))[0].let {
         if (it.size != 6 || it.drop(1).any { el -> el.isNotEmpty() })
-            throw CollectiveFileStringException(path)
+            throw CSVFileStringWithNameException(path)
         else it[0]
     }
     parseLogger.debugC("Started reading participants from $path")
@@ -78,7 +75,7 @@ fun collectiveParser(path: String): Pair<String, List<Participant>>{
             "Разряд",
             "Группа"
         )
-    ) throw TODO() // Надо класс.
+    ) throw CSVFileExceptionWithFieldNames(path)
     // Не знаю, стоит ли так делать, но я передаю файл в makeParticipant, чтобы указать файл в котором получена ошибка
     return Pair(
         name,
