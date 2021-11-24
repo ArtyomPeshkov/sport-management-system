@@ -1,6 +1,7 @@
 package ru.emkn.kotlin.sms
 
 import exceptions.IllegalTimeFormatException
+import exceptions.NegativeSubstractTime
 import exceptions.UnexpectedValueException
 import javax.print.attribute.standard.MediaSize
 import kotlin.math.sign
@@ -35,6 +36,18 @@ class Time {
         this.hours = hours
         this.minutes = minutes
         this.seconds = seconds
+    }
+    constructor(sec: Int) {
+        if (sec < 0)
+            throw UnexpectedValueException(sec)
+        this.hours = sec / 3600
+        this.minutes = sec % 3600 / 60
+        this.seconds = sec % 60
+    }
+
+    operator fun minus(other: Time): Time {
+        if (this < other) throw NegativeSubstractTime(this, other)
+        return Time(this.timeInSeconds - other.timeInSeconds)
     }
 
     private val timeInSeconds: Int
