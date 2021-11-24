@@ -1,6 +1,7 @@
 package exceptions
 
 import log.*
+import ru.emkn.kotlin.sms.Time
 
 class IllegalTimeFormatException(value: Any?) :
     Exception("Ошибка в строковом представлении времени (необходимый формат hh:mm:ss):$YELLOW $value$RESET") {}
@@ -25,3 +26,6 @@ class CSVFieldNamesException(path: String) :
 
 class CollectiveFileStringException(path: String, index: Int) :
     Exception("Неправильный формат строки номер $index в файле:$YELLOW $path$RESET")
+
+class NegativeSubstractTime(time1: Time, time2: Time) :
+        Exception("Попытка вычесть из большего значения меньшее:$YELLOW $time1 и $time2$RESET")
