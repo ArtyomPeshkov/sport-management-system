@@ -1,4 +1,4 @@
-import exceptions.ProblemWithCSV
+import exceptions.ProblemWithCSVException
 import ru.emkn.kotlin.sms.eventParser
 import ru.emkn.kotlin.sms.formatter
 import java.time.LocalDate
@@ -13,21 +13,21 @@ internal class ParseFunctionsTest{
 
     @Test
     fun `incorrect header (event)`() {
-        assertFailsWith<ProblemWithCSV>{eventParser("src/test/resources/events-test/incorrectHeader.csv")}
+        assertFailsWith<ProblemWithCSVException>{eventParser("src/test/resources/events-test/incorrectHeader.csv")}
     }
 
     @Test
     fun `strange csv (event)`() {
-        assertFailsWith<ProblemWithCSV>{eventParser("src/test/resources/events-test/strangeCSVEvent.csv")}
+        assertFailsWith<ProblemWithCSVException>{eventParser("src/test/resources/events-test/strangeCSVEvent.csv")}
     }
 
     @Test
     fun `many strings (event)`() {
-        assertFailsWith<ProblemWithCSV>{eventParser("src/test/resources/events-test/tooManyStrings.csv")}
+        assertFailsWith<ProblemWithCSVException>{eventParser("src/test/resources/events-test/tooManyStrings.csv")}
     }
     @Test
     fun `not enough strings (event)`() {
-        assertFailsWith<ProblemWithCSV>{eventParser("src/test/resources/events-test/notEnoughStrings.csv")}
+        assertFailsWith<ProblemWithCSVException>{eventParser("src/test/resources/events-test/notEnoughStrings.csv")}
     }
 
 /*    val correctApplication:Pair<String, List<Participant>> = Pair("КОМЕТА", listOf())

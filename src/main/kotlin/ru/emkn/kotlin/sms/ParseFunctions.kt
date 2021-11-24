@@ -15,7 +15,7 @@ fun readFile(path: String): File {
     try {
         return File(path)
     } catch (e: Exception) {
-        throw ProblemWithFilePath(path)
+        throw ProblemWithFilePathException(path)
     }
 }
 
@@ -24,11 +24,11 @@ fun eventParser(path: String): Pair<String, LocalDate> {
     val file = readFile(path)
     val rows = csvReader().readAllWithHeader(file)
     if (rows.size != 1)
-        throw ProblemWithCSV(path)
+        throw ProblemWithCSVException(path)
     else if (rows[0]["Дата"] != null && rows[0]["Название"] != null && rows[0].size == 2) {
         return Pair(rows[0]["Название"] ?: "", LocalDate.parse(rows[0]["Дата"], formatter))
     } else
-        throw ProblemWithCSV(path)
+        throw ProblemWithCSVException(path)
 }
 
 fun chooseSex(sex: String): Sex {
@@ -62,7 +62,7 @@ fun collectiveParser(path: String): Pair<String, List<Participant>>{
     val file = readFile(path)
     val name = csvReader().readAll(file.readText().substringBefore("\n"))[0].let {
         if (it.size != 6 || it.drop(1).any { el -> el.isNotEmpty() })
-            throw CSVFileStringWithNameException(path)
+            throw CSVStringWithNameException(path)
         else it[0]
     }
     parseLogger.debugC("Started reading participants from $path")
@@ -75,7 +75,7 @@ fun collectiveParser(path: String): Pair<String, List<Participant>>{
             "Разряд",
             "Группа"
         )
-    ) throw CSVFileExceptionWithFieldNames(path)
+    ) throw CSVFieldNamesException(path)
     // Не знаю, стоит ли так делать, но я передаю файл в makeParticipant, чтобы указать файл в котором получена ошибка
     return Pair(
         name,
