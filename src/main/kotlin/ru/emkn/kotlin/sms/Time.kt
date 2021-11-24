@@ -38,7 +38,7 @@ class Time {
     }
 
     private val timeInSeconds: Int
-        get() = hours * 360 + minutes * 60 + seconds
+        get() = hours * 3600 + minutes * 60 + seconds
 
     operator fun compareTo(other: Time): Int = (timeInSeconds - other.timeInSeconds).sign
 
