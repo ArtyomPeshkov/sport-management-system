@@ -24,7 +24,7 @@ class CSVStringWithNameException(path: String) :
 class CSVFieldNamesException(path: String) :
     Exception("Неправильно указаны названия столбцов в файле:$YELLOW $path$RESET")
 
-class CollectiveFileStringException(path: String, index: Int) :
+class FileStringException(path: String, index: Int) :
     Exception("Неправильный формат строки номер $index в файле:$YELLOW $path$RESET")
 
 class NegativeSubstractTime(time1: Time, time2: Time) :

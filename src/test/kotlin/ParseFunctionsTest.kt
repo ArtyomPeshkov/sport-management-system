@@ -1,6 +1,9 @@
+import exceptions.CSVFieldNamesException
+import exceptions.CSVStringWithNameException
+import exceptions.FileStringException
 import exceptions.ProblemWithCSVException
-import ru.emkn.kotlin.sms.eventParser
-import ru.emkn.kotlin.sms.formatter
+import ru.emkn.kotlin.sms.*
+import java.io.File
 import java.time.LocalDate
 import kotlin.test.*
 
@@ -13,12 +16,12 @@ internal class ParseFunctionsTest{
 
     @Test
     fun `incorrect header (event)`() {
-        assertFailsWith<ProblemWithCSVException>{eventParser("src/test/resources/events-test/incorrectHeader.csv")}
+        assertFailsWith<CSVStringWithNameException>{eventParser("src/test/resources/events-test/incorrectHeader.csv")}
     }
 
     @Test
-    fun `strange csv (event)`() {
-        assertFailsWith<ProblemWithCSVException>{eventParser("src/test/resources/events-test/strangeCSVEvent.csv")}
+    fun `incorrect header two (event)`() {
+        assertFailsWith<CSVStringWithNameException>{eventParser("src/test/resources/events-test/incorrectHeaderOther.csv")}
     }
 
     @Test
@@ -28,6 +31,33 @@ internal class ParseFunctionsTest{
     @Test
     fun `not enough strings (event)`() {
         assertFailsWith<ProblemWithCSVException>{eventParser("src/test/resources/events-test/notEnoughStrings.csv")}
+    }
+
+    @Test
+    fun `empty csv (event)`() {
+        assertFailsWith<ProblemWithCSVException>{eventParser("src/test/resources/events-test/empty.csv")}
+    }
+
+    @Test
+    fun `correct input test (participant)`() {
+        assertEquals(listOf((Participant("М12", Sex.MALE,"АВРАМЕНКО","ДАНИИЛ",2009,"3р"))).toString(), participantsParser("Test",
+            File("src/test/resources/participant-test/correctParticipant.csv")
+        ).second.toString())
+    }
+
+    @Test
+    fun `incorrect header (participant)`() {
+        assertFailsWith<CSVFieldNamesException>{participantsParser("Test", File("src/test/resources/participant-test/incorrectHeader.csv"))}
+    }
+
+
+    @Test
+    fun `empty csv (participant)`() {
+        assertFailsWith<ProblemWithCSVException>{participantsParser("Test", File("src/test/resources/participant-test/empty.csv"))}
+    }
+    @Test
+    fun `not enough strings (participant)`() {
+        assertFailsWith<ProblemWithCSVException>{participantsParser("Test", File("src/test/resources/participant-test/notEnoughStrings.csv"))}
     }
 
 /*    val correctApplication:Pair<String, List<Participant>> = Pair("КОМЕТА", listOf())
