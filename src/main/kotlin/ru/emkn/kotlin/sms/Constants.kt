@@ -13,5 +13,5 @@ enum class Rank {
 }
 
 enum class Groups { //список групп
-    M18, MF9, F14, F12, M12, M14, F21, M60, M16, F60, F16
+    /*TODO("Должны считыватья из csv файлов")*/
 }
