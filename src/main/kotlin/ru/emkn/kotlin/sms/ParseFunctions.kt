@@ -1,5 +1,8 @@
 package ru.emkn.kotlin.sms
 
+
+import com.github.doyaaaaaken.kotlincsv.client.CsvReader
+import com.github.doyaaaaaken.kotlincsv.dsl.context.CsvReaderContext
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import exceptions.*
 import log.debugC
@@ -28,7 +31,7 @@ fun eventParser(path: String): Pair<String, LocalDate> {
     else if (rows[0]["Дата"] != null && rows[0]["Название"] != null && rows[0].size == 2) {
         return Pair(rows[0]["Название"] ?: "", LocalDate.parse(rows[0]["Дата"], formatter))
     } else
-        throw ProblemWithCSVException(path)
+        throw CSVStringWithNameException(path)
 }
 
 fun chooseSex(sex: String): Sex {
@@ -44,41 +47,50 @@ fun makeParticipant(param: Map<String, String>, index: Int, path: String): Parti
     parseLogger.debugC("Reading participant number ${index + 1} from $path")
     try {
         return Participant(
+            param["Группа"]!!,
+            chooseSex(param["Группа"]!![0].toString()),
             param["Фамилия"]!!,
             param["Имя"]!!,
-            chooseSex(param["Пол"]!!),
-            param["Год рождения"]!!.toInt(),
-            param["Разряд"]!!,
-            param["Группа"]!!
+            param["Г.р."]!!.toInt(),
+            param["Разр."]!!
         )
     } catch (e: Exception) {
-        throw CollectiveFileStringException(path, index)
+        throw CSVFieldNamesException(path)
     }
+}
+
+fun participantsParser(name:String,file: File):Pair<String, List<Participant>> {
+
+    if (file.readLines().size<3)
+        throw ProblemWithCSVException(file.path)
+    return Pair(
+        name,
+        csvReader().readAllWithHeader(file.readLines().drop(1).joinToString("\n"))
+            .mapIndexed() { index, it -> makeParticipant(it, index, file.path) })
 }
 
 fun collectiveParser(path: String): Pair<String, List<Participant>>{
     parseLogger.debugC("Parsing collective file: $path")
 
     val file = readFile(path)
-    val name = csvReader().readAll(file.readText().substringBefore("\n"))[0].let {
+    val fileStrings = csvReader().readAll(file.readText().substringBefore("\n"))
+    if (file.readLines().size<3)
+        throw ProblemWithCSVException(path)
+    val name = fileStrings[0].let {
         if (it.size != 6 || it.drop(1).any { el -> el.isNotEmpty() })
             throw CSVStringWithNameException(path)
         else it[0]
     }
     parseLogger.debugC("Started reading participants from $path")
-    val lines = file.readLines()
-    if (csvReader().readAll(lines.drop(1).first())[0] != listOf(
+    val linesOfCSVStrings = file.readLines()
+    if (csvReader().readAll(linesOfCSVStrings.drop(1).first())[0] != listOf(
+            "Группа",
             "Фамилия",
             "Имя",
-            "Пол",
-            "Год рождения",
-            "Разряд",
-            "Группа"
+            "Г.р.",
+            "Разр."
         )
     ) throw CSVFieldNamesException(path)
     // Не знаю, стоит ли так делать, но я передаю файл в makeParticipant, чтобы указать файл в котором получена ошибка
-    return Pair(
-        name,
-        csvReader().readAllWithHeader(lines.drop(1).joinToString("\n"))
-            .mapIndexed() { index, it -> makeParticipant(it, index, path) })
+    return  participantsParser(name,file)
 }
