@@ -1,8 +1,5 @@
 package ru.emkn.kotlin.sms
 
-
-import com.github.doyaaaaaken.kotlincsv.client.CsvReader
-import com.github.doyaaaaaken.kotlincsv.dsl.context.CsvReaderContext
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import exceptions.*
 import log.debugC
@@ -82,8 +79,7 @@ fun collectiveParser(path: String): Pair<String, List<Participant>>{
         else it[0]
     }
     parseLogger.debugC("Started reading participants from $path")
-    val linesOfCSVStrings = file.readLines()
-    if (csvReader().readAll(linesOfCSVStrings.drop(1).first())[0] != listOf(
+    if (csvReader().readAll(file.readLines().drop(1).first())[0] != listOf(
             "Группа",
             "Фамилия",
             "Имя",

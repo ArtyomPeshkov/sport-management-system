@@ -1,4 +1,7 @@
 package ru.emkn.kotlin.sms
 
-class Group(val group: Groups, val distance: Int) {//группа
+class Group(val groupName: String) {//группа
+    var distance: Distance = Distance("") //TODO("Возможно стоит поменять значение по умолчанию")
+        set(value) {field=value}
+    val listParticipants: MutableList<Participant> = mutableListOf()
 }
