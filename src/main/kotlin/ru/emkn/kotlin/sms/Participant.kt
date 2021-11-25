@@ -36,7 +36,7 @@ class Participant {
         number = 1
     }
 
-    fun setPoints(point: Int) {
+    fun setPoints(points: Int) {
         this.points = points
     }
 
