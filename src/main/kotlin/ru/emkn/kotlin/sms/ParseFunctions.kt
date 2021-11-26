@@ -90,3 +90,28 @@ fun collectiveParser(path: String): Pair<String, List<Participant>>{
     // Не знаю, стоит ли так делать, но я передаю файл в makeParticipant, чтобы указать файл в котором получена ошибка
     return  participantsParser(name,file)
 }
+
+fun readGroupsFromFile(path: String) {
+    val file = readFile(path)
+    val groupList = Groups
+    file.forEachLine {
+        if (it != "Название,Дистанция") {
+            try {
+                val nameAndDistance = it.split(",")
+                if (nameAndDistance.size != 2) {
+                    throw TODO() //в строке либо недостает данных, либо есть что-то лишнее
+                }
+                else if (nameAndDistance[1].toIntOrNull() == null ) {
+                    throw TODO() //дистанция не интовая
+                }
+                else {
+                    val group = Group(nameAndDistance[0])
+                    //TODO(group.distance = distances.getDistanceByName(nameAndDistance[1]))
+                    groupList.groupList.add(group)
+                }
+            } catch (e:Exception) {
+                TODO()
+            }
+        }
+    }
+}
