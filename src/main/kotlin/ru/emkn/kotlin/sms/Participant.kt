@@ -10,6 +10,8 @@ class Participant {
     val name: String
     val yearOfBirth: Int
     val rank: String
+    var collective: String = ""
+        private set
     var points: Int = 0
         private set
 
@@ -38,6 +40,12 @@ class Participant {
 
     fun setPoints(points: Int) {
         this.points = points
+    }
+
+    fun setCollective(nameOfCollective: String) {
+        if (this.collective == "") { //поменять коллектив можно только один раз
+            this.collective = nameOfCollective
+        }
     }
 
     override fun toString(): String {
