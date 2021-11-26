@@ -1,8 +1,5 @@
 package ru.emkn.kotlin.sms
 
-import java.awt.Point
-
-
 class Participant {
     val group: String
     val sex: Sex
