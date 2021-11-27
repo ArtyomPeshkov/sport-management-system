@@ -1,7 +1,10 @@
 package ru.emkn.kotlin.sms
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import exceptions.*
+import exceptions.CSVFieldNamesException
+import exceptions.CSVStringWithNameException
+import exceptions.NotEnoughConfigurationFiles
+import exceptions.ProblemWithCSVException
 import log.debugC
 import java.io.File
 import java.time.LocalDate
@@ -82,7 +85,12 @@ class Event {
 
     fun distancesParser(distances: File): Map<String, Distance> {
         val distanceStrings = csvReader().readAllWithHeader(distances)
-        return distanceStrings.associate {Pair(it["Название"] ?: throw CSVFieldNamesException(distances.path), Distance(it, distances.path)) }
+        return distanceStrings.associate {
+            Pair(
+                it["Название"] ?: throw CSVFieldNamesException(distances.path),
+                Distance(it, distances.path)
+            )
+        }
 
     }
 

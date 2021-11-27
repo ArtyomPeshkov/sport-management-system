@@ -1,7 +1,6 @@
 package ru.emkn.kotlin.sms
 
 import exceptions.CSVFieldNamesException
-import exceptions.IncorrectControlPointValue
 
 class Group {
     //группа

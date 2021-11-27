@@ -3,7 +3,6 @@ package ru.emkn.kotlin.sms
 import exceptions.IllegalTimeFormatException
 import exceptions.NegativeSubstractTime
 import exceptions.UnexpectedValueException
-import javax.print.attribute.standard.MediaSize
 import kotlin.math.sign
 
 class Time {
@@ -37,6 +36,7 @@ class Time {
         this.minutes = minutes
         this.seconds = seconds
     }
+
     constructor(sec: Int) {
         if (sec < 0)
             throw UnexpectedValueException(sec)
@@ -44,7 +44,12 @@ class Time {
         val minutes = sec % 3600 / 60
         val seconds = sec % 60
         if (checkDateFormat(hours, minutes, seconds))
-            throw IllegalTimeFormatException("$hours" + ":" + "$minutes".padStart(2,'0') + ":" +"$seconds".padStart(3,'0'))
+            throw IllegalTimeFormatException(
+                "$hours" + ":" + "$minutes".padStart(2, '0') + ":" + "$seconds".padStart(
+                    3,
+                    '0'
+                )
+            )
         this.hours = hours
         this.minutes = minutes
         this.seconds = seconds
@@ -64,6 +69,6 @@ class Time {
 
     operator fun compareTo(other: Time): Int = (timeInSeconds - other.timeInSeconds).sign
 
-    override fun toString(): String = "$hours" + ":" + "$minutes".padStart(2,'0') + ":" +"$seconds".padStart(2,'0')
+    override fun toString(): String = "$hours" + ":" + "$minutes".padStart(2, '0') + ":" + "$seconds".padStart(2, '0')
 
 }

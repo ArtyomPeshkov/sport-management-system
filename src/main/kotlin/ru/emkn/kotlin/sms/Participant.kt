@@ -29,14 +29,13 @@ class Participant {
     }
 
     var number: Int = -1
-    private set
+        private set
     var startTime: Time = Time(0)
-    private set
+        private set
 
-    fun setStart(num: Int, start:Time)
-    {
-        number=num
-        startTime=start
+    fun setStart(num: Int, start: Time) {
+        number = num
+        startTime = start
     }
 
     fun setPoints(points: Int) {
