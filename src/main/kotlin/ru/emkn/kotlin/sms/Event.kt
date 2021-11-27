@@ -1,6 +1,7 @@
 package ru.emkn.kotlin.sms
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
+import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import exceptions.CSVFieldNamesException
 import exceptions.CSVStringWithNameException
 import exceptions.NotEnoughConfigurationFiles
@@ -11,7 +12,8 @@ import java.time.LocalDate
 import kotlin.random.Random
 
 
-class Event {
+class Event(path: String) {
+    //TODO("Вынести в отдельную функцию") Не получится, т.к. там нельзя определить поля
     val name: String
     val date: LocalDate
     val yearOfCompetition: Int
@@ -19,27 +21,22 @@ class Event {
     private var distanceList: Map<String, Distance> = mapOf()//список дистанций
     var collectiveList: List<Collective> = listOf()//список заявленных коллективов
 
-    constructor (path: String) {
-        parseLogger.debugC("Parsing event folder: $path")
-        val configurationFolder = readFile(path).walk().toList()
+    private val configurationFolder = readFile(path).walk().toList()
 
+    init {
+        parseLogger.debugC("Parsing event folder: $path")
+//        val configurationFolder = readFile(path).walk().toList()
         distanceList = distancesParser(configurationFolder.find { it.name.substringAfterLast('/') == "distances.csv" }
             ?: throw NotEnoughConfigurationFiles(path))
-
         groupList =
             groupsParser(configurationFolder.find { it.name.substringAfterLast('/') == "groups.csv" }
                 ?: throw NotEnoughConfigurationFiles(path))
-
         collectiveList =
             collectivesParser(configurationFolder.find { it.name.substringAfterLast('/') == "applications" }
                 ?: throw NotEnoughConfigurationFiles(path))
-
-
-        //TODO("Вынести в отдельную функцию")
         val rows =
             csvReader().readAllWithHeader(configurationFolder.find { it.name.substringAfterLast('/') == "event.csv" }
                 ?: throw NotEnoughConfigurationFiles(path))
-
         if (rows.size != 1)
             throw ProblemWithCSVException(path)
         else if (rows[0]["Дата"] != null && rows[0]["Название"] != null && rows[0].size == 2) {
@@ -48,16 +45,12 @@ class Event {
             yearOfCompetition = date.toString().substringBefore('-').toInt()
         } else
             throw CSVStringWithNameException(path)
-
         setupGroups()
         distanceList.forEach {
             setNumbersAndTime(getGroupsByDistance(it.value))
         }
+        makeStartProtocols()
     }
-
-//    fun getDistanceByName(name: String): Distance {
-//        return distanceList.find { it.name == name } ?: throw  UnexpectedValueException(name)
-//    }
 
     fun getGroupByName(name: String): Group? {
         return groupList.find { it.groupName == name }
@@ -94,46 +87,56 @@ class Event {
 
     }
 
-
     fun collectivesParser(applicationsFolder: File): List<Collective> {
         val applications =
             applicationsFolder.walk().toList().filter { ".*[.]csv".toRegex().matches(it.path.substringAfterLast('/')) }
         return applications.map { Collective(it.path) }
     }
 
-    fun setupGroups() {
-        collectiveList.forEach {
-            it.athleteList.forEach { participant ->
-                chooseGroupByParams(
-                    participant.wishGroup,
-                    yearOfCompetition - participant.yearOfBirth,
-                    participant.sex
-                )?.addParticipant(participant)
-                    ?: parseLogger.debugC("Для участника $participant не нашлось подходящей группы")
-            }
-        }
-    }
-
-    fun setNumbersAndTime(groups: List<Group>) {
-        val numberOfParticipants = groups.sumOf { it.listParticipants.size }
-        val numbers = mutableListOf<Int>()
-        while (numbers.size < numberOfParticipants) {
-            numbers += Random.nextInt(1, numberOfParticipants + 1)
-            numbers.toSet().toMutableList()
-        }
-        var competitionsStart = Time(12, 0, 0)
-        var index = 0
-        groups.forEach {
-            val groupNum = "${groupList.indexOf(it) + 1}"
-            val pref: Int = (groupNum.padEnd(groupNum.length + numberOfParticipants.toString().length, '0')).toInt()
-            it.listParticipants.forEach {
-                it.setStart(pref + numbers[index++], Time(competitionsStart.timeInSeconds + 60))
-                competitionsStart += Time(60)
-            }
-        }
-    }
-
     override fun toString(): String {
         return "Название:$name, дата: $date, количество групп: ${groupList.size}, количество дистанций: ${distanceList.size}, количество коллективов: ${collectiveList.size}"
+    }
+
+    //TODO(что-то с папками)
+    fun makeStartProtocols() {
+        groupList.filter {it.listParticipants.size > 0}.forEach { group ->
+            val path = "csvFiles/start${groupList.indexOf(group) + 1}.csv"
+            if (File(path).createNewFile())
+                csvWriter().writeAll(listOf(List(6) {if (it == 0) group.groupName else ""}), path)
+                csvWriter().writeAll(group.listParticipants.map { it.toCSV() }, path, append = true)
+        }
+    }
+}
+
+fun Event.setNumbersAndTime(groups: List<Group>) {
+    val numberOfParticipants = groups.sumOf { it.listParticipants.size }
+    val numbers = mutableListOf<Int>()
+    while (numbers.size < numberOfParticipants) {
+        numbers += Random.nextInt(1, numberOfParticipants + 1)
+        numbers.toSet().toMutableList()
+    }
+    var competitionsStart = Time(12, 0, 0)
+    var index = 0
+    groups.forEach { group ->
+        val groupNum = "${groupList.indexOf(group) + 1}"
+        val pref: Int = (groupNum.padEnd(groupNum.length + numberOfParticipants.toString().length, '0')).toInt()
+        group.listParticipants.forEach { participant ->
+            participant.setStart(pref + numbers[index++], Time(competitionsStart.timeInSeconds + 60))
+            competitionsStart += Time(60)
+        }
+    }
+}
+
+
+fun Event.setupGroups() {
+    collectiveList.forEach { collective ->
+        collective.athleteList.forEach { participant ->
+            chooseGroupByParams(
+                participant.wishGroup,
+                yearOfCompetition - participant.yearOfBirth,
+                participant.sex
+            )?.addParticipant(participant)
+                ?: parseLogger.debugC("Для участника $participant не нашлось подходящей группы")
+        }
     }
 }
