@@ -19,18 +19,6 @@ fun readFile(path: String): File {
     }
 }
 
-fun eventParser(path: String): Pair<String, LocalDate> {
-    parseLogger.debugC("Parsing event file: $path")
-    val file = readFile(path)
-    val rows = csvReader().readAllWithHeader(file)
-    if (rows.size != 1)
-        throw ProblemWithCSVException(path)
-    else if (rows[0]["Дата"] != null && rows[0]["Название"] != null && rows[0].size == 2) {
-        return Pair(rows[0]["Название"] ?: "", LocalDate.parse(rows[0]["Дата"], formatter))
-    } else
-        throw CSVStringWithNameException(path)
-}
-
 fun chooseSex(sex: String): Sex {
     return when (sex) {
         "М", "M", "m", "м" -> Sex.MALE
@@ -89,29 +77,4 @@ fun collectiveParser(path: String): Pair<String, List<Participant>>{
     ) throw CSVFieldNamesException(path)
     // Не знаю, стоит ли так делать, но я передаю файл в makeParticipant, чтобы указать файл в котором получена ошибка
     return  participantsParser(name,file)
-}
-
-fun readGroupsFromFile(path: String) {
-    val file = readFile(path)
-    val groupList = Groups
-    file.forEachLine {
-        if (it != "Название,Дистанция") {
-            try {
-                val nameAndDistance = it.split(",")
-                if (nameAndDistance.size != 2) {
-                    throw TODO() //в строке либо недостает данных, либо есть что-то лишнее
-                }
-                else if (nameAndDistance[1].toIntOrNull() == null ) {
-                    throw TODO() //дистанция не интовая
-                }
-                else {
-                    val group = Group(nameAndDistance[0])
-                    //TODO(group.distance = distances.getDistanceByName(nameAndDistance[1]))
-                    groupList.groupList.add(group)
-                }
-            } catch (e:Exception) {
-                TODO()
-            }
-        }
-    }
 }
