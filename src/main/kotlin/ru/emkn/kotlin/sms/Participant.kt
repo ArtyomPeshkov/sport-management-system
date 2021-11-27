@@ -29,14 +29,13 @@ class Participant {
     }
 
     var number: Int = -1
-    private set
+        private set
     var startTime: Time = Time(0)
-    private set
+        private set
 
-    fun setStart(num: Int, start:Time)
-    {
-        number=num
-        startTime=start
+    fun setStart(num: Int, start: Time) {
+        number = num
+        startTime = start
     }
 
     fun setPoints(points: Int) {
@@ -50,7 +49,8 @@ class Participant {
     }
 
     override fun toString(): String {
-        return "Группа: $wishGroup, Пол: $sex, Фамилия: $surname, Имя: $name, Год рождения: $yearOfBirth, Разряд: $rank "
+        return "Группа: $wishGroup, Пол: $sex, Фамилия: $surname, Имя: $name, Год рождения: $yearOfBirth, Разряд: $rank"
     }
 
+    fun toCSV(): List<String> = listOf("$number", surname, name, "$yearOfBirth", rank, "$startTime")
 }

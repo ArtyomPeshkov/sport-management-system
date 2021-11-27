@@ -17,6 +17,7 @@ fun readFile(path: String): File {
         throw ProblemWithFilePathException(path)
     }
 }
+
 fun chooseSex(sex: String): Sex {
     return when (sex) {
         "М", "M", "m", "м" -> Sex.MALE
