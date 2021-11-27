@@ -52,5 +52,5 @@ class Participant {
         return "Группа: $wishGroup, Пол: $sex, Фамилия: $surname, Имя: $name, Год рождения: $yearOfBirth, Разряд: $rank"
     }
 
-    fun toCSV(): List<String> = listOf("$number", surname, name, "$yearOfBirth", rank, "$startTime")
+    fun toCSV(): List<String> = listOf("$number", surname, name, "$yearOfBirth",collective, rank, "$startTime")
 }

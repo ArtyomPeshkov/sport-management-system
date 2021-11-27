@@ -10,9 +10,19 @@ import log.debugC
 import java.io.File
 import java.time.LocalDate
 
+fun distancesParser(distances: File): Map<String, Distance> {
+    val distanceStrings = csvReader().readAllWithHeader(distances)
+    return distanceStrings.associate {
+        Pair(
+            it["Название"] ?: throw CSVFieldNamesException(distances.path),
+            Distance(it, distances.path)
+        )
+    }
+
+}
+
 
 class Event(path: String) {
-    //TODO("Вынести в отдельную функцию") Не получится, т.к. там нельзя определить поля
     val name: String
     val date: LocalDate
     val yearOfCompetition: Int
@@ -75,17 +85,6 @@ class Event(path: String) {
         }.toSet().toList()
     }
 
-    fun distancesParser(distances: File): Map<String, Distance> {
-        val distanceStrings = csvReader().readAllWithHeader(distances)
-        return distanceStrings.associate {
-            Pair(
-                it["Название"] ?: throw CSVFieldNamesException(distances.path),
-                Distance(it, distances.path)
-            )
-        }
-
-    }
-
     fun collectivesParser(applicationsFolder: File): List<Collective> {
         val applications =
             applicationsFolder.walk().toList().filter { ".*[.]csv".toRegex().matches(it.path.substringAfterLast('/')) }
@@ -96,13 +95,13 @@ class Event(path: String) {
         return "Название:$name, дата: $date, количество групп: ${groupList.size}, количество дистанций: ${distanceList.size}, количество коллективов: ${collectiveList.size}"
     }
 
-    //TODO(что-то с папками)
     fun makeStartProtocols() {
-        val generalFile = File("csvFiles/starts/start_general.csv")
+        File("csvFiles/starts/").mkdirs()
+        var generalFile = File("csvFiles/starts/start_general.csv")
         val generalLines = mutableListOf<List<String>>()
         groupList.filter { it.listParticipants.size > 0 }.forEach { group ->
             val file = File("csvFiles/starts/start_${group.groupName}.csv")
-            csvWriter().writeAll(listOf(List(6) { if (it == 0) group.groupName else "" }), file, append = false)
+            csvWriter().writeAll(listOf(List(group.listParticipants[0].toCSV().size) { if (it == 0) group.groupName else "" }), file, append = false)
             csvWriter().writeAll(group.listParticipants.map { it.toCSV() }, file, append = true)
             generalLines.addAll(group.listParticipants.map { it.toCSV() })
         }
