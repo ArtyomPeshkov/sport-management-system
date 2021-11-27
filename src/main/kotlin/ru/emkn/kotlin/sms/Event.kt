@@ -9,7 +9,6 @@ import exceptions.ProblemWithCSVException
 import log.debugC
 import java.io.File
 import java.time.LocalDate
-import kotlin.random.Random
 
 
 class Event(path: String) {
@@ -99,22 +98,22 @@ class Event(path: String) {
 
     //TODO(что-то с папками)
     fun makeStartProtocols() {
-        groupList.filter {it.listParticipants.size > 0}.forEach { group ->
-            val path = "csvFiles/start${groupList.indexOf(group) + 1}.csv"
-            if (File(path).createNewFile())
-                csvWriter().writeAll(listOf(List(6) {if (it == 0) group.groupName else ""}), path)
-                csvWriter().writeAll(group.listParticipants.map { it.toCSV() }, path, append = true)
+        val generalFile = File("csvFiles/starts/start_general.csv")
+        val generalLines = mutableListOf<List<String>>()
+        groupList.filter { it.listParticipants.size > 0 }.forEach { group ->
+            val file = File("csvFiles/starts/start_${group.groupName}.csv")
+            csvWriter().writeAll(listOf(List(6) { if (it == 0) group.groupName else "" }), file, append = false)
+            csvWriter().writeAll(group.listParticipants.map { it.toCSV() }, file, append = true)
+            generalLines.addAll(group.listParticipants.map { it.toCSV() })
         }
+        csvWriter().writeAll(generalLines, generalFile)
     }
 }
 
 fun Event.setNumbersAndTime(groups: List<Group>) {
     val numberOfParticipants = groups.sumOf { it.listParticipants.size }
-    val numbers = mutableListOf<Int>()
-    while (numbers.size < numberOfParticipants) {
-        numbers += Random.nextInt(1, numberOfParticipants + 1)
-        numbers.toSet().toMutableList()
-    }
+    var numbers = List(numberOfParticipants) { it + 1 }
+    numbers = numbers.shuffled()
     var competitionsStart = Time(12, 0, 0)
     var index = 0
     groups.forEach { group ->
