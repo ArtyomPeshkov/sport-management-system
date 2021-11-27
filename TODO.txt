@@ -7,7 +7,7 @@ DONE: ***Хранить в группе список участников(Арт
 DONE: ***Перенести Constants.kt в тело Event (Артём)
 //По сути мы там должны хранить все данные об Event, в том числе и всякие списки участников, групп и тп
 **Добавить в Participant поля для результатов
-**Функции-расширения для Event (setupGroups();distanceList.forEach {setNumbersAndTime(getGroupsByDistance(it))})
+DONE: **Функции-расширения для Event (setupGroups();distanceList.forEach {setNumbersAndTime(getGroupsByDistance(it))})
 DONE:  *При получении файла групп создать список групп(Маша)
 DONE: *class Distance хранить контрольные точки (Артём)
 DONE:  *Добавить название команды в класс Participant (Маша)
@@ -30,7 +30,7 @@ DONE: Функция итерирования по applications/ (Артём)
 DONE: Считывание всех applications (Артём)
 DONE: Распределение по группам (Артём)
 DONE:  Жеребьёвка (Артём)
-Формирование стартового протокола
+DONE:  Формирование стартового протокола
 4. Функции для 2 части
 Необходимо:
 {
