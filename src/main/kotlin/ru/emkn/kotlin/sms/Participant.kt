@@ -29,7 +29,9 @@ class Participant {
     }
 
     var number: Int = -1
+    private set
     var startTime: Time = Time(0)
+    private set
 
     fun setStart(num: Int, start:Time)
     {

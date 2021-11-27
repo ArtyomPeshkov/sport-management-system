@@ -23,7 +23,7 @@ class Event {
         distanceList = distancesParser(configurationFolder.find { it.name.substringAfterLast('/') == "distances.csv" }
             ?: throw NotEnoughConfigurationFiles(path))
         groupList =
-            groupsParser(configurationFolder.find { it.name.substringAfterLast('/') == "groupsAndDistances.csv" }
+            groupsParser(configurationFolder.find { it.name.substringAfterLast('/') == "groups.csv" }
                 ?: throw NotEnoughConfigurationFiles(path))
         collectiveList =
             collectivesParser(configurationFolder.find { it.name.substringAfterLast('/') == "applications" }
@@ -118,9 +118,6 @@ class Event {
             it.listParticipants.forEach{
                 it.setStart(pref+numbers[index++],Time(competitionsStart.timeInSeconds+60))
                 competitionsStart += Time(60)
-            }
-            it.listParticipants.forEach {
-                println("${it.number},${it.startTime}\n")
             }
         }
     }
