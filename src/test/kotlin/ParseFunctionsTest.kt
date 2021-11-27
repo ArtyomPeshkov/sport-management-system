@@ -9,7 +9,7 @@ import kotlin.test.*
 
 internal class ParseFunctionsTest{
 
-    @Test
+    /*@Test
     fun `correct input test (event)`() {
         assertEquals(Pair("Mad Wave Classic",  LocalDate.parse("20.11.2021", formatter)), eventParser("src/test/resources/events-test/correctEvent.csv"))
     }
@@ -60,7 +60,7 @@ internal class ParseFunctionsTest{
         assertFailsWith<ProblemWithCSVException>{participantsParser("Test", File("src/test/resources/participant-test/notEnoughStrings.csv"))}
     }
 
-/*    val correctApplication:Pair<String, List<Participant>> = Pair("КОМЕТА", listOf())
+   val correctApplication:Pair<String, List<Participant>> = Pair("КОМЕТА", listOf())
 
     @Test
     fun `correct input test (application)`() {

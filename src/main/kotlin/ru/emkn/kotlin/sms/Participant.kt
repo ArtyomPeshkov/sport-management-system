@@ -1,7 +1,7 @@
 package ru.emkn.kotlin.sms
 
 class Participant {
-    val group: String
+    val wishGroup: String
     val sex: Sex
     val surname: String
     val name: String
@@ -20,7 +20,7 @@ class Participant {
         yearOfBirth: Int,
         rank: String
     ) {
-        this.group = group
+        this.wishGroup = group
         this.sex = sex
         this.surname = surname
         this.name = name
@@ -28,11 +28,15 @@ class Participant {
         this.rank = rank
     }
 
-    private var number: Int = -1
+    var number: Int = -1
+    private set
+    var startTime: Time = Time(0)
+    private set
 
-    fun setParticipantNumber() //Номер после жеребьёвки
+    fun setStart(num: Int, start:Time)
     {
-        number = 1
+        number=num
+        startTime=start
     }
 
     fun setPoints(points: Int) {
@@ -46,7 +50,7 @@ class Participant {
     }
 
     override fun toString(): String {
-        return "Группа: $group, Пол: $sex, Фамилия: $surname, Имя: $name, Год рождения: $yearOfBirth, Разряд: $rank "
+        return "Группа: $wishGroup, Пол: $sex, Фамилия: $surname, Имя: $name, Год рождения: $yearOfBirth, Разряд: $rank "
     }
 
 }
