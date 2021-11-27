@@ -9,36 +9,41 @@ import exceptions.ProblemWithCSVException
 import log.debugC
 import java.io.File
 import java.time.LocalDate
+import java.time.LocalDateTime
 
-fun distancesParser(distances: File): Map<String, Distance> {
-    val distanceStrings = csvReader().readAllWithHeader(distances)
-    return distanceStrings.associate {
-        Pair(
-            it["Название"] ?: throw CSVFieldNamesException(distances.path),
-            Distance(it, distances.path)
-        )
+class Event(groups: List<Group>,distances: Map<String, Distance>) {
+    var name: String = ""
+    var date: LocalDate = LocalDate.parse("01.01.2021", formatter)
+    var yearOfCompetition: Int = date.toString().substringBefore('-').toInt()
+    var groupList: List<Group> = listOf() //список групп
+    private var distanceList: Map<String, Distance> = mapOf() //список дистанций
+    var collectiveList: List<Collective> = listOf() //список заявленных коллективов
+
+
+    constructor(name:String,date:LocalDate,groups: List<Group>,distances: Map<String, Distance>,collectives: List<Collective>):this(groups,distances)
+    {
+        this.name=name;
+        this.date=date
+        collectiveList = collectives
+        setupGroups()
+        distanceList.forEach {
+            setNumbersAndTime(getGroupsByDistance(it.value))
+        }
+        makeStartProtocols()
     }
 
-}
-
-
-class Event(path: String) {
-    val name: String
-    val date: LocalDate
-    val yearOfCompetition: Int
-    var groupList: List<Group> = listOf()//список групп
-    private var distanceList: Map<String, Distance> = mapOf()//список дистанций
-    var collectiveList: List<Collective> = listOf()//список заявленных коллективов
-
-    private val configurationFolder = readFile(path).walk().toList()
-
     init {
+        groupList=groups
+        distanceList=distances
+
+        /*
+         configurationFolder = readFile(path).walk().toList()
         parseLogger.debugC("Parsing event folder: $path")
 //        val configurationFolder = readFile(path).walk().toList()
         distanceList = distancesParser(configurationFolder.find { it.name.substringAfterLast('/') == "distances.csv" }
             ?: throw NotEnoughConfigurationFiles(path))
         groupList =
-            groupsParser(configurationFolder.find { it.name.substringAfterLast('/') == "groups.csv" }
+            groupsParser(distanceList, configurationFolder.find { it.name.substringAfterLast('/') == "groups.csv" }
                 ?: throw NotEnoughConfigurationFiles(path))
         collectiveList =
             collectivesParser(configurationFolder.find { it.name.substringAfterLast('/') == "applications" }
@@ -49,24 +54,21 @@ class Event(path: String) {
         if (rows.size != 1)
             throw ProblemWithCSVException(path)
         else if (rows[0]["Дата"] != null && rows[0]["Название"] != null && rows[0].size == 2) {
-            name = rows[0]["Название"] ?: throw CSVStringWithNameException(path)
+            //name = rows[0]["Название"] ?: throw CSVStringWithNameException(path)
             date = LocalDate.parse(rows[0]["Дата"], formatter)
             yearOfCompetition = date.toString().substringBefore('-').toInt()
         } else
             throw CSVStringWithNameException(path)
-        setupGroups()
-        distanceList.forEach {
-            setNumbersAndTime(getGroupsByDistance(it.value))
-        }
-        makeStartProtocols()
-    }
 
-    fun getGroupByName(name: String): Group? {
-        return groupList.find { it.groupName == name }
+*/
     }
 
     fun getGroupsByDistance(distance: Distance): List<Group> {
         return groupList.filter { it.distance == distance }
+    }
+
+    private fun getGroupByName(name: String): Group? {
+        return groupList.find { it.groupName == name }
     }
 
     fun chooseGroupByParams(wishedGroup: String, age: Int, sex: Sex): Group? {
@@ -77,36 +79,23 @@ class Event(path: String) {
         return groupList.find { it.sex == sex && it.ageTo >= age && it.ageFrom <= age }
     }
 
-    fun groupsParser(groups: File): List<Group> {
-        val groupStrings = csvReader().readAllWithHeader(groups)
-        return groupStrings.map { group ->
-            val distance = distanceList[group["Дистанция"]] ?: throw CSVFieldNamesException(groups.path)
-            Group(group, distance, groups.path)
-        }.toSet().toList()
-    }
-
-    fun collectivesParser(applicationsFolder: File): List<Collective> {
-        val applications =
-            applicationsFolder.walk().toList().filter { ".*[.]csv".toRegex().matches(it.path.substringAfterLast('/')) }
-        return applications.map { Collective(it.path) }
-    }
-
     override fun toString(): String {
         return "Название:$name, дата: $date, количество групп: ${groupList.size}, количество дистанций: ${distanceList.size}, количество коллективов: ${collectiveList.size}"
     }
 
-    fun makeStartProtocols() {
-        File("csvFiles/starts/").mkdirs()
-        var generalFile = File("csvFiles/starts/start_general.csv")
-        val generalLines = mutableListOf<List<String>>()
-        groupList.filter { it.listParticipants.size > 0 }.forEach { group ->
-            val file = File("csvFiles/starts/start_${group.groupName}.csv")
-            csvWriter().writeAll(listOf(List(group.listParticipants[0].toCSV().size) { if (it == 0) group.groupName else "" }), file, append = false)
-            csvWriter().writeAll(group.listParticipants.map { it.toCSV() }, file, append = true)
-            generalLines.addAll(group.listParticipants.map { it.toCSV() })
-        }
-        csvWriter().writeAll(generalLines, generalFile)
+}
+
+fun Event.makeStartProtocols() {
+    File("csvFiles/starts/").mkdirs()
+    val generalFile = File("csvFiles/starts/start_general.csv")
+    val generalLines = mutableListOf<List<String>>()
+    groupList.filter { it.listParticipants.size > 0 }.forEach { group ->
+        val file = File("csvFiles/starts/start_${group.groupName}.csv")
+        csvWriter().writeAll(listOf(List(group.listParticipants[0].toCSV().size) { if (it == 0) group.groupName else "" }), file, append = false)
+        csvWriter().writeAll(group.listParticipants.map { it.toCSV() }, file, append = true)
+        generalLines.addAll(group.listParticipants.map { it.toCSV() })
     }
+    csvWriter().writeAll(generalLines, generalFile)
 }
 
 fun Event.setNumbersAndTime(groups: List<Group>) {
