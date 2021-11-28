@@ -35,32 +35,6 @@ class Event(groups: List<Group>,distances: Map<String, Distance>) {
     init {
         groupList=groups
         distanceList=distances
-
-        /*
-         configurationFolder = readFile(path).walk().toList()
-        parseLogger.debugC("Parsing event folder: $path")
-//        val configurationFolder = readFile(path).walk().toList()
-        distanceList = distancesParser(configurationFolder.find { it.name.substringAfterLast('/') == "distances.csv" }
-            ?: throw NotEnoughConfigurationFiles(path))
-        groupList =
-            groupsParser(distanceList, configurationFolder.find { it.name.substringAfterLast('/') == "groups.csv" }
-                ?: throw NotEnoughConfigurationFiles(path))
-        collectiveList =
-            collectivesParser(configurationFolder.find { it.name.substringAfterLast('/') == "applications" }
-                ?: throw NotEnoughConfigurationFiles(path))
-        val rows =
-            csvReader().readAllWithHeader(configurationFolder.find { it.name.substringAfterLast('/') == "event.csv" }
-                ?: throw NotEnoughConfigurationFiles(path))
-        if (rows.size != 1)
-            throw ProblemWithCSVException(path)
-        else if (rows[0]["Дата"] != null && rows[0]["Название"] != null && rows[0].size == 2) {
-            //name = rows[0]["Название"] ?: throw CSVStringWithNameException(path)
-            date = LocalDate.parse(rows[0]["Дата"], formatter)
-            yearOfCompetition = date.toString().substringBefore('-').toInt()
-        } else
-            throw CSVStringWithNameException(path)
-
-*/
     }
 
     fun getGroupsByDistance(distance: Distance): List<Group> {
@@ -91,7 +65,7 @@ fun Event.makeStartProtocols() {
     val generalLines = mutableListOf<List<String>>()
     groupList.filter { it.listParticipants.size > 0 }.forEach { group ->
         val file = File("csvFiles/starts/start_${group.groupName}.csv")
-        csvWriter().writeAll(listOf(List(group.listParticipants[0].toCSV().size) { if (it == 0) group.groupName else "" }), file, append = false)
+        csvWriter().writeAll(listOf(List(group.listParticipants[0].toCSV().size) { if (it == 0) group.groupName else "" }, listOf("номер", "фамилия", "имя", "г.р.", "коллектив", "разряд", "стартовое время")), file, append = false)
         csvWriter().writeAll(group.listParticipants.map { it.toCSV() }, file, append = true)
         generalLines.addAll(group.listParticipants.map { it.toCSV() })
     }
