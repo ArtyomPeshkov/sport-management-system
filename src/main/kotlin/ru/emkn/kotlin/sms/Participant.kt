@@ -64,5 +64,5 @@ class Participant {
         return this.toString() + "Пол: $sex; Год рождения: $yearOfBirth; Разряд: $rank"
     }
 
-    fun toCSV(): List<String> = listOf("$number", surname, name, "$yearOfBirth",collective, rank, "$startTime")
+    fun toCSV(): List<String> = listOf("$number", surname, name, sex.toString(), "$yearOfBirth",collective, rank, "$startTime")
 }
