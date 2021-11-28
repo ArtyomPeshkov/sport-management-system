@@ -41,12 +41,8 @@ class Event(groups: List<Group>,distances: Map<String, Distance>) {
         return groupList.filter { it.distance == distance }
     }
 
-    private fun getGroupByName(name: String): Group? {
-        return groupList.find { it.groupName == name }
-    }
-
     fun chooseGroupByParams(wishedGroup: String, age: Int, sex: Sex): Group? {
-        val wish = getGroupByName(wishedGroup)
+        val wish = getGroupByName(wishedGroup, groupList)
         if (wish != null && (sex == Sex.FEMALE || sex == wish.sex) && age <= wish.ageTo) {
             return wish
         }
