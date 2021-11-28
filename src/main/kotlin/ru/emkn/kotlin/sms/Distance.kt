@@ -6,6 +6,9 @@ import exceptions.IncorrectControlPointValue
 class Distance(val name: String) {
     private val pointsList: MutableList<ControlPoint> = mutableListOf()
 
+    fun getPointsList(): List<ControlPoint>{
+        return pointsList.toMutableList()
+    }
     constructor(configFileString: Map<String, String>, path: String, controlPoints: HashSet<ControlPoint>) : this(
         configFileString["Название"] ?: throw CSVFieldNamesException(path)
     ) {
@@ -30,3 +33,4 @@ class Distance(val name: String) {
 data class ControlPoint(val name: String)
 
 data class ControlPointWithTime(val name: String, val time: Time)
+

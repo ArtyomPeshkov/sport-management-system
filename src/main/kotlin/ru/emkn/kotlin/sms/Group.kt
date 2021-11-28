@@ -31,7 +31,7 @@ class Group {
 
     fun toStringFull():String{
         val s = StringBuilder(this.toString())
-        s.append("Пол: $sex; Минимальный возраст: $ageFrom; Минимальный возраст: $ageTo")
+        s.append("Пол: $sex; Минимальный возраст: $ageFrom; Максимальный возраст: $ageTo")
         return s.toString()
     }
 
