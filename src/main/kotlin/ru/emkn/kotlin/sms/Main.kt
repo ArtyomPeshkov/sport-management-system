@@ -37,11 +37,14 @@ fun distancesParser(distances: File): Map<String, Distance> {
     }
 }
 
-fun groupsParser(distanceList:Map<String, Distance>, groups: File): List<Group> {
+fun groupsParser(distanceList:Map<String, Distance>, groups: File,currentPhase:Phase): List<Group> {
     val groupStrings = csvReader().readAllWithHeader(groups)
     return groupStrings.map { group ->
         val distance = distanceList[group["Дистанция"]] ?: throw CSVFieldNamesException(groups.path)
-        Group(group, distance, groups.path)
+        if (currentPhase==Phase.FIRST)
+            Group(group, distance, groups.path)
+        else
+            Group(group["Название"] ?: throw CSVFieldNamesException(groups.path), distance)
     }.toSet().toList()
 }
 
@@ -57,9 +60,9 @@ fun getCollectives(configurationFolder: List<File>,path: String) = collectivesPa
 fun getDistances(configurationFolder: List<File>,path: String) = distancesParser(configurationFolder.find { it.name.substringAfterLast('/') == "distances.csv" }
     ?: throw NotEnoughConfigurationFiles(path))
 
-fun getGroups(configurationFolder: List<File>,distanceList: Map<String,Distance>,path: String)=
+fun getGroups(configurationFolder: List<File>,distanceList: Map<String,Distance>,path: String, currentPhase: Phase)=
     groupsParser(distanceList, configurationFolder.find { it.name.substringAfterLast('/') == "groups.csv" }
-        ?: throw NotEnoughConfigurationFiles(path))
+        ?: throw NotEnoughConfigurationFiles(path),currentPhase)
 
 data class nameDate(val name:String,val date: LocalDate)
 
@@ -75,13 +78,26 @@ fun getNameAndDate(configurationFolder: List<File>,path: String): nameDate{
         throw CSVStringWithNameException(path)
 }
 
-fun main(args: Array<String>) {
-    val path = "csvFiles/configuration"
+fun phase1(path: String)
+{
     val configurationFolder=readFile(path).walk().toList()
     val distances = getDistances(configurationFolder,path)
-    val groups = getGroups(configurationFolder,distances,path)
+    val groups = getGroups(configurationFolder,distances,path,Phase.FIRST)
     val collective = getCollectives(configurationFolder,path)
     val (name,date) = getNameAndDate(configurationFolder,path)
     val event = Event(name,date,groups,distances,collective)
     println(event.toString())
+}
+
+fun phase2(path:String)
+{
+    val configurationFolder=readFile(path).walk().toList()
+    val distances = getDistances(configurationFolder,path)
+    val groups = getGroups(configurationFolder,distances,path,Phase.SECOND)
+}
+
+
+fun main(args: Array<String>) {
+    val path = "csvFiles/configuration"
+    phase1(path)
 }

@@ -20,3 +20,5 @@ class Distance(val name: String) {
 }
 
 data class ControlPoint(val number: Int, val isFinal: Boolean = false)
+
+data class ControlPointWithTime(val number: Int, val time: Time)
