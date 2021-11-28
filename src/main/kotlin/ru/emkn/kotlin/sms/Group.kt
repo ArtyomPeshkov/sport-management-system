@@ -28,4 +28,15 @@ class Group {
         ageFrom = configFileString["ВозрастОт"]?.toInt() ?: throw CSVFieldNamesException(path)
         ageTo = configFileString["ВозрастДо"]?.toInt() ?: throw CSVFieldNamesException(path)
     }
+
+    fun toStringFull():String{
+        val s = StringBuilder(this.toString())
+        s.append("Пол: $sex; Минимальный возраст: $ageFrom; Минимальный возраст: $ageTo")
+        return s.toString()
+    }
+
+    override fun toString(): String {
+        val s = StringBuilder("Название: $groupName\nДистанция: $distance\nСписок участников: $listParticipants\n")
+        return s.toString()
+    }
 }

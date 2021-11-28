@@ -6,7 +6,7 @@ import exceptions.CSVFieldNamesException
 import exceptions.CSVStringWithNameException
 import exceptions.NotEnoughConfigurationFiles
 import exceptions.ProblemWithCSVException
-import log.debugC
+import log.universalC
 import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -93,7 +93,7 @@ fun Event.setupGroups() {
                 yearOfCompetition - participant.yearOfBirth,
                 participant.sex
             )?.addParticipant(participant)
-                ?: parseLogger.debugC("Для участника $participant не нашлось подходящей группы")
+                ?: parseLogger.universalC(Colors.YELLOW._name,"Для участника $participant не нашлось подходящей группы")
         }
     }
 }

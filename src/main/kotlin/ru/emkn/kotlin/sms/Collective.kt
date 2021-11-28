@@ -4,7 +4,7 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import exceptions.CSVFieldNamesException
 import exceptions.CSVStringWithNameException
 import exceptions.ProblemWithCSVException
-import log.debugC
+import log.universalC
 import java.io.File
 
 class Collective {
@@ -17,7 +17,7 @@ class Collective {
     }
 
     fun makeParticipant(name: String, param: Map<String, String>, index: Int, path: String): Participant {
-        parseLogger.debugC("Reading participant number ${index + 1} from $path")
+        parseLogger.universalC(Colors.YELLOW._name,"Reading participant number ${index + 1} from $path")
         try {
             val participant = Participant(
                 param["Группа"] ?: throw CSVFieldNamesException(path),
@@ -43,7 +43,7 @@ class Collective {
     }
 
     fun collectiveParser(path: String): List<Participant> {
-        parseLogger.debugC("Started reading participants from $path")
+        parseLogger.universalC(Colors.YELLOW._name,"Started reading participants from $path")
         return participantsParser(name, readFile(path))
     }
 

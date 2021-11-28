@@ -1,24 +1,30 @@
 package log
 
 import org.slf4j.Logger
+import ru.emkn.kotlin.sms.Colors
+import ru.emkn.kotlin.sms.ControlPointWithTime
+import java.lang.reflect.Type
 
-const val RESET: String = "\u001B[0m"
-const val RED: String = "\u001B[31m"
-const val GREEN: String = "\u001B[32m"
-const val YELLOW: String = "\u001B[33m"
-const val BLUE: String = "\u001B[34m"
-const val PURPLE: String = "\u001B[35m"
+fun Logger.universalC(color: String,s: String, type: Char='d' ) {
+    when (type){
+        't' -> this.trace(" $color$s${Colors.RESET._name}")
+        'd' -> this.debug(" $color$s${Colors.RESET._name}")
+        'i' -> this.info(" $color$s${Colors.RESET._name}")
+        'e' -> this.error(" $color$s${Colors.RESET._name}")
+    }
+}
 
-fun Logger.traceC(s: String) {
-    this.debug("$BLUE $s $RESET")
+fun Logger.printCollection(c:Collection<Any>,color: String,type: Char='d')
+{
+    c.forEach{
+        this.universalC(color,"$it",type)
+    }
 }
-fun Logger.debugC(s: String) {
-    this.debug("$YELLOW $s $RESET")
-}
-fun Logger.infoC(s: String) {
-    this.debug("$GREEN $s $RESET")
-}
-fun Logger.warningC(s: String) {
-    this.debug("$PURPLE $s $RESET")
 
+fun Logger.printMap(c:Map<out Any,Any>,color: String,type: Char='d')
+{
+    c.forEach{
+        this.universalC(color,"$it",type)
+    }
 }
+

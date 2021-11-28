@@ -48,8 +48,14 @@ class Participant {
         }
     }
 
-    override fun toString(): String {
-        return "Группа: $wishGroup, Пол: $sex, Фамилия: $surname, Имя: $name, Год рождения: $yearOfBirth, Разряд: $rank"
+    override fun toString(): String
+    {
+        return "Группа: $wishGroup; Фамилия: $surname; Имя: $name;"
+    }
+
+    
+    fun fullToString(): String {
+        return this.toString() + "Пол: $sex; Год рождения: $yearOfBirth; Разряд: $rank"
     }
 
     fun toCSV(): List<String> = listOf("$number", surname, name, "$yearOfBirth",collective, rank, "$startTime")
