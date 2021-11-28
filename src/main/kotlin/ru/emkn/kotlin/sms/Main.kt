@@ -2,7 +2,7 @@ package ru.emkn.kotlin.sms
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import exceptions.*
-import log.debugC
+import log.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 val parseLogger: Logger = LoggerFactory.getLogger("Parse")
 
 fun readFile(path: String): File {
-    parseLogger.debugC("Reading file: $path")
+    parseLogger.universalC(Colors.YELLOW._name,"Reading file: $path")
     try {
         return File(path)
     } catch (e: Exception) {
@@ -30,20 +30,23 @@ fun chooseSex(sex: String): Sex {
 
 fun distancesParser(distances: File): Map<String, Distance> {
     val distanceStrings = csvReader().readAllWithHeader(distances)
+    val controlPoints = hashSetOf<ControlPoint>()
     return distanceStrings.associate {
         Pair(
             it["Название"] ?: throw CSVFieldNamesException(distances.path),
-            Distance(it, distances.path)
+            Distance(it, distances.path,controlPoints)
         )
     }
 }
 
-fun groupsParser(distanceList:Map<String, Distance>, groups: File,currentPhase:Phase): List<Group> {
+fun groupsParser(distanceList: Map<String, Distance>, groups: File, currentPhase: Phase): List<Group> {
     val groupStrings = csvReader().readAllWithHeader(groups)
     return groupStrings.map { group ->
         val distance = distanceList[group["Дистанция"]] ?: throw CSVFieldNamesException(groups.path)
-        if (currentPhase==Phase.FIRST)
+        parseLogger.universalC(Colors.BLUE._name,distance.toString())
+        if (currentPhase == Phase.FIRST) {
             Group(group, distance, groups.path)
+        }
         else
             Group(group["Название"] ?: throw CSVFieldNamesException(groups.path), distance)
     }.toSet().toList()
@@ -55,51 +58,55 @@ fun collectivesParser(applicationsFolder: File): List<Collective> {
     return applications.map { Collective(it.path) }
 }
 
-fun getCollectives(configurationFolder: List<File>,path: String) = collectivesParser(configurationFolder.find { it.name.substringAfterLast('/') == "applications" }
+fun getCollectives(configurationFolder: List<File>, path: String) =
+    collectivesParser(configurationFolder.find { it.name.substringAfterLast('/') == "applications" }
         ?: throw NotEnoughConfigurationFiles(path))
 
-fun getDistances(configurationFolder: List<File>,path: String) = distancesParser(configurationFolder.find { it.name.substringAfterLast('/') == "distances.csv" }
-    ?: throw NotEnoughConfigurationFiles(path))
+fun getDistances(configurationFolder: List<File>, path: String) =
+    distancesParser(configurationFolder.find { it.name.substringAfterLast('/') == "distances.csv" }
+        ?: throw NotEnoughConfigurationFiles(path))
 
-fun getGroups(configurationFolder: List<File>,distanceList: Map<String,Distance>,path: String, currentPhase: Phase)=
+fun getGroups(configurationFolder: List<File>, distanceList: Map<String, Distance>, path: String, currentPhase: Phase) =
     groupsParser(distanceList, configurationFolder.find { it.name.substringAfterLast('/') == "groups.csv" }
-        ?: throw NotEnoughConfigurationFiles(path),currentPhase)
+        ?: throw NotEnoughConfigurationFiles(path), currentPhase)
 
-data class nameDate(val name:String,val date: LocalDate)
+data class nameDate(val name: String, val date: LocalDate)
 
-fun getNameAndDate(configurationFolder: List<File>,path: String): nameDate{
+fun getNameAndDate(configurationFolder: List<File>, path: String): nameDate {
     val rows = csvReader().readAllWithHeader(configurationFolder.find { it.name.substringAfterLast('/') == "event.csv" }
-            ?: throw NotEnoughConfigurationFiles(path))
+        ?: throw NotEnoughConfigurationFiles(path))
     return if (rows.size != 1)
         throw ProblemWithCSVException(path)
     else if (rows[0]["Дата"] != null && rows[0]["Название"] != null && rows[0].size == 2) {
-        nameDate( rows[0]["Название"] ?: throw CSVStringWithNameException(path),
-        LocalDate.parse(rows[0]["Дата"], formatter))
+        nameDate(
+            rows[0]["Название"] ?: throw CSVStringWithNameException(path),
+            LocalDate.parse(rows[0]["Дата"], formatter)
+        )
     } else
         throw CSVStringWithNameException(path)
 }
 
-fun phase1(path: String)
-{
-    val configurationFolder=readFile(path).walk().toList()
-    val distances = getDistances(configurationFolder,path)
-    val groups = getGroups(configurationFolder,distances,path,Phase.FIRST)
-    val collective = getCollectives(configurationFolder,path)
-    val (name,date) = getNameAndDate(configurationFolder,path)
-    val event = Event(name,date,groups,distances,collective)
+fun phase1(path: String) {
+    val configurationFolder = readFile(path).walk().toList()
+    val distances = getDistances(configurationFolder, path)
+    val groups = getGroups(configurationFolder, distances, path, Phase.FIRST)
+    val collective = getCollectives(configurationFolder, path)
+    val (name, date) = getNameAndDate(configurationFolder, path)
+    val event = Event(name, date, groups, distances, collective)
     println(event.toString())
 }
 
-fun startProtocolParse(startsFolder: File) {
+fun parseStartProtocolFiles(startsFolder: File, groups: List<Group>) {
     val startInfo =
         startsFolder.walk().toList().filter { ".*[.]csv".toRegex().matches(it.path.substringAfterLast('/')) }
-    startInfo.map { parseStartProtocol(it) }
+    startInfo.map { parseStartProtocol(it, groups) }
 }
 
-fun getStartProtocol(configurationFolder: List<File>,path: String) = startProtocolParse(configurationFolder.find { it.name.substringAfterLast('/') == "starts" }
-    ?: throw NotEnoughConfigurationFiles(path))
+fun getStartProtocolFolder(configurationFolder: List<File>, path: String, groups: List<Group>) =
+    parseStartProtocolFiles(configurationFolder.find { it.name.substringAfterLast('/') == "starts" }
+        ?: throw NotEnoughConfigurationFiles(path), groups)
 
-fun parseStartProtocol(protocol: File) {
+fun parseStartProtocol(protocol: File, groups: List<Group>) {
     val fileStrings = csvReader().readAll(protocol.readText().substringBefore("\n"))
     val nameOfGroup = fileStrings[0].let {
         if (it.size != 7)
@@ -107,14 +114,21 @@ fun parseStartProtocol(protocol: File) {
         else it[0]
     }
     val indexOfGroup = getGroupIndexByName(nameOfGroup, groups)
-    fileStrings.forEachIndexed { index, it -> if (index>=2) {
+    //Тут будет Map вместо List
+    val participantData = csvReader().readAll(protocol).drop(1)
+    participantData.forEach {
         val participant = Participant(
-            nameOfGroup, chooseSex(nameOfGroup[0].toString()), it[1], it[2], it[3].toInt(), it[5]
+            nameOfGroup, /*TODO("пол должен передаваться вместе с участником")*/
+            chooseSex(nameOfGroup[0].toString()),
+            it[1],
+            it[2],
+            it[3].toInt(),
+            it[5]
         )
         participant.setCollective(it[4])
-        participant.setStart(it[0].toInt(), Time(it[4]))
+        participant.setStart(it[0].toInt(), Time(it[6]))
         groups[indexOfGroup].addParticipant(participant)
-    }
+
     }
 }
 
@@ -130,14 +144,45 @@ fun getGroupIndexByName(name: String, groups: List<Group>): Int {
     } else throw UnexpectedValueException(group)
 }
 
-fun phase2(path:String)
-{
-    val configurationFolder=readFile(path).walk().toList()
-    val distances = getDistances(configurationFolder,path)
-    groups = getGroups(configurationFolder,distances,path,Phase.SECOND)
-    getStartProtocol(configurationFolder, path)
-    println("${groups[0].listParticipants.size}, ${groups[1].listParticipants.size}, ${groups[2].listParticipants.size}")
+fun parseCPFiles(pointsFolder: File): Map<Int, List<ControlPointWithTime>> {
+    val res: MutableList<Pair<Int, ControlPointWithTime>> = mutableListOf()
+    val pointsInfo =
+        pointsFolder.walk().toList().filter { ".*[.]csv".toRegex().matches(it.path.substringAfterLast('/')) }
+    pointsInfo.forEach { res += parseCP(it) }
+    return res.groupBy({it.first},{it.second})
 }
+
+fun getCPFolder(configurationFolder: List<File>, path: String): Map<Int, List<ControlPointWithTime>> =
+    parseCPFiles(configurationFolder.find { it.name.substringAfterLast('/') == "points" }
+        ?: throw NotEnoughConfigurationFiles(path))
+
+
+fun parseCP(protocol: File): List<Pair<Int,ControlPointWithTime>>  {
+    val fileFirstString = csvReader().readAll(protocol.readText().substringBefore("\n"))
+    val nameOfControlPoint= fileFirstString[0].let {
+        if (it.size != 2)
+            throw CSVStringWithNameException(protocol.path)
+        else it[0]
+    }
+    val eachControlPoint = csvReader().readAll(protocol).drop(1)
+    return eachControlPoint.map { Pair(it[0].toInt(), ControlPointWithTime(nameOfControlPoint,Time(it[1]))) }
+
+}
+
+
+fun phase2(path: String) {
+    val configurationFolder = readFile(path).walk().toList()
+        parseLogger.printCollection(configurationFolder,Colors.GREEN._name)
+    val distances = getDistances(configurationFolder, path)
+        parseLogger.printMap(distances,Colors.BLUE._name)
+    val groups = getGroups(configurationFolder, distances, path, Phase.SECOND)
+    getStartProtocolFolder(configurationFolder, path, groups)
+        parseLogger.printCollection(groups,Colors.PURPLE._name)
+    val participantDistance: Map<Int, List<ControlPointWithTime>> = getCPFolder(configurationFolder, path)
+        parseLogger.universalC(Colors.RED._name,"${participantDistance.size}", 'd')
+        parseLogger.printMap(participantDistance,Colors.YELLOW._name)
+}
+
 
 
 fun main(args: Array<String>) {
@@ -145,4 +190,3 @@ fun main(args: Array<String>) {
     phase2(path)
 }
 
-var groups: List<Group> = listOf()
