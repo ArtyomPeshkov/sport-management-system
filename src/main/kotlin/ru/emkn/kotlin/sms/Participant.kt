@@ -11,6 +11,7 @@ class Participant {
         private set
     var points: Int = 0
         private set
+    var status: String = ""
 
     constructor(
         group: String,
@@ -38,6 +39,11 @@ class Participant {
         startTime = start
     }
 
+    fun setParticipantStatus(stat:String)
+    {
+        status=stat
+    }
+
     fun setPoints(points: Int) {
         this.points = points
     }
@@ -50,13 +56,14 @@ class Participant {
 
     override fun toString(): String
     {
-        return "Группа: $wishGroup; Фамилия: $surname; Имя: $name;"
+        return "Группа: ${Colors.BLUE._name}$wishGroup${Colors.PURPLE._name}; Фамилия: ${Colors.GREEN._name}$surname${Colors.PURPLE._name}; Имя: ${Colors.GREEN._name}$name${Colors.PURPLE._name}; Статус: ${Colors.YELLOW._name}$status${Colors.PURPLE._name}"
     }
 
-    
+
     fun fullToString(): String {
         return this.toString() + "Пол: $sex; Год рождения: $yearOfBirth; Разряд: $rank"
     }
 
-    fun toCSV(): List<String> = listOf("$number", surname, name, "$yearOfBirth",collective, rank, "$startTime")
+    fun toCSV(): List<String> = listOf("$number", surname, name, sex.toString(), "$yearOfBirth",collective, rank, "$startTime")
+    fun headerFormatCSV() = listOf("Номер", "Фамилия", "Имя", "Пол"  ,"Г.р.", "Коллектив", "Разр.", "Стартовое время")
 }

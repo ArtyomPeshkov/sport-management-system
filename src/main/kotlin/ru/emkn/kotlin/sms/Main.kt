@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 val parseLogger: Logger = LoggerFactory.getLogger("Parse")
 
 fun readFile(path: String): File {
-    parseLogger.universalC(Colors.YELLOW._name,"Reading file: $path")
+    parseLogger.universalC(Colors.YELLOW._name, "Reading file: $path")
     try {
         return File(path)
     } catch (e: Exception) {
@@ -34,7 +34,7 @@ fun distancesParser(distances: File): Map<String, Distance> {
     return distanceStrings.associate {
         Pair(
             it["Название"] ?: throw CSVFieldNamesException(distances.path),
-            Distance(it, distances.path,controlPoints)
+            Distance(it, distances.path, controlPoints)
         )
     }
 }
@@ -43,11 +43,10 @@ fun groupsParser(distanceList: Map<String, Distance>, groups: File, currentPhase
     val groupStrings = csvReader().readAllWithHeader(groups)
     return groupStrings.map { group ->
         val distance = distanceList[group["Дистанция"]] ?: throw CSVFieldNamesException(groups.path)
-        parseLogger.universalC(Colors.BLUE._name,distance.toString())
+        parseLogger.universalC(Colors.BLUE._name, distance.toString())
         if (currentPhase == Phase.FIRST) {
             Group(group, distance, groups.path)
-        }
-        else
+        } else
             Group(group["Название"] ?: throw CSVFieldNamesException(groups.path), distance)
     }.toSet().toList()
 }
@@ -109,24 +108,23 @@ fun getStartProtocolFolder(configurationFolder: List<File>, path: String, groups
 fun parseStartProtocol(protocol: File, groups: List<Group>) {
     val fileStrings = csvReader().readAll(protocol.readText().substringBefore("\n"))
     val nameOfGroup = fileStrings[0].let {
-        if (it.size != 7)
+        if (it[0] == "")
             throw CSVStringWithNameException(protocol.path)
         else it[0]
     }
     val indexOfGroup = getGroupIndexByName(nameOfGroup, groups)
-    //Тут будет Map вместо List
-    val participantData = csvReader().readAll(protocol).drop(1)
+    val participantData = csvReader().readAllWithHeader(protocol.readLines().drop(1).joinToString("\n"))
     participantData.forEach {
         val participant = Participant(
             nameOfGroup, /*TODO("пол должен передаваться вместе с участником")*/
             chooseSex(nameOfGroup[0].toString()),
-            it[1],
-            it[2],
-            it[3].toInt(),
-            it[5]
+            it["Фамилия"] ?: throw CSVFieldNamesException(protocol.path),
+            it["Имя"] ?: throw CSVFieldNamesException(protocol.path),
+            it["Г.р."]?.toInt() ?: throw CSVFieldNamesException(protocol.path),
+            it["Разр."] ?: throw CSVFieldNamesException(protocol.path)
         )
-        participant.setCollective(it[4])
-        participant.setStart(it[0].toInt(), Time(it[6]))
+        participant.setCollective(it["Коллектив"] ?: throw CSVFieldNamesException(protocol.path))
+        participant.setStart(it["Номер"]?.toInt() ?: throw CSVFieldNamesException(protocol.path), Time(it["Стартовое время"] ?: throw CSVFieldNamesException(protocol.path),))
         groups[indexOfGroup].addParticipant(participant)
 
     }
@@ -149,7 +147,7 @@ fun parseCPFiles(pointsFolder: File): Map<Int, List<ControlPointWithTime>> {
     val pointsInfo =
         pointsFolder.walk().toList().filter { ".*[.]csv".toRegex().matches(it.path.substringAfterLast('/')) }
     pointsInfo.forEach { res += parseCP(it) }
-    return res.groupBy({it.first},{it.second})
+    return res.groupBy({ it.first }, { it.second })
 }
 
 fun getCPFolder(configurationFolder: List<File>, path: String): Map<Int, List<ControlPointWithTime>> =
@@ -157,32 +155,51 @@ fun getCPFolder(configurationFolder: List<File>, path: String): Map<Int, List<Co
         ?: throw NotEnoughConfigurationFiles(path))
 
 
-fun parseCP(protocol: File): List<Pair<Int,ControlPointWithTime>>  {
+fun parseCP(protocol: File): List<Pair<Int, ControlPointWithTime>> {
     val fileFirstString = csvReader().readAll(protocol.readText().substringBefore("\n"))
-    val nameOfControlPoint= fileFirstString[0].let {
+    val nameOfControlPoint = fileFirstString[0].let {
         if (it.size != 2)
             throw CSVStringWithNameException(protocol.path)
         else it[0]
     }
     val eachControlPoint = csvReader().readAll(protocol).drop(1)
-    return eachControlPoint.map { Pair(it[0].toInt(), ControlPointWithTime(nameOfControlPoint,Time(it[1]))) }
+    return eachControlPoint.map { Pair(it[0].toInt(), ControlPointWithTime(nameOfControlPoint, Time(it[1]))) }
 
 }
 
+fun checkProtocolPointsCorrectness(
+    participantNumber: Int,
+    distances: Distance,
+    participantDistance: Map<Int, List<ControlPointWithTime>>
+): String {
+   if (distances.getPointsList() != participantDistance[participantNumber]?.map{it.name})
+       return "Снят"
+   var previousCP = ControlPointWithTime("Prev", Time(0))
+   participantDistance[participantNumber]?.forEach {
+        if (it.time<=previousCP.time)
+            return "Снят"
+        previousCP=it
+   }
+   return previousCP.time.toString()
+}
 
 fun phase2(path: String) {
     val configurationFolder = readFile(path).walk().toList()
-        parseLogger.printCollection(configurationFolder,Colors.GREEN._name)
+    parseLogger.printCollection(configurationFolder, Colors.GREEN._name)
     val distances = getDistances(configurationFolder, path)
-        parseLogger.printMap(distances,Colors.BLUE._name)
+    parseLogger.printMap(distances, Colors.BLUE._name)
     val groups = getGroups(configurationFolder, distances, path, Phase.SECOND)
     getStartProtocolFolder(configurationFolder, path, groups)
-        parseLogger.printCollection(groups,Colors.PURPLE._name)
     val participantDistance: Map<Int, List<ControlPointWithTime>> = getCPFolder(configurationFolder, path)
-        parseLogger.universalC(Colors.RED._name,"${participantDistance.size}", 'd')
-        parseLogger.printMap(participantDistance,Colors.YELLOW._name)
+    parseLogger.universalC(Colors.RED._name, "${participantDistance.size}", 'd')
+    parseLogger.printMap(participantDistance, Colors.YELLOW._name)
+    groups.forEach { group ->
+        group.listParticipants.forEach { participant ->
+            participant.setParticipantStatus(checkProtocolPointsCorrectness(participant.number, distances[group.distance.name] ?: throw UnexpectedValueException(group.distance.name), participantDistance))
+        }
+    }
+    parseLogger.printCollection(groups, Colors.PURPLE._name)
 }
-
 
 
 fun main(args: Array<String>) {
