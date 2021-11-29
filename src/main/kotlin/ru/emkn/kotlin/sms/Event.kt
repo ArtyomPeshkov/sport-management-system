@@ -6,6 +6,7 @@ import exceptions.CSVFieldNamesException
 import exceptions.CSVStringWithNameException
 import exceptions.NotEnoughConfigurationFiles
 import exceptions.ProblemWithCSVException
+import log.printCollection
 import log.universalC
 import java.io.File
 import java.time.LocalDate
@@ -26,6 +27,7 @@ class Event(groups: List<Group>,distances: Map<String, Distance>) {
         this.date=date
         collectiveList = collectives
         setupGroups()
+        parseLogger.printCollection(groupList,Colors.PURPLE._name)
         distanceList.forEach {
             setNumbersAndTime(getGroupsByDistance(it.value))
         }
@@ -43,7 +45,7 @@ class Event(groups: List<Group>,distances: Map<String, Distance>) {
 
     fun chooseGroupByParams(wishedGroup: String, age: Int, sex: Sex): Group? {
         val wish = getGroupByName(wishedGroup, groupList)
-        if (wish != null && (sex == Sex.FEMALE || sex == wish.sex) && age <= wish.ageTo) {
+        if (wish != null && (sex == Sex.FEMALE || sex == wish.sex) && age >= wish.ageFrom && age <= wish.ageTo) {
             return wish
         }
         return groupList.find { it.sex == sex && it.ageTo >= age && it.ageFrom <= age }
@@ -56,16 +58,19 @@ class Event(groups: List<Group>,distances: Map<String, Distance>) {
 }
 
 fun Event.makeStartProtocols() {
-    File("csvFiles/starts/").mkdirs()
-    val generalFile = File("csvFiles/starts/start_general.csv")
-    val generalLines = mutableListOf<List<String>>()
+    val startDir = File("csvFiles/starts/")
+    startDir.mkdirs()
+    //val generalFile = File("csvFiles/starts/start_general.csv")
+    //val generalLines = mutableListOf<List<String>>()
     groupList.filter { it.listParticipants.size > 0 }.forEach { group ->
-        val file = File("csvFiles/starts/start_${group.groupName}.csv")
-        csvWriter().writeAll(listOf(List(group.listParticipants[0].toCSV().size) { if (it == 0) group.groupName else "" }, listOf("номер", "фамилия", "имя", "г.р.", "коллектив", "разряд", "стартовое время")), file, append = false)
-        csvWriter().writeAll(group.listParticipants.map { it.toCSV() }, file, append = true)
-        generalLines.addAll(group.listParticipants.map { it.toCSV() })
+        val startGroupFile = File("csvFiles/configuration/starts/start_${group.groupName}.csv")
+        val helper= group.listParticipants[0]
+        csvWriter().writeAll(listOf(List(helper.toCSV().size) { if (it == 0) group.groupName else "" }, helper.headerFormatCSV()), startGroupFile, append = false)
+        csvWriter().writeAll(group.listParticipants.map { it.toCSV() }, startGroupFile, append = true)
+
+       // generalLines.addAll(group.listParticipants.map { it.toCSV() })
     }
-    csvWriter().writeAll(generalLines, generalFile)
+  //  csvWriter().writeAll(generalLines, generalFile)
 }
 
 fun Event.setNumbersAndTime(groups: List<Group>) {

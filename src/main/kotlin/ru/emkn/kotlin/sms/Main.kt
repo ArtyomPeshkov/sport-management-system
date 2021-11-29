@@ -108,24 +108,23 @@ fun getStartProtocolFolder(configurationFolder: List<File>, path: String, groups
 fun parseStartProtocol(protocol: File, groups: List<Group>) {
     val fileStrings = csvReader().readAll(protocol.readText().substringBefore("\n"))
     val nameOfGroup = fileStrings[0].let {
-        if (it.size != 7)
+        if (it[0] == "")
             throw CSVStringWithNameException(protocol.path)
         else it[0]
     }
     val indexOfGroup = getGroupIndexByName(nameOfGroup, groups)
-    //Тут будет Map вместо List
-    val participantData = csvReader().readAll(protocol).drop(1)
+    val participantData = csvReader().readAllWithHeader(protocol.readLines().drop(1).joinToString("\n"))
     participantData.forEach {
         val participant = Participant(
             nameOfGroup, /*TODO("пол должен передаваться вместе с участником")*/
             chooseSex(nameOfGroup[0].toString()),
-            it[1],
-            it[2],
-            it[3].toInt(),
-            it[5]
+            it["Фамилия"] ?: throw CSVFieldNamesException(protocol.path),
+            it["Имя"] ?: throw CSVFieldNamesException(protocol.path),
+            it["Г.р."]?.toInt() ?: throw CSVFieldNamesException(protocol.path),
+            it["Разр."] ?: throw CSVFieldNamesException(protocol.path)
         )
-        participant.setCollective(it[4])
-        participant.setStart(it[0].toInt(), Time(it[6]))
+        participant.setCollective(it["Коллектив"] ?: throw CSVFieldNamesException(protocol.path))
+        participant.setStart(it["Номер"]?.toInt() ?: throw CSVFieldNamesException(protocol.path), Time(it["Стартовое время"] ?: throw CSVFieldNamesException(protocol.path),))
         groups[indexOfGroup].addParticipant(participant)
 
     }
