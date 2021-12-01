@@ -13,6 +13,9 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 class Event(groups: List<Group>,distances: Map<String, Distance>) {
+    init {
+        parseLogger.universalC(Colors.BLUE._name, "you created Event", 'i' )
+    }
     var name: String = ""
     var date: LocalDate = LocalDate.parse("01.01.2021", formatter)
     var yearOfCompetition: Int = date.toString().substringBefore('-').toInt()
@@ -70,10 +73,12 @@ fun Event.makeStartProtocols() {
 
        // generalLines.addAll(group.listParticipants.map { it.toCSV() })
     }
+    parseLogger.universalC(Colors.BLUE._name, "you created start protocols in folder csvFiles/configuration/starts", 'i' )
   //  csvWriter().writeAll(generalLines, generalFile)
 }
 
 fun Event.setNumbersAndTime(groups: List<Group>) {
+    parseLogger.universalC(Colors.BLUE._name, "the start time is selected for each participant", 'i' )
     val numberOfParticipants = groups.sumOf { it.listParticipants.size }
     var numbers = List(numberOfParticipants) { it + 1 }
     numbers = numbers.shuffled()
