@@ -66,4 +66,6 @@ class Participant {
 
     fun toCSV(): List<String> = listOf("$number", surname, name, sex.toString(), "$yearOfBirth",collective, rank, "$startTime")
     fun headerFormatCSV() = listOf("Номер", "Фамилия", "Имя", "Пол"  ,"Г.р.", "Коллектив", "Разр.", "Стартовое время")
+    fun headerFormatCSVResult() = listOf("Порядковый номер","Номер", "Фамилия", "Имя", "Пол"  ,"Г.р.", "Коллектив", "Разр.", "Результат","Место","Отставание")
+    fun toCSVStartTime(): List<String> = listOf("$number","$startTime")
 }

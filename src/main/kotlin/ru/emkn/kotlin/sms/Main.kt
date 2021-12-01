@@ -1,6 +1,7 @@
 package ru.emkn.kotlin.sms
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
+import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import exceptions.*
 import log.*
 import org.slf4j.Logger
@@ -28,9 +29,8 @@ fun chooseSex(sex: String): Sex {
     }
 }
 
-fun distancesParser(distances: File): Map<String, Distance> {
+fun distancesParser(distances: File, controlPoints: MutableSet<ControlPoint>): Map<String, Distance> {
     val distanceStrings = csvReader().readAllWithHeader(distances)
-    val controlPoints = hashSetOf<ControlPoint>()
     return distanceStrings.associate {
         Pair(
             it["Название"] ?: throw CSVFieldNamesException(distances.path),
@@ -61,9 +61,13 @@ fun getCollectives(configurationFolder: List<File>, path: String) =
     collectivesParser(configurationFolder.find { it.name.substringAfterLast('/') == "applications" }
         ?: throw NotEnoughConfigurationFiles(path))
 
-fun getDistances(configurationFolder: List<File>, path: String) =
+fun getDistances(
+    configurationFolder: List<File>,
+    path: String,
+    controlPoints: MutableSet<ControlPoint> = mutableSetOf()
+) =
     distancesParser(configurationFolder.find { it.name.substringAfterLast('/') == "distances.csv" }
-        ?: throw NotEnoughConfigurationFiles(path))
+        ?: throw NotEnoughConfigurationFiles(path), controlPoints)
 
 fun getGroups(configurationFolder: List<File>, distanceList: Map<String, Distance>, path: String, currentPhase: Phase) =
     groupsParser(distanceList, configurationFolder.find { it.name.substringAfterLast('/') == "groups.csv" }
@@ -124,7 +128,10 @@ fun parseStartProtocol(protocol: File, groups: List<Group>) {
             it["Разр."] ?: throw CSVFieldNamesException(protocol.path)
         )
         participant.setCollective(it["Коллектив"] ?: throw CSVFieldNamesException(protocol.path))
-        participant.setStart(it["Номер"]?.toInt() ?: throw CSVFieldNamesException(protocol.path), Time(it["Стартовое время"] ?: throw CSVFieldNamesException(protocol.path),))
+        participant.setStart(
+            it["Номер"]?.toInt() ?: throw CSVFieldNamesException(protocol.path),
+            Time(it["Стартовое время"] ?: throw CSVFieldNamesException(protocol.path))
+        )
         groups[indexOfGroup].addParticipant(participant)
 
     }
@@ -145,7 +152,8 @@ fun getGroupIndexByName(name: String, groups: List<Group>): Int {
 fun parseCPFiles(pointsFolder: File): Map<Int, List<ControlPointWithTime>> {
     val res: MutableList<Pair<Int, ControlPointWithTime>> = mutableListOf()
     val pointsInfo =
-        pointsFolder.walk().toList().filter { ".*[.]csv".toRegex().matches(it.path.substringAfterLast('/')) }
+        pointsFolder.walk(FileWalkDirection.TOP_DOWN)
+            .filter { ".*[.]csv".toRegex().matches(it.path.substringAfterLast('/')) }
     pointsInfo.forEach { res += parseCP(it) }
     return res.groupBy({ it.first }, { it.second })
 }
@@ -168,37 +176,122 @@ fun parseCP(protocol: File): List<Pair<Int, ControlPointWithTime>> {
 }
 
 fun checkProtocolPointsCorrectness(
-    participantNumber: Int,
+    participant: Participant,
     distances: Distance,
     participantDistance: Map<Int, List<ControlPointWithTime>>
 ): String {
-   if (distances.getPointsList() != participantDistance[participantNumber]?.map{it.name})
-       return "Снят"
-   var previousCP = ControlPointWithTime("Prev", Time(0))
-   participantDistance[participantNumber]?.forEach {
-        if (it.time<=previousCP.time)
+    if (participantDistance[participant.number]?.map { ControlPoint(it.name) }
+            ?.containsAll(distances.getPointsList()) == false)
+        return "Снят"
+    var previousCP = ControlPointWithTime("Prev", Time(0))
+    participantDistance[participant.number]?.forEach {
+        if (it.time <= previousCP.time)
             return "Снят"
-        previousCP=it
-   }
-   return previousCP.time.toString()
+        previousCP = it
+    }
+    return (previousCP.time-participant.startTime).toString()
+}
+
+fun makeResultProtocols(groups: List<Group>) {
+    val resultDir = File("csvFiles/configuration/results/")
+    resultDir.mkdirs()
+    //val generalFile = File("csvFiles/starts/start_general.csv")
+    //val generalLines = mutableListOf<List<String>>()
+    groups.filter { it.listParticipants.size > 0 }.forEach { group ->
+        val resultGroupFile = File("${resultDir.path}/result_${group.groupName}.csv")
+        val helper = group.listParticipants[0]
+        csvWriter().writeAll(
+            listOf(
+                List(helper.headerFormatCSVResult().size) { if (it == 0) group.groupName else "" },
+                helper.headerFormatCSVResult()
+            ), resultGroupFile, append = false
+        )
+        val (participants, deletedParticipants) = group.listParticipants.partition { it.status != "Снят" }
+        val result: List<Participant> = participants.sortedBy { Time(it.status).timeInSeconds } + deletedParticipants
+        var number = 1
+        var place = 1
+        csvWriter().writeAll(result.map {
+            listOf(
+                number++.toString(),
+                it.number,
+                it.surname,
+                it.name,
+                it.sex,
+                it.yearOfBirth,
+                it.collective,
+                it.rank,
+                it.status,
+                if (number!= 2 && result[number-3].status==result[number-2].status && result[number-2].status != "Снят") place-1 else if (result[number-2].status!= "Снят") place++ else "",
+                if (place!=2 && it.status != "Снят") Time(it.status)-Time(result[0].status) else ""
+            )
+        }, resultGroupFile, append = true)
+        // generalLines.addAll(group.listParticipants.map { it.toCSV() })
+    }
+    //  csvWriter().writeAll(generalLines, generalFile)
 }
 
 fun phase2(path: String) {
     val configurationFolder = readFile(path).walk().toList()
     parseLogger.printCollection(configurationFolder, Colors.GREEN._name)
-    val distances = getDistances(configurationFolder, path)
+    val controlPoints = mutableSetOf<ControlPoint>()
+    val distances = getDistances(configurationFolder, path, controlPoints)
     parseLogger.printMap(distances, Colors.BLUE._name)
     val groups = getGroups(configurationFolder, distances, path, Phase.SECOND)
     getStartProtocolFolder(configurationFolder, path, groups)
-    val participantDistance: Map<Int, List<ControlPointWithTime>> = getCPFolder(configurationFolder, path)
-    parseLogger.universalC(Colors.RED._name, "${participantDistance.size}", 'd')
-    parseLogger.printMap(participantDistance, Colors.YELLOW._name)
+    startCP(groups)
+    generateCP(controlPoints, groups)
+    val participantDistanceWithTime: Map<Int, List<ControlPointWithTime>> = getCPFolder(configurationFolder, path)
+    parseLogger.universalC(Colors.RED._name, "${participantDistanceWithTime.size}", 'd')
+    parseLogger.printMap(participantDistanceWithTime, Colors.YELLOW._name)
     groups.forEach { group ->
         group.listParticipants.forEach { participant ->
-            participant.setParticipantStatus(checkProtocolPointsCorrectness(participant.number, distances[group.distance.name] ?: throw UnexpectedValueException(group.distance.name), participantDistance))
+            participant.setParticipantStatus(
+                checkProtocolPointsCorrectness(
+                    participant,
+                    distances[group.distance.name] ?: throw UnexpectedValueException(group.distance.name),
+                    participantDistanceWithTime
+                )
+            )
         }
     }
     parseLogger.printCollection(groups, Colors.PURPLE._name)
+    makeResultProtocols(groups)
+}
+
+fun startCP(groupList: List<Group>) {
+    val generalFile = File("csvFiles/configuration/points/cp00.csv")
+    csvWriter().writeAll(listOf(listOf("Номер", "Время старта")), generalFile, append = false)
+    groupList.filter { it.listParticipants.size > 0 }.forEach { group ->
+        csvWriter().writeAll(group.listParticipants.map { it.toCSVStartTime() }, generalFile, append = true)
+    }
+}
+
+//РАБОТАЕТ НА ЧЕСТНОМ СЛОВЕ И УЛИЧНОЙ МАГИИ
+//Если серьёзно, эта штука очень чувствительна к порядку файлов в папке, поэтому будем требовать, чтобы все контрольные точки были отсортированы в том порядке, как они идут в дистанциях
+//Для условного спортивного ориентирования придётся менять концепцию генерации и не обращаться к более старым файлам, а заводить массив, хранящий для каждого участника предыдущую КТ
+//и время её прохождения, чтобы генерировать новые. Но это решает сразу все проблемы.
+fun generateCP(controlPoints: Set<ControlPoint>, groups: List<Group>) {
+    var num = 1;
+    controlPoints.forEach { controlPoint ->
+        val prev = "${num - 1}".padStart(controlPoints.size.toString().length, '0')
+        val cur = "${num++}".padStart(controlPoints.size.toString().length, '0')
+        val fileFrom = csvReader().readAll(File("csvFiles/configuration/points/cp$prev.csv"))
+        val file = File("csvFiles/configuration/points/cp$cur.csv")
+        csvWriter().writeAll(listOf(listOf(controlPoint.name, "")), file, append = false)
+        val listOfControlPoints = mutableListOf<ControlPointWithTime>()
+        fileFrom.drop(1).forEach { fileStr ->
+            if (groups.any {
+                    it.listParticipants.map { it.number }.contains(fileStr[0].toInt()) && it.distance.getPointsList()
+                        .contains(controlPoint)
+                }
+            ) listOfControlPoints += ControlPointWithTime(
+                fileStr[0],
+                Time(fileStr[1]).plus(Time((10..20).random()))
+            )
+        }
+        csvWriter().writeAll(listOfControlPoints.map { it.toCSV() }, file, append = true)
+    }
+    File("csvFiles/configuration/points/cp00.csv").delete()
 }
 
 

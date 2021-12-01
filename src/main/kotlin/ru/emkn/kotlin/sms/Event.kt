@@ -58,7 +58,7 @@ class Event(groups: List<Group>,distances: Map<String, Distance>) {
 }
 
 fun Event.makeStartProtocols() {
-    val startDir = File("csvFiles/starts/")
+    val startDir = File("csvFiles/configuration/starts/")
     startDir.mkdirs()
     //val generalFile = File("csvFiles/starts/start_general.csv")
     //val generalLines = mutableListOf<List<String>>()
