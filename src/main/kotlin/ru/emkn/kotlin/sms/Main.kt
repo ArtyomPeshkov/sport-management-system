@@ -30,6 +30,7 @@ fun chooseSex(sex: String): Sex {
 }
 
 fun distancesParser(distances: File, controlPoints: MutableSet<ControlPoint>): Map<String, Distance> {
+    parseLogger.universalC(Colors.BLUE._name, "reading distances from file ${distances.path}", 'i')
     val distanceStrings = csvReader().readAllWithHeader(distances)
     return distanceStrings.associate {
         Pair(
@@ -40,6 +41,7 @@ fun distancesParser(distances: File, controlPoints: MutableSet<ControlPoint>): M
 }
 
 fun groupsParser(distanceList: Map<String, Distance>, groups: File, currentPhase: Phase): List<Group> {
+    parseLogger.universalC(Colors.BLUE._name, "reading groups from file ${groups.path}", 'i')
     val groupStrings = csvReader().readAllWithHeader(groups)
     return groupStrings.map { group ->
         val distance = distanceList[group["Дистанция"]] ?: throw CSVFieldNamesException(groups.path)
@@ -52,6 +54,7 @@ fun groupsParser(distanceList: Map<String, Distance>, groups: File, currentPhase
 }
 
 fun collectivesParser(applicationsFolder: File): List<Collective> {
+    parseLogger.universalC(Colors.BLUE._name, "reading applications from folder ${applicationsFolder.path}", 'i')
     val applications =
         applicationsFolder.walk().toList().filter { ".*[.]csv".toRegex().matches(it.path.substringAfterLast('/')) }
     return applications.map { Collective(it.path) }
@@ -90,6 +93,7 @@ fun getNameAndDate(configurationFolder: List<File>, path: String): nameDate {
 }
 
 fun phase1(path: String) {
+    parseLogger.universalC(Colors.YELLOW._name, "you are using phase 1: form start protocols according to the application lists", 'i')
     val configurationFolder = readFile(path).walk().toList()
     val distances = getDistances(configurationFolder, path)
     val groups = getGroups(configurationFolder, distances, path, Phase.FIRST)
@@ -100,6 +104,7 @@ fun phase1(path: String) {
 }
 
 fun parseStartProtocolFiles(startsFolder: File, groups: List<Group>) {
+    parseLogger.universalC(Colors.BLUE._name, "reading atsrt protocols from folder ${startsFolder.path}", 'i')
     val startInfo =
         startsFolder.walk().toList().filter { ".*[.]csv".toRegex().matches(it.path.substringAfterLast('/')) }
     startInfo.map { parseStartProtocol(it, groups) }
@@ -150,6 +155,7 @@ fun getGroupIndexByName(name: String, groups: List<Group>): Int {
 }
 
 fun parseCPFiles(pointsFolder: File): Map<Int, List<ControlPointWithTime>> {
+    parseLogger.universalC(Colors.BLUE._name, "reading control points and how participants passed them from folder ${pointsFolder.path}", 'i')
     val res: MutableList<Pair<Int, ControlPointWithTime>> = mutableListOf()
     val pointsInfo =
         pointsFolder.walk(FileWalkDirection.TOP_DOWN)
@@ -193,6 +199,7 @@ fun checkProtocolPointsCorrectness(
 }
 
 fun makeResultProtocols(groups: List<Group>) {
+    parseLogger.universalC(Colors.BLUE._name, "making result protocols", 'i')
     val resultDir = File("csvFiles/configuration/results/")
     resultDir.mkdirs()
     //val generalFile = File("csvFiles/starts/start_general.csv")
@@ -231,6 +238,7 @@ fun makeResultProtocols(groups: List<Group>) {
 }
 
 fun phase2(path: String) {
+    parseLogger.universalC(Colors.YELLOW._name, "you are using phase 2: form result protocols according to start protocols and protocols of passing control points", 'i')
     val configurationFolder = readFile(path).walk().toList()
     parseLogger.printCollection(configurationFolder, Colors.GREEN._name)
     val controlPoints = mutableSetOf<ControlPoint>()
@@ -271,6 +279,7 @@ fun startCP(groupList: List<Group>) {
 //Для условного спортивного ориентирования придётся менять концепцию генерации и не обращаться к более старым файлам, а заводить массив, хранящий для каждого участника предыдущую КТ
 //и время её прохождения, чтобы генерировать новые. Но это решает сразу все проблемы.
 fun generateCP(controlPoints: Set<ControlPoint>, groups: List<Group>) {
+    parseLogger.universalC(Colors.RED._name, "ATTENTION: BLACK MAGIC HAPPENS. WE ARE GENERATING CONTROL POINTS. EVERYTHING CAN GO WRONG AT ANY MOMENT. ADVISE YOU TO PREPARE FOR THE WORST", 'i')
     var num = 1;
     controlPoints.forEach { controlPoint ->
         val prev = "${num - 1}".padStart(controlPoints.size.toString().length, '0')
@@ -296,7 +305,9 @@ fun generateCP(controlPoints: Set<ControlPoint>, groups: List<Group>) {
 
 
 fun main(args: Array<String>) {
+    parseLogger.universalC(Colors.GREEN._name, "Hello, dear programmer. At your own peril and risk, you decided to work with this program.\nWell, this is very brave of you and very pleasant for us - creators.\nWe hope you will be satisfied with the work and everything will go according your plan.\nSo, let's begin our hunger games. Good luck))", 'i')
     val path = "csvFiles/configuration"
     phase2(path)
+    parseLogger.universalC(Colors.GREEN._name, "Well, everything has gone according to your plan. You are very lucky, right?\nThank you for using our programm. Have a good day. Goodbye", 'i')
 }
 
