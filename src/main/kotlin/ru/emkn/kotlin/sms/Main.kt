@@ -7,8 +7,8 @@ import log.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.lang.Integer.max
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 val parseLogger: Logger = LoggerFactory.getLogger("Parse")
 
@@ -23,8 +23,8 @@ fun readFile(path: String): File {
 
 fun chooseSex(sex: String): Sex {
     return when (sex) {
-        "М", "M", "m", "м" -> Sex.MALE
-        "Ж", "F", "ж", "f" -> Sex.FEMALE
+        "М", "M", "m", "м", "MALE" -> Sex.MALE
+        "Ж", "F", "ж", "f", "FEMALE" -> Sex.FEMALE
         else -> throw SexException(sex)
     }
 }
@@ -271,7 +271,7 @@ fun startCP(groupList: List<Group>) {
 //Для условного спортивного ориентирования придётся менять концепцию генерации и не обращаться к более старым файлам, а заводить массив, хранящий для каждого участника предыдущую КТ
 //и время её прохождения, чтобы генерировать новые. Но это решает сразу все проблемы.
 fun generateCP(controlPoints: Set<ControlPoint>, groups: List<Group>) {
-    var num = 1;
+    var num = 1
     controlPoints.forEach { controlPoint ->
         val prev = "${num - 1}".padStart(controlPoints.size.toString().length, '0')
         val cur = "${num++}".padStart(controlPoints.size.toString().length, '0')
@@ -294,9 +294,67 @@ fun generateCP(controlPoints: Set<ControlPoint>, groups: List<Group>) {
     File("csvFiles/configuration/points/cp00.csv").delete()
 }
 
+fun phase3(path: String) {
+    val configurationFolder = readFile(path).walk().toList()
+    val collectives = mutableListOf<Collective>()
+    getResultProtocolFolder(configurationFolder, path, collectives)
+    generateResultProtocolForCollectives(collectives)
+}
+
+fun getResultProtocolFolder(configurationFolder: List<File>, path: String, collectives: MutableList<Collective>) =
+    getGroupsFromResultProtocols(configurationFolder.find { it.name.substringAfterLast('/') == "results" }
+        ?: throw NotEnoughConfigurationFiles(path), collectives)
+
+fun getGroupsFromResultProtocols(resultsFolder: File, collectives: MutableList<Collective>) {
+    val resultInfo =
+        resultsFolder.walk().toList().filter { ".*[.]csv".toRegex().matches(it.path.substringAfterLast('/')) }
+    resultInfo.map { parseResultProtocol(it, collectives) }
+}
+fun parseResultProtocol(protocol: File, collectives: MutableList<Collective>) {
+    val fileStrings = csvReader().readAll(protocol.readText())
+    val nameOfGroup = fileStrings[0].let {
+        if (it[0] == "")
+            throw CSVStringWithNameException(protocol.path)
+        else it[0]
+    }
+    val bestResult = Time(fileStrings[2][8]) ?: throw CSVFieldNamesException(protocol.path)
+    val participantData = csvReader().readAllWithHeader(protocol.readLines().drop(1).joinToString("\n"))
+    participantData.forEach {
+        val participant = Participant(
+            nameOfGroup,
+            chooseSex(it["Пол"] ?: throw CSVFieldNamesException(protocol.path)),
+            it["Фамилия"] ?: throw CSVFieldNamesException(protocol.path),
+            it["Имя"] ?: throw CSVFieldNamesException(protocol.path),
+            it["Г.р."]?.toInt() ?: throw CSVFieldNamesException(protocol.path),
+            it["Разр."] ?: throw CSVFieldNamesException(protocol.path)
+        )
+        val currentTime = it["Результат"] ?: throw CSVFieldNamesException(protocol.path)
+        participant.setPoints(max(0, (100.0 * (2 - Time(currentTime).timeInSeconds.toDouble()/bestResult.timeInSeconds)).toInt()))
+        val collectiveName = it["Коллектив"] ?: throw CSVFieldNamesException(protocol.path)
+        if (collectives.find { it.name == collectiveName } == null) collectives.add(Collective(collectiveName))
+        val collective = collectives.find { it.name == collectiveName } ?: throw UnexpectedValueException(collectiveName)
+        collective.addParticipant(participant)
+    }
+}
+
+fun generateResultProtocolForCollectives(collectives: MutableList<Collective>) {
+    val file = File("csvFiles/configuration/collectivesResults.csv")
+    file.writeText("")
+    collectives.forEach {
+        csvWriter().writeAll(listOf(listOf("Коллектив", "Баллы"),listOf(it.name,"${it.points}"),listOf(""),listOf("Участник", "Баллы")), file, append = true)
+        it.athleteList.forEach {
+            csvWriter().writeAll(
+                listOf(listOf("${it.surname} ${it.name}", "${it.points}")),
+                file,
+                append = true
+            )
+        }
+        csvWriter().writeAll(listOf(listOf(""),listOf("<-------------------------------------------------------->"),listOf("")), file, append = true)
+    }
+}
 
 fun main(args: Array<String>) {
     val path = "csvFiles/configuration"
-    phase2(path)
+    phase3(path)
 }
 
