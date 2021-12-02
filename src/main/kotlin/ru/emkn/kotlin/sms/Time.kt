@@ -17,7 +17,11 @@ class Time {
     }
 
     constructor(time: String) {
-        val timeParametersHhMmSs = List(3) { time.split(':')[it].toIntOrNull() }
+        val newTime = time.split(':').toMutableList()
+        if (newTime.size==2)
+            newTime.add(0,"0")
+
+        val timeParametersHhMmSs = List(3) { newTime[it].toIntOrNull() }
         if (timeParametersHhMmSs.size != 3 || timeParametersHhMmSs.any { it == null } || checkDateFormat(
                 timeParametersHhMmSs[0] ?: -1,
                 timeParametersHhMmSs[1] ?: -1,
@@ -69,6 +73,14 @@ class Time {
 
     operator fun compareTo(other: Time): Int = (timeInSeconds - other.timeInSeconds).sign
 
-    override fun toString(): String = "$hours" + ":" + "$minutes".padStart(2, '0') + ":" + "$seconds".padStart(2, '0')
+    override fun toString(): String {
+        val res = StringBuilder("")
+        if (hours != 0)
+            res.append("$hours:" + "$minutes".padStart(2, '0'))
+        else
+            res.append("$minutes".padStart(2, '0'))
+        res.append(":" + "$seconds".padStart(2, '0'))
+        return res.toString()
+    }
 
 }
