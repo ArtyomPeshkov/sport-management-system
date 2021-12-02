@@ -11,13 +11,14 @@ class Collective {
     val name: String
     var athleteList: MutableList<Participant> = mutableListOf()
     var points = 0
+
     fun addParticipant(participant: Participant) {
         athleteList.add(participant)
         points += participant.points
     }
 
     fun makeParticipant(name: String, param: Map<String, String>, index: Int, path: String): Participant {
-        parseLogger.universalC(Colors.YELLOW._name,"Reading participant number ${index + 1} from $path")
+        parseLogger.universalC(Colors.YELLOW._name, "Reading participant number ${index + 1} from $path")
         try {
             val participant = Participant(
                 param["Группа"] ?: throw CSVFieldNamesException(path),
@@ -43,13 +44,15 @@ class Collective {
     }
 
     fun collectiveParser(path: String): List<Participant> {
-        parseLogger.universalC(Colors.YELLOW._name,"Started reading participants from $path")
+        parseLogger.universalC(Colors.YELLOW._name, "Started reading participants from $path")
         return participantsParser(name, readFile(path))
     }
 
     constructor(path: String) {
         val file = readFile(path)
         val fileStrings = csvReader().readAll(file.readText().substringBefore("\n"))
+        if (fileStrings.isEmpty())
+            throw CSVStringWithNameException(path)
         name = fileStrings[0].let {
             if (it.size != 5)
                 throw CSVStringWithNameException(path)
