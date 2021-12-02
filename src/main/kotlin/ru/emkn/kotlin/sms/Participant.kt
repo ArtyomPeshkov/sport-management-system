@@ -56,7 +56,7 @@ class Participant {
 
     override fun toString(): String
     {
-        return "Группа: ${Colors.BLUE._name}$wishGroup${Colors.PURPLE._name}; Фамилия: ${Colors.GREEN._name}$surname${Colors.PURPLE._name}; Имя: ${Colors.GREEN._name}$name${Colors.PURPLE._name}; Статус: ${Colors.YELLOW._name}$status${Colors.PURPLE._name}"
+        return "Группа: ${Colors.BLUE._name}$wishGroup${Colors.PURPLE._name}; Номер: ${Colors.GREEN._name}$number${Colors.PURPLE._name}; Статус: ${Colors.YELLOW._name}$status${Colors.PURPLE._name}"
     }
 
 

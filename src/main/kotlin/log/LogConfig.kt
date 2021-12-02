@@ -10,6 +10,7 @@ fun Logger.universalC(color: String,s: String, type: Char='d' ) {
         't' -> this.trace(" $color$s${Colors.RESET._name}")
         'd' -> this.debug(" $color$s${Colors.RESET._name}")
         'i' -> this.info(" $color$s${Colors.RESET._name}")
+        'w' -> this.warn(" $color$s${Colors.RESET._name}")
         'e' -> this.error(" $color$s${Colors.RESET._name}")
     }
 }
