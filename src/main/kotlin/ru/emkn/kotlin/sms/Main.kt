@@ -8,7 +8,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 val parseLogger: Logger = LoggerFactory.getLogger("Parse")
 
@@ -73,15 +72,15 @@ fun getGroups(configurationFolder: List<File>, distanceList: Map<String, Distanc
     groupsParser(distanceList, configurationFolder.find { it.name.substringAfterLast('/') == "groups.csv" }
         ?: throw NotEnoughConfigurationFiles(path), currentPhase)
 
-data class nameDate(val name: String, val date: LocalDate)
+data class NameDate(val name: String, val date: LocalDate)
 
-fun getNameAndDate(configurationFolder: List<File>, path: String): nameDate {
+fun getNameAndDate(configurationFolder: List<File>, path: String): NameDate {
     val rows = csvReader().readAllWithHeader(configurationFolder.find { it.name.substringAfterLast('/') == "event.csv" }
         ?: throw NotEnoughConfigurationFiles(path))
     return if (rows.size != 1)
         throw ProblemWithCSVException(path)
     else if (rows[0]["Дата"] != null && rows[0]["Название"] != null && rows[0].size == 2) {
-        nameDate(
+        NameDate(
             rows[0]["Название"] ?: throw CSVStringWithNameException(path),
             LocalDate.parse(rows[0]["Дата"], formatter)
         )
