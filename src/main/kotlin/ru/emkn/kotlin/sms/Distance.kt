@@ -2,6 +2,7 @@ package ru.emkn.kotlin.sms
 
 import exceptions.CSVFieldNamesException
 import exceptions.IncorrectControlPointValue
+import exceptions.UnexpectedValueException
 
 class Distance(val name: String) {
     private val pointsList: MutableList<ControlPoint> = mutableListOf()
@@ -24,6 +25,8 @@ class Distance(val name: String) {
             else
                 return@forEach
         }
+        if (pointsList.isEmpty())
+            throw UnexpectedValueException("В дистанции нет контрольных точек!")
     }
 
     override fun toString(): String {
