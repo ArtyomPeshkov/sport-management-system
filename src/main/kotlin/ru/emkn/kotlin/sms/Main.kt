@@ -29,6 +29,17 @@ fun chooseSex(sex: String): Sex {
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
 fun distancesParser(distances: File, controlPoints: MutableSet<ControlPoint>): Map<String, Distance> {
     parseLogger.universalC(Colors.BLUE._name, "reading distances from file ${distances.path}", 'i')
     val distanceStrings = csvReader().readAllWithHeader(distances)
@@ -56,7 +67,7 @@ fun collectivesParser(applicationsFolder: File): List<Collective> {
     parseLogger.universalC(Colors.BLUE._name, "reading applications from folder ${applicationsFolder.path}", 'i')
     val applications =
         applicationsFolder.walk().toList().filter { it.extension == "csv" }
-    return applications.map { Collective(it.path) }
+    return applications.map { Collective(readFile(it.path)) }
 }
 
 fun getCollectives(configurationFolder: List<File>, path: String) =
