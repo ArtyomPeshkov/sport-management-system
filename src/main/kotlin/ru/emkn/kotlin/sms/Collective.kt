@@ -47,17 +47,20 @@ class Collective {
         parseLogger.universalC(Colors.YELLOW._name, "Started reading participants from $path")
         return participantsParser(name, readFile(path))
     }
-
-    constructor(path: String) {
-        val file = readFile(path)
+   //  TODO("передавать что-то другое (не строку)")
+    constructor(file: File) {
         val fileStrings = csvReader().readAll(file.readText().substringBefore("\n"))
         if (fileStrings.isEmpty())
             throw CSVStringWithNameException(path)
         name = fileStrings[0].let {
             if (it.size != 5)
-                throw CSVStringWithNameException(path)
+                throw CSVStringWithNameException(file.path)
             else it[0]
         }
-        athleteList = collectiveParser(path).toMutableList()
+        athleteList = collectiveParser(file.path).toMutableList()
+    }
+
+    constructor(name: String) {
+        this.name = name
     }
 }
