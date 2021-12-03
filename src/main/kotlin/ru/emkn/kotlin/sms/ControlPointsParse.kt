@@ -12,7 +12,11 @@ fun getCPFolder(configurationFolder: List<File>, path: String): Map<Int, List<Co
         ?: throw NotEnoughConfigurationFiles(path))
 
 fun parseCPFiles(pointsFolder: File): Map<Int, List<ControlPointWithTime>> {
-    parseLogger.universalC(Colors.BLUE._name, "reading control points and how participants passed them from folder ${pointsFolder.path}", 'i')
+    parseLogger.universalC(
+        Colors.BLUE._name,
+        "reading control points and how participants passed them from folder ${pointsFolder.path}",
+        'i'
+    )
     val res: MutableList<Pair<Int, ControlPointWithTime>> = mutableListOf()
     val pointsInfo =
         pointsFolder.walk(FileWalkDirection.TOP_DOWN)
@@ -46,7 +50,8 @@ fun checkProtocolPointsCorrectness(
         )))
         return "Снят"
     val first = ControlPointWithTime("Start", participant.startTime)
-    val lastControlPointTime = participantControlPoints?.find { it.name==controlPoints.last().name}?.time ?: return "Снят"
+    val lastControlPointTime =
+        participantControlPoints?.find { it.name == controlPoints.last().name }?.time ?: return "Снят"
     participantControlPoints.forEach {
         val previousControlPointIndex = controlPoints.indexOf(ControlPoint(it.name))
         val previousControlPointWithTime = if (previousControlPointIndex != 0) {

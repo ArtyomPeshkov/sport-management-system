@@ -5,7 +5,11 @@ import exceptions.UnexpectedValueException
 import log.universalC
 import java.io.File
 
-fun setStatusForAllParticipants(groups: List<Group>,distances:Map<String,Distance>,participantDistanceWithTime:Map<Int, List<ControlPointWithTime>>){
+fun setStatusForAllParticipants(
+    groups: List<Group>,
+    distances: Map<String, Distance>,
+    participantDistanceWithTime: Map<Int, List<ControlPointWithTime>>
+) {
     groups.forEach { group ->
         group.listParticipants.forEach { participant ->
             participant.setParticipantStatus(
@@ -48,7 +52,7 @@ fun makeResultProtocols(groups: List<Group>) {
                 it.rank,
                 it.status,
                 if (number >= 2 && result[number - 3].status == result[number - 2].status && result[number - 2].status != "Снят") place - 1 else if (result[number - 2].status != "Снят") place++ else "",
-                if (place != 2 && it.status != "Снят") "+"+(Time(it.status) - Time(result[0].status)) else ""
+                if (place != 2 && it.status != "Снят") "+" + (Time(it.status) - Time(result[0].status)) else ""
             )
         }, resultGroupFile, append = true)
     }

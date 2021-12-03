@@ -23,7 +23,7 @@ class Participant(
         private set
     var status: String = ""
 
-    init{
+    init {
         emptyNameCheck(name, "Пустое имя участника обнаружено")
         emptyNameCheck(surname, "Пустая фамилия участника обнаружена")
         if (yearOfBirth <= 1900)
@@ -46,9 +46,8 @@ class Participant(
         startTime = start
     }
 
-    fun setParticipantStatus(stat:String)
-    {
-        status=stat
+    fun setParticipantStatus(stat: String) {
+        status = stat
     }
 
     fun setPoints(points: Int) {
@@ -61,8 +60,7 @@ class Participant(
         }
     }
 
-    override fun toString(): String
-    {
+    override fun toString(): String {
         return "Группа: ${Colors.BLUE._name}$wishGroup${Colors.PURPLE._name}; Номер: ${Colors.GREEN._name}$number${Colors.PURPLE._name}; Статус: ${Colors.YELLOW._name}$status${Colors.PURPLE._name}"
     }
 
@@ -71,8 +69,23 @@ class Participant(
         return this.toString() + "Пол: $sex; Год рождения: $yearOfBirth; Разряд: $rank"
     }
 
-    fun toCSV(): List<String> = listOf("$number", surname, name, sex.toString(), "$yearOfBirth",collective, rank, "$startTime")
-    fun headerFormatCSV() = listOf("Номер", "Фамилия", "Имя", "Пол"  ,"Г.р.", "Коллектив", "Разр.", "Стартовое время")
-    fun headerFormatCSVResult() = listOf("Порядковый номер","Номер", "Фамилия", "Имя", "Пол"  ,"Г.р.", "Коллектив", "Разр.", "Результат","Место","Отставание")
-    fun toCSVStartTime(): List<String> = listOf("$number","$startTime")
+    fun toCSV(): List<String> =
+        listOf("$number", surname, name, sex.toString(), "$yearOfBirth", collective, rank, "$startTime")
+
+    fun headerFormatCSV() = listOf("Номер", "Фамилия", "Имя", "Пол", "Г.р.", "Коллектив", "Разр.", "Стартовое время")
+    fun headerFormatCSVResult() = listOf(
+        "Порядковый номер",
+        "Номер",
+        "Фамилия",
+        "Имя",
+        "Пол",
+        "Г.р.",
+        "Коллектив",
+        "Разр.",
+        "Результат",
+        "Место",
+        "Отставание"
+    )
+
+    fun toCSVStartTime(): List<String> = listOf("$number", "$startTime")
 }

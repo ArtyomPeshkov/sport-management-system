@@ -11,7 +11,7 @@ fun Group.modifyGroup(
     configFileString: Map<String, String>,
     path: String
 ) {
-   this.addDataWhenInitialise(
+    this.addDataWhenInitialise(
         configFileString["ВозрастОт"]?.toInt() ?: throw CSVFieldNamesException(path),
         configFileString["ВозрастДо"]?.toInt() ?: throw CSVFieldNamesException(path),
         chooseSex(configFileString["Пол"] ?: throw CSVFieldNamesException(path))
@@ -31,7 +31,7 @@ fun groupsParser(distanceList: Map<String, Distance>, groups: File, currentPhase
 
         val group = Group(groupName, distance)
         if (currentPhase == Phase.FIRST) {
-            group.modifyGroup(groupData,groups.path)
+            group.modifyGroup(groupData, groups.path)
         }
 
         group

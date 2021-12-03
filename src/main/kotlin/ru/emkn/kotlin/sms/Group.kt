@@ -6,7 +6,6 @@ import exceptions.emptyNameCheck
 import log.universalC
 
 class Group(name: String, dist: Distance) {
-    //группа
     val groupName: String
     val distance: Distance
     var ageFrom: Int = 0
@@ -17,31 +16,31 @@ class Group(name: String, dist: Distance) {
         private set
 
     init {
-        emptyNameCheck(name,"Имя группы пустое")
-        groupName=name
+        emptyNameCheck(name, "Имя группы пустое")
+        groupName = name
         if (dist.getPointsList().isEmpty())
             throw UnexpectedValueException("У дистанции  $dist нет контрольных точек")
-        distance=dist
+        distance = dist
     }
 
     val listParticipants: MutableList<Participant> = mutableListOf()
     fun addParticipant(participant: Participant) {
         listParticipants.add(participant)
     }
+
     fun addParticipants(participants: Collection<Participant>) {
         listParticipants.addAll(participants)
     }
 
-    fun addDataWhenInitialise(ageFrom: Int,ageTo:Int,sex: Sex)
-    {
-        if (ageTo<0 || ageFrom<0 || ageFrom>ageTo)
+    fun addDataWhenInitialise(ageFrom: Int, ageTo: Int, sex: Sex) {
+        if (ageTo < 0 || ageFrom < 0 || ageFrom > ageTo)
             throw UnexpectedValueException("Проблема с возрастными ограничениями группы: Минимальный возраст = $ageFrom; Максимальный возраст = $ageTo")
-        this.ageFrom=ageFrom
-        this.ageTo=ageTo
-        this.sex=sex
+        this.ageFrom = ageFrom
+        this.ageTo = ageTo
+        this.sex = sex
     }
 
-    fun toStringFull():String{
+    fun toStringFull(): String {
         val s = StringBuilder(this.toString())
         s.append("Пол: $sex; Минимальный возраст: $ageFrom; Максимальный возраст: $ageTo")
         return s.toString()

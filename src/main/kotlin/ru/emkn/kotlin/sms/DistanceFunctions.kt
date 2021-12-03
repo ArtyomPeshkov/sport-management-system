@@ -7,8 +7,12 @@ import exceptions.UnexpectedValueException
 import log.universalC
 import java.io.File
 
-fun getDistance(distanceName:String,configFileString: Map<String, String>, controlPoints: MutableSet<ControlPoint>):Distance {
-    val pointsList:MutableList<ControlPoint> = mutableListOf()
+fun getDistance(
+    distanceName: String,
+    configFileString: Map<String, String>,
+    controlPoints: MutableSet<ControlPoint>
+): Distance {
+    val pointsList: MutableList<ControlPoint> = mutableListOf()
     configFileString.values.drop(1).forEach { pointName ->
         if (pointName != "") {
             val requiredPoint = ControlPoint(pointName)
@@ -32,10 +36,10 @@ fun distancesParser(distances: File, controlPoints: MutableSet<ControlPoint>): M
     parseLogger.universalC(Colors.BLUE._name, "reading distances from file ${distances.path}", 'i')
     val distanceStrings = csvReader().readAllWithHeader(distances)
     return distanceStrings.associate {
-        val distanceName=  it["Название"] ?: throw CSVFieldNamesException(distances.path)
+        val distanceName = it["Название"] ?: throw CSVFieldNamesException(distances.path)
         Pair(
             distanceName,
-            getDistance(distanceName,it, controlPoints)
+            getDistance(distanceName, it, controlPoints)
         )
     }
 }

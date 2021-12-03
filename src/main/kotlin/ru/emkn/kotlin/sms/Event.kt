@@ -8,14 +8,25 @@ import java.io.File
 import java.time.LocalDate
 
 
-class Event(val name:String,val date:LocalDate,val groupList: List<Group>/*MutableList<Group>*/, private  val distanceList: Map<String, Distance> /*MutableMap<String,String>*/,collectives: List<Collective>) {
+class Event(
+    val name: String,
+    val date: LocalDate,
+    groupList: List<Group>/*MutableList<Group>*/,
+    distanceList: Map<String, Distance> /*MutableMap<String,String>*/,
+    collectives: List<Collective>
+) {
     var yearOfCompetition: Int = date.year
     var collectiveList: List<Collective> = listOf() //список заявленных коллективов
-
+    val groupList: List<Group>
+    private val distanceList: Map<String, Distance>
 
     init {
-        require(groupList.isNotEmpty())
-        require(distanceList.isNotEmpty())
+        if (groupList.isEmpty())
+            throw UnexpectedValueException("Пустой список групп у события")
+        if (distanceList.isEmpty())
+            throw UnexpectedValueException("Пустой список дистанций у события")
+        this.groupList = groupList
+        this.distanceList = distanceList
         parseLogger.printCollection(groupList, Colors.PURPLE._name)
         if (collectives.any { it.athleteList.isEmpty() })
             throw UnexpectedValueException("В коллективе нет участников")
