@@ -51,7 +51,7 @@ fun makeResultProtocols(groups: List<Group>) {
                 it.collective,
                 it.rank,
                 it.status,
-                if (number >= 2 && result[number - 3].status == result[number - 2].status && result[number - 2].status != "Снят") place - 1 else if (result[number - 2].status != "Снят") place++ else "",
+                if (number > 2 && result[number - 3].status == result[number - 2].status && result[number - 2].status != "Снят") place - 1 else if (result[number - 2].status != "Снят") place++ else "",
                 if (place != 2 && it.status != "Снят") "+" + (Time(it.status) - Time(result[0].status)) else ""
             )
         }, resultGroupFile, append = true)
