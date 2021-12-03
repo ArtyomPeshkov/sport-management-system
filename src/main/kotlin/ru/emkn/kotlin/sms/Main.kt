@@ -40,16 +40,6 @@ fun chooseSex(sex: String): Sex {
 
 
 
-fun distancesParser(distances: File, controlPoints: MutableSet<ControlPoint>): Map<String, Distance> {
-    parseLogger.universalC(Colors.BLUE._name, "reading distances from file ${distances.path}", 'i')
-    val distanceStrings = csvReader().readAllWithHeader(distances)
-    return distanceStrings.associate {
-        Pair(
-            it["Название"] ?: throw CSVFieldNamesException(distances.path),
-            Distance(it, distances.path, controlPoints)
-        )
-    }
-}
 
 fun groupsParser(distanceList: Map<String, Distance>, groups: File, currentPhase: Phase): List<Group> {
     parseLogger.universalC(Colors.BLUE._name, "reading groups from file ${groups.path}", 'i')
@@ -73,14 +63,6 @@ fun collectivesParser(applicationsFolder: File): List<Collective> {
 fun getCollectives(configurationFolder: List<File>, path: String) =
     collectivesParser(configurationFolder.find { it.name.substringAfterLast('/') == "applications" }
         ?: throw NotEnoughConfigurationFiles(path))
-
-fun getDistances(
-    configurationFolder: List<File>,
-    path: String,
-    controlPoints: MutableSet<ControlPoint> = mutableSetOf()
-) =
-    distancesParser(configurationFolder.find { it.name.substringAfterLast('/') == "distances.csv" }
-        ?: throw NotEnoughConfigurationFiles(path), controlPoints)
 
 fun getGroups(configurationFolder: List<File>, distanceList: Map<String, Distance>, path: String, currentPhase: Phase) =
     groupsParser(distanceList, configurationFolder.find { it.name.substringAfterLast('/') == "groups.csv" }

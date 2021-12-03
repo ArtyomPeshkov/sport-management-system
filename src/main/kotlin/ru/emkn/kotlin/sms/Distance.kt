@@ -7,26 +7,16 @@ import exceptions.UnexpectedValueException
 class Distance(val name: String) {
     private val pointsList: MutableList<ControlPoint> = mutableListOf()
 
-    fun getPointsList(): List<ControlPoint>{
+    fun getPointsList(): List<ControlPoint> {
         return pointsList.toMutableList()
     }
-    constructor(configFileString: Map<String, String>, path: String, controlPoints: MutableSet<ControlPoint>) : this(
-        configFileString["Название"] ?: throw CSVFieldNamesException(path)
-    ) {
-        configFileString.values.drop(1).forEach { name ->
-            val requiredPoint = ControlPoint(name)
-            val point = controlPoints.find { it==requiredPoint}
-            if (point!=null)
-                pointsList.add(point)
-            else if (name != "") {
-                pointsList.add(requiredPoint)
-                controlPoints.add(requiredPoint)
-            }
-            else
-                return@forEach
-        }
-        if (pointsList.isEmpty())
-            throw UnexpectedValueException("В дистанции нет контрольных точек!")
+
+    fun addPoint(point: ControlPoint) {
+        pointsList.add(point)
+    }
+
+    fun addAllPoints(points: Collection<ControlPoint>) {
+        pointsList.addAll(points)
     }
 
     override fun toString(): String {
@@ -38,9 +28,4 @@ class Distance(val name: String) {
 data class ControlPoint(val name: String)
 
 data class ControlPointWithTime(val name: String, val time: Time)
-{
-    fun toCSV():List<String>{
-        return listOf(name,time.toString())
-    }
-}
 
