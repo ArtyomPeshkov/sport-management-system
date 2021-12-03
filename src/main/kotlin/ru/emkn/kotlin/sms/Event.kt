@@ -1,36 +1,33 @@
 package ru.emkn.kotlin.sms
 
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
-import exceptions.CSVFieldNamesException
-import exceptions.CSVStringWithNameException
-import exceptions.NotEnoughConfigurationFiles
-import exceptions.ProblemWithCSVException
 import log.printCollection
 import log.universalC
 import java.io.File
 import java.time.LocalDate
-import java.time.LocalDateTime
 
-class Event(groups: List<Group>,distances: Map<String, Distance>) {
-    init {
-        parseLogger.universalC(Colors.BLUE._name, "you created Event", 'i' )
-    }
+
+class Event(groups: List<Group>, distances: Map<String, Distance>) {
     var name: String = ""
     var date: LocalDate = LocalDate.parse("01.01.2021", formatter)
-    var yearOfCompetition: Int = date.toString().substringBefore('-').toInt()
+    var yearOfCompetition: Int = date.year
     var groupList: List<Group> = listOf() //список групп
     private var distanceList: Map<String, Distance> = mapOf() //список дистанций
     var collectiveList: List<Collective> = listOf() //список заявленных коллективов
 
 
-    constructor(name:String,date:LocalDate,groups: List<Group>,distances: Map<String, Distance>,collectives: List<Collective>):this(groups,distances)
-    {
-        this.name=name;
-        this.date=date
+    constructor(
+        name: String,
+        date: LocalDate,
+        groups: List<Group>,
+        distances: Map<String, Distance>,
+        collectives: List<Collective>
+    ) : this(groups, distances) {
+        this.name = name;
+        this.date = date
         collectiveList = collectives
         setupGroups()
-        parseLogger.printCollection(groupList,Colors.PURPLE._name)
+        parseLogger.printCollection(groupList, Colors.PURPLE._name)
         distanceList.forEach {
             setNumbersAndTime(getGroupsByDistance(it.value))
         }
@@ -38,8 +35,8 @@ class Event(groups: List<Group>,distances: Map<String, Distance>) {
     }
 
     init {
-        groupList=groups
-        distanceList=distances
+        groupList = groups
+        distanceList = distances
     }
 
     fun getGroupsByDistance(distance: Distance): List<Group> {
@@ -67,14 +64,18 @@ fun Event.makeStartProtocols() {
     //val generalLines = mutableListOf<List<String>>()
     groupList.filter { it.listParticipants.size > 0 }.forEach { group ->
         val startGroupFile = File("csvFiles/configuration/starts/start_${group.groupName}.csv")
-        val helper= group.listParticipants[0]
-        csvWriter().writeAll(listOf(List(helper.toCSV().size) { if (it == 0) group.groupName else "" }, helper.headerFormatCSV()), startGroupFile, append = false)
+        val helper = group.listParticipants[0]
+        csvWriter().writeAll(
+            listOf(
+                List(helper.toCSV().size) { if (it == 0) group.groupName else "" },
+                helper.headerFormatCSV()
+            ), startGroupFile, append = false
+        )
         csvWriter().writeAll(group.listParticipants.map { it.toCSV() }, startGroupFile, append = true)
 
-       // generalLines.addAll(group.listParticipants.map { it.toCSV() })
+        // generalLines.addAll(group.listParticipants.map { it.toCSV() })
     }
     parseLogger.universalC(Colors.BLUE._name, "you created start protocols in folder csvFiles/configuration/starts", 'i' )
-  //  csvWriter().writeAll(generalLines, generalFile)
 }
 
 fun Event.setNumbersAndTime(groups: List<Group>) {
@@ -103,7 +104,10 @@ fun Event.setupGroups() {
                 yearOfCompetition - participant.yearOfBirth,
                 participant.sex
             )?.addParticipant(participant)
-                ?: parseLogger.universalC(Colors.YELLOW._name,"Для участника $participant не нашлось подходящей группы")
+                ?: parseLogger.universalC(
+                    Colors.YELLOW._name,
+                    "Для участника $participant не нашлось подходящей группы"
+                )
         }
     }
 }
