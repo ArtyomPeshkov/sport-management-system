@@ -41,18 +41,6 @@ fun chooseSex(sex: String): Sex {
 
 
 
-fun groupsParser(distanceList: Map<String, Distance>, groups: File, currentPhase: Phase): List<Group> {
-    parseLogger.universalC(Colors.BLUE._name, "reading groups from file ${groups.path}", 'i')
-    val groupStrings = csvReader().readAllWithHeader(groups)
-    return groupStrings.map { group ->
-        val distance = distanceList[group["Дистанция"]] ?: throw CSVFieldNamesException(groups.path)
-        if (currentPhase == Phase.FIRST) {
-            Group(group, distance, groups.path)
-        } else
-            Group(group["Название"] ?: throw CSVFieldNamesException(groups.path), distance)
-    }.toSet().toList()
-}
-
 fun collectivesParser(applicationsFolder: File): List<Collective> {
     parseLogger.universalC(Colors.BLUE._name, "reading applications from folder ${applicationsFolder.path}", 'i')
     val applications =
@@ -64,9 +52,6 @@ fun getCollectives(configurationFolder: List<File>, path: String) =
     collectivesParser(configurationFolder.find { it.name.substringAfterLast('/') == "applications" }
         ?: throw NotEnoughConfigurationFiles(path))
 
-fun getGroups(configurationFolder: List<File>, distanceList: Map<String, Distance>, path: String, currentPhase: Phase) =
-    groupsParser(distanceList, configurationFolder.find { it.name.substringAfterLast('/') == "groups.csv" }
-        ?: throw NotEnoughConfigurationFiles(path), currentPhase)
 
 data class NameDate(val name: String, val date: LocalDate)
 
