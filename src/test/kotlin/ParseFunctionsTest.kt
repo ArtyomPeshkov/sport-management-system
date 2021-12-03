@@ -4,7 +4,6 @@ import exceptions.ProblemWithCSVException
 import ru.emkn.kotlin.sms.*
 import java.io.File
 import java.time.LocalDate
-import javax.print.attribute.standard.PrinterIsAcceptingJobs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -117,7 +116,14 @@ internal class ParseDistanceTest {
     @Test
     fun `correct input test (distances)`() {
         val path = "src/test/resources/distances-test/correctDistance.csv"
-        val configFile = mapOf(Pair("Название", "D500"), Pair("1", "100"), Pair("2", "200"), Pair("3", "300"), Pair("4", "400"), Pair("5", "500"))
+        val configFile = mapOf(
+            Pair("Название", "D4000"),
+            Pair("1", "100"),
+            Pair("2", "200"),
+            Pair("3", "300"),
+            Pair("4", "400"),
+            Pair("5", "500")
+        )
         assertEquals(
             mapOf(Pair("D500", Distance(configFile, path, mutableSetOf()))).toString(),
             distancesParser(File(path), mutableSetOf()).toString()
@@ -128,5 +134,33 @@ internal class ParseDistanceTest {
     fun `incorrect header (distances)`() {
         val path = "src/test/resources/distances-test/incorrectHeader.csv"
         assertFailsWith<CSVFieldNamesException> { distancesParser(File(path), mutableSetOf()) }
+    }
+}
+
+internal class ParseGroupTest {
+    @Test
+    fun `correct input test (groups)`() {
+        val configFile = mapOf(
+            Pair("Название", "D4000"),
+            Pair("1", "100"),
+            Pair("2", "200"),
+            Pair("3", "300"),
+            Pair("4", "400"),
+            Pair("5", "500")
+        )
+        val path = "src/test/resources/group-test/correctGroup.csv"
+        val distancePath = "src/test/resources/distances-test/correctDistance.csv"
+        val answer = listOf(Group("М0304", Distance(configFile, distancePath, mutableSetOf())))
+        assertEquals(
+            answer.toString(),
+            groupsParser(distancesParser(File(distancePath), mutableSetOf()), File(path), Phase.FIRST).toString()
+        )
+    }
+
+    @Test
+    fun `incorrect header input (groups)`() {
+        val path = "src/test/resources/group-test/incorrectHeader.csv"
+        val distancePath = "src/test/resources/distances-test/correctDistance.csv"
+        assertFailsWith<CSVFieldNamesException> { groupsParser(distancesParser(File(distancePath), mutableSetOf()), File(path), Phase.FIRST).toString() }
     }
 }
