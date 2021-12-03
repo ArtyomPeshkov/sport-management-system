@@ -46,5 +46,5 @@ fun getGroupIndexByName(name: String, groups: List<Group>): Int {
     val group = getGroupByName(name, groups)
     return if (group != null) {
         groups.indexOf(group)
-    } else throw UnexpectedValueException(group)
+    } else throw UnexpectedValueException(name)
 }
