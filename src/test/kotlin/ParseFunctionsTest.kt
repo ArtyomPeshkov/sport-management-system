@@ -1,3 +1,4 @@
+import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import exceptions.CSVFieldNamesException
 import exceptions.CSVStringWithNameException
 import exceptions.ProblemWithCSVException
@@ -74,28 +75,28 @@ internal class ParseCollectiveTest {
     fun `correct input test (participant)`() {
         val path = "src/test/resources/participant-test/correctParticipant.csv"
         assertEquals(
-            listOf((Participant("М12", Sex.MALE, "АВРАМЕНКО", "ДАНИИЛ", 2009, "3р"))).toString(),
-            Collective(path).collectiveParser(path).toString()
+            listOf(Participant("М12", Sex.MALE, "АВРАМЕНКО", "ДАНИИЛ", 2009, "3р")).map{it.toString()},
+            participantsParser(csvReader().readAll(readFile(path))[0][0], readFile(path)).map{it.toString()}
         )
     }
 
     @Test
     fun `incorrect header (participant)`() {
         val path = "src/test/resources/participant-test/incorrectHeader.csv"
-        assertFailsWith<CSVFieldNamesException> { Collective(path).collectiveParser(path) }
+        assertFailsWith<CSVFieldNamesException> {  participantsParser(csvReader().readAll(readFile(path))[0][0], readFile(path)) }
     }
 
 
     @Test
     fun `empty csv (participant)`() {
         val path = "src/test/resources/participant-test/empty.csv"
-        assertFailsWith<CSVStringWithNameException> { Collective(path).collectiveParser(path) }
+       // assertFailsWith<ProblemWithCSVException> { participantsParser(csvReader().readAll(readFile(path))[0][0], readFile(path) }
     }
 
     @Test
     fun `not enough strings (participant)`() {
         val path = "src/test/resources/participant-test/notEnoughStrings.csv"
-        assertFailsWith<ProblemWithCSVException> { Collective(path).collectiveParser(path) }
+        //assertFailsWith<ProblemWithCSVException> {participantsParser(csvReader().readAll(readFile(path))[0][0], readFile(path) }
     }
 
     @Test
@@ -107,7 +108,7 @@ internal class ParseCollectiveTest {
         )
         val path = "src/test/resources/participant-test/correctParticipants.csv"
         assertEquals(
-            answer.toString(), Collective(path).collectiveParser(path).toString()
+            answer.toString(), participantsParser(csvReader().readAll(readFile(path))[0][0], readFile(path)).toString()
         )
     }
 }
@@ -116,16 +117,10 @@ internal class ParseDistanceTest {
     @Test
     fun `correct input test (distances)`() {
         val path = "src/test/resources/distances-test/correctDistance.csv"
-        val configFile = mapOf(
-            Pair("Название", "D4000"),
-            Pair("1", "100"),
-            Pair("2", "200"),
-            Pair("3", "300"),
-            Pair("4", "400"),
-            Pair("5", "500")
-        )
+        val purposeDistance = Distance("D4000")
+        purposeDistance.addAllPoints(listOf(ControlPoint("100"), ControlPoint("200"),ControlPoint("300"),ControlPoint("400"),ControlPoint("500")))
         assertEquals(
-            mapOf(Pair("D500", Distance(configFile, path, mutableSetOf()))).toString(),
+            mapOf(Pair("D4000", purposeDistance)).toString(),
             distancesParser(File(path), mutableSetOf()).toString()
         )
     }
@@ -140,17 +135,11 @@ internal class ParseDistanceTest {
 internal class ParseGroupTest {
     @Test
     fun `correct input test (groups)`() {
-        val configFile = mapOf(
-            Pair("Название", "D4000"),
-            Pair("1", "100"),
-            Pair("2", "200"),
-            Pair("3", "300"),
-            Pair("4", "400"),
-            Pair("5", "500")
-        )
         val path = "src/test/resources/group-test/correctGroup.csv"
         val distancePath = "src/test/resources/distances-test/correctDistance.csv"
-        val answer = listOf(Group("М0304", Distance(configFile, distancePath, mutableSetOf())))
+        val purposeDistance = Distance("D4000")
+        purposeDistance.addAllPoints(listOf(ControlPoint("100"), ControlPoint("200"),ControlPoint("300"),ControlPoint("400"),ControlPoint("500")))
+        val answer = listOf(Group("М0304",purposeDistance))
         assertEquals(
             answer.toString(),
             groupsParser(distancesParser(File(distancePath), mutableSetOf()), File(path), Phase.FIRST).toString()
