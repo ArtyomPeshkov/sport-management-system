@@ -4,6 +4,7 @@ import exceptions.ProblemWithCSVException
 import ru.emkn.kotlin.sms.*
 import java.io.File
 import java.time.LocalDate
+import javax.print.attribute.standard.PrinterIsAcceptingJobs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -112,10 +113,20 @@ internal class ParseCollectiveTest {
     }
 }
 
-internal class ParseCPTest {
+internal class ParseDistanceTest {
     @Test
-    fun `correct input (CP)`() {
-
+    fun `correct input test (distances)`() {
+        val path = "src/test/resources/distances-test/correctDistance.csv"
+        val configFile = mapOf(Pair("Название", "D500"), Pair("1", "100"), Pair("2", "200"), Pair("3", "300"), Pair("4", "400"), Pair("5", "500"))
+        assertEquals(
+            mapOf(Pair("D500", Distance(configFile, path, mutableSetOf()))).toString(),
+            distancesParser(File(path), mutableSetOf()).toString()
+        )
     }
 
+    @Test
+    fun `incorrect header (distances)`() {
+        val path = "src/test/resources/distances-test/incorrectHeader.csv"
+        assertFailsWith<CSVFieldNamesException> { distancesParser(File(path), mutableSetOf()) }
+    }
 }
