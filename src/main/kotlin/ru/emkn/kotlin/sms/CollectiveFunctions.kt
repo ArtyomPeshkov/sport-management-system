@@ -1,10 +1,7 @@
 package ru.emkn.kotlin.sms
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import exceptions.CSVFieldNamesException
-import exceptions.CSVStringWithNameException
-import exceptions.NotEnoughConfigurationFiles
-import exceptions.ProblemWithCSVException
+import exceptions.*
 import log.universalC
 import java.io.File
 
@@ -19,7 +16,7 @@ fun collectivesParser(applicationsFolder: File): List<Collective> {
     return applications.map { getParticularCollective(readFile(it.path)) }
 }
 
-fun getParticularCollective(file: File):Collective {
+fun getParticularCollective(file: File): Collective {
     val fileStrings = csvReader().readAll(file.readText().substringBefore("\n"))
     if (fileStrings.isEmpty())
         throw CSVStringWithNameException(file.path)
@@ -43,18 +40,14 @@ fun participantsParser(name: String, file: File): List<Participant> {
 
 fun makeParticipant(name: String, param: Map<String, String>, index: Int, path: String): Participant {
     parseLogger.universalC(Colors.YELLOW._name, "Reading participant number ${index + 1} from $path")
-    try {
-        val participant = Participant(
-            param["Группа"] ?: throw CSVFieldNamesException(path),
-            chooseSex(param["Пол"] ?: throw CSVFieldNamesException(path)),
-            param["Фамилия"] ?: throw CSVFieldNamesException(path),
-            param["Имя"] ?: throw CSVFieldNamesException(path),
-            param["Г.р."]?.toInt() ?: throw CSVFieldNamesException(path),
-            param["Разр."] ?: throw CSVFieldNamesException(path)
-        )
-        participant.setCollective(name)
-        return participant
-    } catch (e: Exception) {
-        throw CSVFieldNamesException(path)
-    }
+    val participant = Participant(
+        param["Группа"] ?: throw CSVFieldNamesException(path),
+        chooseSex(param["Пол"] ?: throw CSVFieldNamesException(path)),
+        param["Фамилия"] ?: throw CSVFieldNamesException(path),
+        param["Имя"] ?: throw CSVFieldNamesException(path),
+        param["Г.р."]?.toInt() ?: throw CSVFieldNamesException(path),
+        param["Разр."] ?: throw CSVFieldNamesException(path)
+    )
+    participant.setCollective(name)
+    return participant
 }

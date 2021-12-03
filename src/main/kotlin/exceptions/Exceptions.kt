@@ -3,6 +3,12 @@ package exceptions
 import log.*
 import ru.emkn.kotlin.sms.Colors
 import ru.emkn.kotlin.sms.Time
+import javax.security.auth.kerberos.KerberosCredMessage
+
+fun emptyNameCheck(name:String,message: String) {
+    if (name.isBlank())
+        throw UnexpectedValueException(message)
+}
 
 class  IncorrectControlPointValue(value: String) :
     Exception("Название контрольной точки должно быть числовым. Ваше название: ${Colors.YELLOW._name} $value")

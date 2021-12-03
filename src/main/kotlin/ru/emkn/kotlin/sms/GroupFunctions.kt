@@ -3,6 +3,7 @@ package ru.emkn.kotlin.sms
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import exceptions.CSVFieldNamesException
 import exceptions.NotEnoughConfigurationFiles
+import exceptions.UnexpectedValueException
 import log.universalC
 import java.io.File
 
@@ -25,12 +26,25 @@ fun groupsParser(distanceList: Map<String, Distance>, groups: File, currentPhase
     parseLogger.universalC(Colors.BLUE._name, "reading groups from file ${groups.path}", 'i')
     val groupStrings = csvReader().readAllWithHeader(groups)
     return groupStrings.map { groupData ->
-        val distance = distanceList[groupData["Дистанция"]] ?: throw CSVFieldNamesException(groups.path)
         val groupName = groupData["Название"] ?: throw CSVFieldNamesException(groups.path)
+        val distance = distanceList[groupData["Дистанция"]] ?: throw CSVFieldNamesException(groups.path)
+
         val group = Group(groupName, distance)
         if (currentPhase == Phase.FIRST) {
             group.modifyGroup(groupData,groups.path)
         }
+
         group
     }.toSet().toList()
+}
+
+fun getGroupByName(name: String, groups: List<Group>): Group? {
+    return groups.find { it.groupName == name }
+}
+
+fun getGroupIndexByName(name: String, groups: List<Group>): Int {
+    val group = getGroupByName(name, groups)
+    return if (group != null) {
+        groups.indexOf(group)
+    } else throw UnexpectedValueException(group)
 }

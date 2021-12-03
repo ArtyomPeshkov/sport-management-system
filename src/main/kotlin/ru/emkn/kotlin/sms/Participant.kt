@@ -1,6 +1,16 @@
 package ru.emkn.kotlin.sms
 
-class Participant {
+import exceptions.UnexpectedValueException
+import exceptions.emptyNameCheck
+
+class Participant(
+    group: String,
+    sex: Sex,
+    surname: String,
+    name: String,
+    yearOfBirth: Int,
+    rank: String
+) {
     val wishGroup: String
     val sex: Sex
     val surname: String
@@ -13,14 +23,11 @@ class Participant {
         private set
     var status: String = ""
 
-    constructor(
-        group: String,
-        sex: Sex,
-        surname: String,
-        name: String,
-        yearOfBirth: Int,
-        rank: String
-    ) {
+    init{
+        emptyNameCheck(name, "Пустое имя участника обнаружено")
+        emptyNameCheck(surname, "Пустая фамилия участника обнаружена")
+        if (yearOfBirth <= 1900)
+            throw UnexpectedValueException("Unreal date of birth: $yearOfBirth")
         this.wishGroup = group
         this.sex = sex
         this.surname = surname
@@ -49,7 +56,7 @@ class Participant {
     }
 
     fun setCollective(nameOfCollective: String) {
-        if (this.collective == "") { //поменять коллектив можно только один раз
+        if (this.collective == "") {
             this.collective = nameOfCollective
         }
     }

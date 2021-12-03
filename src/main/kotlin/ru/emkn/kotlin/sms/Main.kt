@@ -29,39 +29,26 @@ fun chooseSex(sex: String): Sex {
     }
 }
 
-
-
-
-
-
-data class NameDate(val name: String, val date: LocalDate)
-
-fun getNameAndDate(configurationFolder: List<File>, path: String): NameDate {
-    val rows = csvReader().readAllWithHeader(configurationFolder.find { it.name.substringAfterLast('/') == "event.csv" }
-        ?: throw NotEnoughConfigurationFiles(path))
-    return if (rows.size != 1)
-        throw ProblemWithCSVException(path)
-    else if (rows[0]["Дата"] != null && rows[0]["Название"] != null && rows[0].size == 2) {
-        NameDate(
-            rows[0]["Название"] ?: throw CSVStringWithNameException(path),
-            LocalDate.parse(rows[0]["Дата"], formatter)
-        )
-    } else
-        throw CSVStringWithNameException(path)
-}
-
 fun phase1(path: String) {
     parseLogger.universalC(Colors.YELLOW._name, "you are using phase 1: form start protocols according to the application lists", 'i')
     val configurationFolder = readFile(path).walk().toList()
+
     val controlPoints = mutableSetOf<ControlPoint>()
     val distances = getDistances(configurationFolder, path,controlPoints)
+
     val groups = getGroups(configurationFolder, distances, path, Phase.FIRST)
     val collective = getCollectives(configurationFolder, path)
     val (name, date) = getNameAndDate(configurationFolder, path)
-    val event = Event(name, date, groups, distances, collective)
-    //TODO("Предложить сгенерировать рандомные результаты")
+
+    val event = Event(name, date, groups, distances,collective)
+
+    event.getDistanceList().forEach {
+        event.setNumbersAndTime(event.getGroupsByDistance(it.value))
+    }
+    event.makeStartProtocols()
+
     generateCP(controlPoints, groups)
-    println(event.toString())
+    parseLogger.universalC(Colors.PURPLE._name, "some info about event: $event", 'i')
 }
 
 fun parseStartProtocolFiles(startsFolder: File, groups: List<Group>) {
@@ -86,7 +73,7 @@ fun parseStartProtocol(protocol: File, groups: List<Group>) {
     val participantData = csvReader().readAllWithHeader(protocol.readLines().drop(1).joinToString("\n"))
     participantData.forEach {
         val participant = Participant(
-            nameOfGroup, /*TODO("пол должен передаваться вместе с участником")*/
+            nameOfGroup,
             chooseSex(nameOfGroup[0].toString()),
             it["Фамилия"] ?: throw CSVFieldNamesException(protocol.path),
             it["Имя"] ?: throw CSVFieldNamesException(protocol.path),
@@ -101,18 +88,6 @@ fun parseStartProtocol(protocol: File, groups: List<Group>) {
         groups[indexOfGroup].addParticipant(participant)
 
     }
-}
-
-
-fun getGroupByName(name: String, groups: List<Group>): Group? {
-    return groups.find { it.groupName == name }
-}
-
-fun getGroupIndexByName(name: String, groups: List<Group>): Int {
-    val group = getGroupByName(name, groups)
-    return if (group != null) {
-        groups.indexOf(group)
-    } else throw UnexpectedValueException(group)
 }
 
 fun parseCPFiles(pointsFolder: File): Map<Int, List<ControlPointWithTime>> {
@@ -238,7 +213,7 @@ fun phase2(path: String) {
 
 fun startCP(groupList: List<Group>): Pair<ControlPoint, MutableMap<Pair<ControlPoint, Participant>, Time>> {
     val resultsOfParticipantsAtParticularPoint: MutableMap<Pair<ControlPoint, Participant>, Time> = mutableMapOf()
-    val start = ControlPoint("Start");
+    val start = ControlPoint("Start")
     groupList.forEach { group ->
         group.listParticipants.forEach {
             resultsOfParticipantsAtParticularPoint[Pair(start, it)] = (it.startTime)
