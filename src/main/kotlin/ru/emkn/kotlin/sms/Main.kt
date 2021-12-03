@@ -34,25 +34,6 @@ fun chooseSex(sex: String): Sex {
 
 
 
-
-
-
-
-
-
-
-fun collectivesParser(applicationsFolder: File): List<Collective> {
-    parseLogger.universalC(Colors.BLUE._name, "reading applications from folder ${applicationsFolder.path}", 'i')
-    val applications =
-        applicationsFolder.walk().toList().filter { it.extension == "csv" }
-    return applications.map { Collective(readFile(it.path)) }
-}
-
-fun getCollectives(configurationFolder: List<File>, path: String) =
-    collectivesParser(configurationFolder.find { it.name.substringAfterLast('/') == "applications" }
-        ?: throw NotEnoughConfigurationFiles(path))
-
-
 data class NameDate(val name: String, val date: LocalDate)
 
 fun getNameAndDate(configurationFolder: List<File>, path: String): NameDate {
@@ -318,7 +299,7 @@ fun getResultProtocolFolder(configurationFolder: List<File>, path: String, colle
 
 fun getGroupsFromResultProtocols(resultsFolder: File, collectives: MutableList<Collective>) {
     val resultInfo =
-        resultsFolder.walk().toList().filter { ".*[.]csv".toRegex().matches(it.path.substringAfterLast('/')) }
+        resultsFolder.walk().toList().filter { it.extension=="csv" }
     resultInfo.map { parseResultProtocol(it, collectives) }
 }
 fun parseResultProtocol(protocol: File, collectives: MutableList<Collective>) {
