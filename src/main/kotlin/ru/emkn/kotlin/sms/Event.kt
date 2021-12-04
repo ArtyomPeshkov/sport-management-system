@@ -10,7 +10,7 @@ import java.time.LocalDate
 
 class Event(
     val name: String,
-    val date: LocalDate,
+    private val date: LocalDate,
     groupList: List<Group>/*MutableList<Group>*/,
     distanceList: Map<String, Distance> /*MutableMap<String,String>*/,
     collectives: List<Collective>
@@ -32,7 +32,7 @@ class Event(
             throw UnexpectedValueException("В коллективе нет участников")
         if (collectives.isEmpty())
             throw UnexpectedValueException("Нет коллективов")
-        setupCollectives(collectives)
+        collectiveList = collectives
         setupGroups()
     }
 
@@ -60,10 +60,6 @@ class Event(
             return wish
         }
         return groupList.find { it.sex == sex && it.ageTo >= age && it.ageFrom <= age }
-    }
-
-    private fun setupCollectives(collectives: List<Collective>) {
-        collectiveList = collectives
     }
 
     fun getGroupsByDistance(distance: Distance): List<Group> {

@@ -36,7 +36,7 @@ fun phase1(path: String) {
         'i'
     )
     val configurationFolder = readFile(path).walk().toList()
-
+    //Лог уровня дебаг, информация о содержимом полученных коллекций и переменных
     val controlPoints = mutableSetOf<ControlPoint>()
     val distances = getDistances(configurationFolder, path, controlPoints)
 
