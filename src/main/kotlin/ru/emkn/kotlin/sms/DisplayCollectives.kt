@@ -1,49 +1,75 @@
 package ru.emkn.kotlin.sms
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 
+data class ButtonState(var backgroundColor: Color = Color(255, 255, 255)) {
+
+}
+
+@OptIn(ExperimentalFoundationApi::class)
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         title = "Test, TEST, AND ANOTHER TEST",
-        state = rememberWindowState(width = 300.dp, height = 300.dp)
+        state = rememberWindowState(width = 500.dp, height = 300.dp)
     ) {
         val buttonsState =
             remember { mutableStateOf(mapOf("Collective" to "Collective", "Group" to "Group", "Age" to "Age")) }
         val state = remember { mutableStateOf(true) }
-        Row(Modifier.fillMaxWidth().padding(start = 5.dp), Arrangement.spacedBy(5.dp)) {
-            Button(
-                onClick = { state.value = !state.value },
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = if (state.value) Color.Magenta else Color.Red,
-                    contentColor = Color.White
-                )
+        Row(Modifier.fillMaxSize(), Arrangement.spacedBy(0.dp)) {
+//            @OptIn(ExperimentalFoundationApi::class)
+            Box(
+                Modifier.weight(1f).clickable { state.value = !state.value }
+                    .background(if (state.value) Color.Magenta else Color.Red).wrapContentSize()
+                    .padding(top = 10.dp, bottom = 10.dp)
             ) {
                 buttonsState.value["Collective"]?.let { Text(it) }
-
             }
-            Button(onClick = {}) {
+            Box(
+                Modifier.weight(1f).clickable { state.value = !state.value }
+                    .background(if (state.value) Color.Magenta else Color.Red).wrapContentSize()
+            ) {
                 buttonsState.value["Group"]?.let { Text(it) }
-                Color(255, 0, 0)
             }
-            Button(onClick = {}) {
+            Box( //TODO("Чтобы отслеживать правые клики вместо clickable надо mouseClicked, но затемнение надо будет добавить самому. Для отслеживания buttons..")
+                Modifier.weight(1f).clickable { state.value = !state.value }
+                    .background(if (state.value) Color.Magenta else Color.Red).wrapContentSize()
+
+            ) {
                 buttonsState.value["Age"]?.let { Text(it) }
-                Color(255, 0, 0)
             }
+//            Button(
+//                modifier = Modifier.weight(1f).fillMaxWidth(),
+//                onClick = { state.value = !state.value },
+//                colors = ButtonDefaults.buttonColors(
+//                    backgroundColor = if (state.value) Color.Magenta else Color.Red,
+//                    contentColor = Color.White
+//                )
+//            ) {
+//                buttonsState.value["Collective"]?.let { Text(it) }
+//
+//            }
+////            Box(modifier = Modifier.width(20.dp).fillMaxHeight().background(Color(128, 128, 128)))
+//            Button(modifier = Modifier.weight(1f).fillMaxWidth(), onClick = {}) {
+//                buttonsState.value["Group"]?.let { Text(it) }
+//                Color(255, 0, 0)
+//            }
+//            Button(modifier = Modifier.weight(1f).fillMaxWidth(), onClick = {}) {
+//                buttonsState.value["Age"]?.let { Text(it) }
+//                Color(255, 0, 0)
+//            }
         }
 
 
@@ -71,4 +97,9 @@ fun main() = application {
 //
 //        }
     }
+}
+
+@Composable
+fun TopButton(text: String) {
+
 }
