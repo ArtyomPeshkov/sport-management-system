@@ -13,11 +13,10 @@ fun setStatusForAllParticipants(
     groups.forEach { group ->
         group.listParticipants.forEach { participant ->
             participant.setParticipantStatus(
-                checkProtocolPointsCorrectness(
+                distances[group.distance.name]?.checkProtocolPointsCorrectness(
                     participant,
-                    distances[group.distance.name] ?: throw UnexpectedValueException(group.distance.name),
                     participantDistanceWithTime
-                )
+                ) ?: throw UnexpectedValueException(group.distance.name)
             )
         }
     }
@@ -40,6 +39,20 @@ fun makeResultProtocols(groups: List<Group>) {
         val result: List<Participant> = participants.sortedBy { Time(it.status).timeInSeconds } + deletedParticipants
         var number = 1
         var place = 1
+
+        fun setPlace(): String {
+            return if (number > 2 && result[number - 3].status == result[number - 2].status && result[number - 2].status != "Снят")
+                (place - 1).toString()
+            else if (result[number - 2].status != "Снят")
+                (place++).toString()
+            else
+                ""
+        }
+
+        fun setTime(participant: Participant): String {
+            return if (place != 2 && participant.status != "Снят") "+" + (Time(participant.status) - Time(result[0].status)) else ""
+        }
+
         csvWriter().writeAll(result.map {
             listOf(
                 number++.toString(),
@@ -51,8 +64,8 @@ fun makeResultProtocols(groups: List<Group>) {
                 it.collective,
                 it.rank,
                 it.status,
-                if (number > 2 && result[number - 3].status == result[number - 2].status && result[number - 2].status != "Снят") place - 1 else if (result[number - 2].status != "Снят") place++ else "",
-                if (place != 2 && it.status != "Снят") "+" + (Time(it.status) - Time(result[0].status)) else ""
+                setPlace(),
+                setTime(it)
             )
         }, resultGroupFile, append = true)
     }

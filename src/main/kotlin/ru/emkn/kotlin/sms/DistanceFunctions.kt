@@ -1,11 +1,6 @@
 package ru.emkn.kotlin.sms
 
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import exceptions.CSVFieldNamesException
-import exceptions.NotEnoughConfigurationFiles
 import exceptions.UnexpectedValueException
-import log.universalC
-import java.io.File
 
 fun getDistance(
     distanceName: String,
@@ -31,23 +26,3 @@ fun getDistance(
     distance.addAllPoints(pointsList)
     return distance
 }
-
-fun distancesParser(distances: File, controlPoints: MutableSet<ControlPoint>): Map<String, Distance> {
-    parseLogger.universalC(Colors.BLUE._name, "reading distances from file ${distances.path}", 'i')
-    val distanceStrings = csvReader().readAllWithHeader(distances)
-    return distanceStrings.associate {
-        val distanceName = it["Название"] ?: throw CSVFieldNamesException(distances.path)
-        Pair(
-            distanceName,
-            getDistance(distanceName, it, controlPoints)
-        )
-    }
-}
-
-fun getDistances(
-    configurationFolder: List<File>,
-    path: String,
-    controlPoints: MutableSet<ControlPoint> = mutableSetOf()
-) =
-    distancesParser(configurationFolder.find { it.name.substringAfterLast('/') == "distances.csv" }
-        ?: throw NotEnoughConfigurationFiles(path), controlPoints)

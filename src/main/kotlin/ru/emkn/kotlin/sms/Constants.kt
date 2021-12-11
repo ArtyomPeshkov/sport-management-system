@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter
 val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
 enum class Sex {
-    MALE, FEMALE, NB
+    MALE, FEMALE, NS
 }
 
 enum class Rank {

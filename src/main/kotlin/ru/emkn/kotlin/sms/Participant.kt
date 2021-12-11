@@ -2,6 +2,7 @@ package ru.emkn.kotlin.sms
 
 import exceptions.UnexpectedValueException
 import exceptions.emptyNameCheck
+import java.time.LocalDateTime
 
 class Participant(
     group: String,
@@ -26,7 +27,7 @@ class Participant(
     init {
         emptyNameCheck(name, "Пустое имя участника обнаружено")
         emptyNameCheck(surname, "Пустая фамилия участника обнаружена")
-        if (yearOfBirth <= 1900)
+        if (yearOfBirth <= 1900 || yearOfBirth>LocalDateTime.now().year)
             throw UnexpectedValueException("Unreal date of birth: $yearOfBirth")
         this.wishGroup = group
         this.sex = sex
@@ -51,6 +52,7 @@ class Participant(
     }
 
     fun setPoints(points: Int) {
+        require(points>=0)
         this.points = points
     }
 

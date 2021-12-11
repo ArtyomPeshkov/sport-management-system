@@ -1,11 +1,8 @@
 package ru.emkn.kotlin.sms
 
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import exceptions.*
-import log.universalC
-import java.io.File
 
-class Collective(name: String) {
+class Team(name: String) {
     val name: String
     var athleteList: MutableList<Participant> = mutableListOf()
     var points = 0

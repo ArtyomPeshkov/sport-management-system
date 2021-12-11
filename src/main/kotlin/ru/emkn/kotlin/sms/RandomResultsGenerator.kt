@@ -1,6 +1,7 @@
 package ru.emkn.kotlin.sms
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import exceptions.UnexpectedValueException
 import log.universalC
 import java.io.File
 
@@ -36,7 +37,9 @@ fun generateCP(controlPoints: Set<ControlPoint>, groups: List<Group>) {
                 if (pointList.contains(controlPoint)) {
                     val curIndex = pointList.indexOf(controlPoint)
                     if (curIndex == 0) {
-                        val newTime = controlPointMap[Pair(startPoint, participant)]!! + Time((10..20).random())
+                        val newTime = (controlPointMap[Pair(startPoint, participant)] ?: throw UnexpectedValueException(
+                            "Participant: $participant does not have control point: $startPoint"
+                        )) + Time((10..20).random())
                         listOfControlPoints += ParticipantTimeAtControlPoint(
                             participant.number.toString(),
                             newTime.toString()
