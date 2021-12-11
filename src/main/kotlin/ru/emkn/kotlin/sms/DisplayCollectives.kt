@@ -20,7 +20,7 @@ import androidx.compose.ui.window.rememberWindowState
 
 val topRowHeight = 30.dp
 val topButtonWidth = 100.dp
-val separatorLineWidth = 2.dp
+val separatorLineWidth = 1.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 fun main() = application {
@@ -31,7 +31,8 @@ fun main() = application {
         state = rememberWindowState(width = 500.dp, height = 300.dp)
     ) {
         Column {
-            AllTopButtons(3, buttonStates)
+            AllTopButtons(1, buttonStates)
+//            Box(modifier = Modifier.fillMaxWidth().height(separatorLineWidth).background(Color.Black)) {}
         }
     }
 }
@@ -56,23 +57,23 @@ fun AllTopButtons(phase: Int, buttonStates: MutableState<MutableList<Boolean>>)/
             else -> listOf("7", "8", "9")
         }
     Row(
-        modifier = Modifier.height(topRowHeight).fillMaxWidth().padding(bottom = 5.dp),
+        modifier = Modifier.height(topRowHeight).fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(0.dp)
     ) {
         values.forEachIndexed { index, s ->
             if (index != values.lastIndex) {
-                TopButton(s, index, buttonStates)
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {TopButton(s, index, buttonStates)}
                 SeparatorLine()
             }
         }
-        TopButton(values.last(), values.lastIndex, buttonStates)
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {TopButton(values.last(), values.lastIndex, buttonStates)}
     }
 }
 
 @Composable
 fun TopButton(text: String, index: Int, buttonStates: MutableState<MutableList<Boolean>>) {
     Box(
-        modifier = Modifier.fillMaxHeight().width(topButtonWidth)
+        modifier = Modifier.fillMaxHeight().fillMaxWidth()
             .clickable {
                 buttonStates.value = MutableList(buttonStates.value.size) { it == index }
             }.background(color = if (buttonStates.value[index]) Color.White else Color.LightGray)
