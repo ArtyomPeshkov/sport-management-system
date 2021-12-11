@@ -8,9 +8,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.lang.Integer.max
-import java.time.LocalDate
 
 val parseLogger: Logger = LoggerFactory.getLogger("Parse")
+
 
 fun readFile(path: String): File {
     parseLogger.universalC(Colors.YELLOW._name, "Reading file: $path")
@@ -41,7 +41,7 @@ fun phase1(path: String) {
     val distances = getDistances(configurationFolder, path, controlPoints)
 
     val groups = getGroups(configurationFolder, distances, path, Phase.FIRST)
-    val collective = getCollectives(configurationFolder, path)
+    val collective = getTeams(configurationFolder, path)
     val (name, date) = getNameAndDate(configurationFolder, path)
 
     val event = Event(name, date, groups, distances, collective)
@@ -77,22 +77,22 @@ fun phase2(path: String) {
 
 fun phase3(path: String) {
     val configurationFolder = readFile(path).walk().toList()
-    val collectives = mutableListOf<Collective>()
-    getResultProtocolFolder(configurationFolder, path, collectives)
-    generateResultProtocolForCollectives(collectives)
+    val teams = mutableListOf<Team>()
+    getResultProtocolFolder(configurationFolder, path, teams)
+    generateResultProtocolForCollectives(teams)
 }
 
-fun getResultProtocolFolder(configurationFolder: List<File>, path: String, collectives: MutableList<Collective>) =
+fun getResultProtocolFolder(configurationFolder: List<File>, path: String, teams: MutableList<Team>) =
     getGroupsFromResultProtocols(configurationFolder.find { it.name.substringAfterLast('/') == "results" }
-        ?: throw NotEnoughConfigurationFiles(path), collectives)
+        ?: throw NotEnoughConfigurationFiles(path), teams)
 
-fun getGroupsFromResultProtocols(resultsFolder: File, collectives: MutableList<Collective>) {
+fun getGroupsFromResultProtocols(resultsFolder: File, teams: MutableList<Team>) {
     val resultInfo =
         resultsFolder.walk().toList().filter { it.extension == "csv" }
-    resultInfo.map { parseResultProtocol(it, collectives) }
+    resultInfo.map { parseResultProtocol(it, teams) }
 }
 
-fun parseResultProtocol(protocol: File, collectives: MutableList<Collective>) {
+fun parseResultProtocol(protocol: File, teams: MutableList<Team>) {
     val fileStrings = csvReader().readAll(protocol.readText())
     val nameOfGroup = fileStrings[0].let {
         if (it[0] == "")
@@ -118,17 +118,17 @@ fun parseResultProtocol(protocol: File, collectives: MutableList<Collective>) {
             )
         )
         val collectiveName = it["Коллектив"] ?: throw CSVFieldNamesException(protocol.path)
-        if (collectives.find { it.name == collectiveName } == null) collectives.add(Collective(collectiveName))
+        if (teams.find { it.name == collectiveName } == null) teams.add(Team(collectiveName))
         val collective =
-            collectives.find { it.name == collectiveName } ?: throw UnexpectedValueException(collectiveName)
+            teams.find { it.name == collectiveName } ?: throw UnexpectedValueException(collectiveName)
         collective.addParticipant(participant)
     }
 }
 
-fun generateResultProtocolForCollectives(collectives: MutableList<Collective>) {
+fun generateResultProtocolForCollectives(teams: MutableList<Team>) {
     val file = File("csvFiles/configuration/collectivesResults.csv")
     file.writeText("")
-    collectives.forEach {
+    teams.forEach {
         csvWriter().writeAll(
             listOf(
                 listOf("Коллектив", "Баллы"),

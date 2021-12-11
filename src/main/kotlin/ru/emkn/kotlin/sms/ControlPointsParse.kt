@@ -33,35 +33,6 @@ fun parseCP(protocol: File): List<Pair<Int, ControlPointWithTime>> {
         else it[0]
     }
     val eachControlPoint = csvReader().readAll(protocol).drop(1)
-    return eachControlPoint.map { Pair(it[0].toInt(), ControlPointWithTime(nameOfControlPoint, Time(it[1]))) }
+    return eachControlPoint.map { Pair(it[0].toInt(), ControlPointWithTime(ControlPoint(nameOfControlPoint), Time(it[1]))) }
 
-}
-
-fun checkProtocolPointsCorrectness(
-    participant: Participant,
-    distances: Distance,
-    participantDistance: Map<Int, List<ControlPointWithTime>>
-): String {
-    val controlPoints = distances.getPointsList()
-    val participantControlPoints = participantDistance[participant.number]
-    //Если в список попала несуществующая КТ, участник снимается, не знаю, насколько это правильно
-    if (!controlPoints.containsAll(participantControlPoints?.map { ControlPoint(it.name) } ?: listOf(
-            ControlPoint("")
-        )))
-        return "Снят"
-    val first = ControlPointWithTime("Start", participant.startTime)
-    val lastControlPointTime =
-        participantControlPoints?.find { it.name == controlPoints.last().name }?.time ?: return "Снят"
-    participantControlPoints.forEach {
-        val previousControlPointIndex = controlPoints.indexOf(ControlPoint(it.name))
-        val previousControlPointWithTime = if (previousControlPointIndex != 0) {
-            val previousControlPoint = controlPoints[previousControlPointIndex - 1]
-            participantControlPoints.find { previousControlPoint.name == it.name }
-                ?: throw UnexpectedValueException(previousControlPoint.name)
-        } else
-            first
-        if (it.time <= previousControlPointWithTime.time)
-            return "Снят"
-    }
-    return (lastControlPointTime - first.time).toString()
 }

@@ -51,6 +51,7 @@ class Participant(
     }
 
     fun setPoints(points: Int) {
+        require(points>0)
         this.points = points
     }
 

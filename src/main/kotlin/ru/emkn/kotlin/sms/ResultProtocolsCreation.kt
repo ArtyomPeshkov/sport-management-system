@@ -13,11 +13,10 @@ fun setStatusForAllParticipants(
     groups.forEach { group ->
         group.listParticipants.forEach { participant ->
             participant.setParticipantStatus(
-                checkProtocolPointsCorrectness(
+                distances[group.distance.name]?.checkProtocolPointsCorrectness(
                     participant,
-                    distances[group.distance.name] ?: throw UnexpectedValueException(group.distance.name),
                     participantDistanceWithTime
-                )
+                ) ?: throw UnexpectedValueException(group.distance.name)
             )
         }
     }

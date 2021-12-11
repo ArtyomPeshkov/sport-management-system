@@ -10,9 +10,6 @@ fun emptyNameCheck(name:String,message: String) {
         throw UnexpectedValueException(message)
 }
 
-class  IncorrectControlPointValue(value: String) :
-    Exception("Название контрольной точки должно быть числовым. Ваше название: ${Colors.YELLOW._name} $value")
-
 class IllegalTimeFormatException(value: Any?) :
     Exception("Ошибка в строковом представлении времени (необходимый формат hh:mm:ss):${Colors.YELLOW._name} $value") {}
 

@@ -1,10 +1,8 @@
 package ru.emkn.kotlin.sms
 
-import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import exceptions.UnexpectedValueException
 import log.printCollection
 import log.universalC
-import java.io.File
 import java.time.LocalDate
 
 
@@ -13,10 +11,10 @@ class Event(
     private val date: LocalDate,
     groupList: List<Group>/*MutableList<Group>*/,
     distanceList: Map<String, Distance> /*MutableMap<String,String>*/,
-    collectives: List<Collective>
+    teams: List<Team>
 ) {
     var yearOfCompetition: Int = date.year
-    var collectiveList: List<Collective> = listOf() //список заявленных коллективов
+    var teamList: List<Team> = listOf() //список заявленных коллективов
     val groupList: List<Group>
     private val distanceList: Map<String, Distance>
 
@@ -28,16 +26,16 @@ class Event(
         this.groupList = groupList
         this.distanceList = distanceList
         parseLogger.printCollection(groupList, Colors.PURPLE._name)
-        if (collectives.any { it.athleteList.isEmpty() })
+        if (teams.any { it.athleteList.isEmpty() })
             throw UnexpectedValueException("В коллективе нет участников")
-        if (collectives.isEmpty())
+        if (teams.isEmpty())
             throw UnexpectedValueException("Нет коллективов")
-        collectiveList = collectives
+        teamList = teams
         setupGroups()
     }
 
     private fun setupGroups() {
-        collectiveList.forEach { collective ->
+        teamList.forEach { collective ->
             collective.athleteList.forEach { participant ->
                 chooseGroupByParams(
                     participant.wishGroup,
@@ -67,7 +65,7 @@ class Event(
     }
 
     override fun toString(): String {
-        return "Название:$name, дата: $date, количество групп: ${groupList.size}, количество дистанций: ${distanceList.size}, количество коллективов: ${collectiveList.size}"
+        return "Название:$name, дата: $date, количество групп: ${groupList.size}, количество дистанций: ${distanceList.size}, количество коллективов: ${teamList.size}"
     }
 
 }

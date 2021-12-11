@@ -5,18 +5,18 @@ import exceptions.*
 import log.universalC
 import java.io.File
 
-fun getCollectives(configurationFolder: List<File>, path: String) =
-    collectivesParser(configurationFolder.find { it.name.substringAfterLast('/') == "applications" }
+fun getTeams(configurationFolder: List<File>, path: String) =
+    teamsParser(configurationFolder.find { it.name.substringAfterLast('/') == "applications" }
         ?: throw NotEnoughConfigurationFiles(path))
 
-fun collectivesParser(applicationsFolder: File): List<Collective> {
+fun teamsParser(applicationsFolder: File): List<Team> {
     parseLogger.universalC(Colors.BLUE._name, "reading applications from folder ${applicationsFolder.path}", 'i')
     val applications =
         applicationsFolder.walk().toList().filter { it.extension == "csv" }
-    return applications.map { getParticularCollective(readFile(it.path)) }
+    return applications.map { getParticularTeam(readFile(it.path)) }
 }
 
-fun getParticularCollective(file: File): Collective {
+fun getParticularTeam(file: File): Team {
     val fileStrings = csvReader().readAll(file.readText().substringBefore("\n"))
     if (fileStrings.isEmpty())
         throw CSVStringWithNameException(file.path)
@@ -25,7 +25,7 @@ fun getParticularCollective(file: File): Collective {
             throw CSVStringWithNameException(file.path)
         else it[0]
     }
-    val collective = Collective(name)
-    collective.addParticipants(participantsParser(name, file))
-    return collective
+    val team = Team(name)
+    team.addParticipants(participantsParser(name, file))
+    return team
 }
