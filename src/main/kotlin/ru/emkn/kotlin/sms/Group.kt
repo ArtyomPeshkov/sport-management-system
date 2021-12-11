@@ -1,9 +1,7 @@
 package ru.emkn.kotlin.sms
 
-import exceptions.CSVFieldNamesException
 import exceptions.UnexpectedValueException
 import exceptions.emptyNameCheck
-import log.universalC
 
 class Group(name: String, dist: Distance) {
     val groupName: String

@@ -1,9 +1,6 @@
 package ru.emkn.kotlin.sms
 
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import exceptions.*
-import log.universalC
-import java.io.File
 
 class Team(name: String) {
     val name: String

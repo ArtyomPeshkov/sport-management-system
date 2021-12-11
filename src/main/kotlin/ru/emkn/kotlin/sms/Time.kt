@@ -18,8 +18,12 @@ class Time {
 
     constructor(time: String) {
         val newTime = time.split(':').toMutableList()
-        if (newTime.size == 2)
-            newTime.add(0, "0")
+        when (newTime.size){
+            1 -> throw IllegalTimeFormatException(time)
+            2-> newTime.add(0,"0")
+            3-> run{}
+            else -> throw IllegalTimeFormatException(time)
+        }
 
         val timeParametersHhMmSs = List(3) { newTime[it].toIntOrNull() }
         if (timeParametersHhMmSs.size != 3 || timeParametersHhMmSs.any { it == null } || checkDateFormat(

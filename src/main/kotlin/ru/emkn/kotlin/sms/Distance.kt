@@ -33,7 +33,6 @@ class Distance(name: String) {
         participantDistance: Map<Int, List<ControlPointWithTime>>
     ): String {
         val participantControlPoints = participantDistance[participant.number]
-        //Если в список попала несуществующая КТ, участник снимается, не знаю, насколько это правильно
         if (!(participantControlPoints?.map { it.point }?: listOf(
                 ControlPoint(""))).containsAll(pointsList))
             return "Снят"

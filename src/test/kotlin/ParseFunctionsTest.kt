@@ -121,14 +121,14 @@ internal class ParseDistanceTest {
         purposeDistance.addAllPoints(listOf(ControlPoint("100"), ControlPoint("200"),ControlPoint("300"),ControlPoint("400"),ControlPoint("500")))
         assertEquals(
             mapOf(Pair("D4000", purposeDistance)).toString(),
-            distancesParser(File(path), mutableSetOf()).toString()
+            DistanceReader(path).getDistances().toString()
         )
     }
 
     @Test
     fun `incorrect header (distances)`() {
         val path = "src/test/resources/distances-test/incorrectHeader.csv"
-        assertFailsWith<CSVFieldNamesException> { distancesParser(File(path), mutableSetOf()) }
+        assertFailsWith<CSVFieldNamesException> { DistanceReader(path).getDistances().toString() }
     }
 }
 
@@ -142,7 +142,7 @@ internal class ParseGroupTest {
         val answer = listOf(Group("М0304",purposeDistance))
         assertEquals(
             answer.toString(),
-            groupsParser(distancesParser(File(distancePath), mutableSetOf()), File(path), Phase.FIRST).toString()
+            GroupReader(path).getGroups(DistanceReader(path).getDistances(), Phase.FIRST).toString()
         )
     }
 
@@ -150,6 +150,6 @@ internal class ParseGroupTest {
     fun `incorrect header input (groups)`() {
         val path = "src/test/resources/group-test/incorrectHeader.csv"
         val distancePath = "src/test/resources/distances-test/correctDistance.csv"
-        assertFailsWith<CSVFieldNamesException> { groupsParser(distancesParser(File(distancePath), mutableSetOf()), File(path), Phase.FIRST).toString() }
+        assertFailsWith<CSVFieldNamesException> {  GroupReader(path).getGroups(DistanceReader(distancePath).getDistances(), Phase.FIRST).toString() }
     }
 }

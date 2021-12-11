@@ -11,7 +11,7 @@ fun emptyNameCheck(name:String,message: String) {
 }
 
 class IllegalTimeFormatException(value: Any?) :
-    Exception("Ошибка в строковом представлении времени (необходимый формат hh:mm:ss):${Colors.YELLOW._name} $value") {}
+    Exception("Ошибка в строковом представлении времени (необходимый формат hh:mm:ss или mm:ss):${Colors.YELLOW._name} $value") {}
 
 class UnexpectedValueException(value: Any?) :
     Exception("Обнаружено неожиданное значение:${Colors.YELLOW._name} $value")
