@@ -1,6 +1,7 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.5.31'
     id 'application'
+    id "org.jetbrains.compose" version '1.0.0'
 }
 
 group = 'ru.senin.kotlin'
@@ -8,6 +9,8 @@ version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+//     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    google()
 }
 
 dependencies {
@@ -20,6 +23,7 @@ dependencies {
     runtimeOnly('org.slf4j:slf4j-simple:1.7.32')
 
     implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.2.0")
+    implementation(compose.desktop.currentOs)
 
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
