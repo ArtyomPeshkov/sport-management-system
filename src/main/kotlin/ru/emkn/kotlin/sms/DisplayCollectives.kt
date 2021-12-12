@@ -24,7 +24,7 @@ val topRowHeight = 30.dp
 val topButtonWidth = 100.dp
 val separatorLineWidth = 1.dp
 
-@OptIn(ExperimentalFoundationApi::class)
+//@OptIn(ExperimentalFoundationApi::class)
 fun main() = application {
     val buttonStates = remember { mutableStateOf(MutableList(10) { it == 0 }) }
     val path = remember { mutableStateOf("") }
@@ -43,7 +43,7 @@ fun main() = application {
                 Box(modifier = Modifier.weight(1f).fillMaxWidth()) { DropDownMenu(phase) }
                 Button(
                     modifier = Modifier.weight(1f),
-                    onClick = { /*TODO("Передает куда-то путь")*/ },
+                    onClick = { /*TODO("Передает куда-то путь для проверки")*/ },
                     enabled = false
                 ) { Text("Результат") }
             }
@@ -99,7 +99,7 @@ fun DropDownMenu(phase: MutableState<Int>) {
 
 @Composable
 fun AllTopButtons(phase: Int, buttonStates: MutableState<MutableList<Boolean>>)/*: MutableList<Boolean>*/ {
-    //TODO()
+    //TODO("Какие вкладки в какой фазу")
     val values =
         when (phase) {
             1 -> listOf("1", "2", "3", "4")
