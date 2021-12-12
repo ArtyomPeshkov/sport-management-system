@@ -5,14 +5,14 @@ import exceptions.emptyNameCheck
 import java.time.LocalDateTime
 
 class Participant(
-    group: String,
     sex: Sex,
     surname: String,
     name: String,
     yearOfBirth: Int,
     rank: String
 ) {
-    val wishGroup: String
+    var wishGroup: String = ""
+        private set
     val sex: Sex
     val surname: String
     val name: String
@@ -29,7 +29,6 @@ class Participant(
         emptyNameCheck(surname, "Пустая фамилия участника обнаружена")
         if (yearOfBirth <= 1900 || yearOfBirth>LocalDateTime.now().year)
             throw UnexpectedValueException("Unreal date of birth: $yearOfBirth")
-        this.wishGroup = group
         this.sex = sex
         this.surname = surname
         this.name = name
@@ -60,6 +59,11 @@ class Participant(
         if (this.collective == "") {
             this.collective = nameOfCollective
         }
+    }
+
+    fun setGroup(wishGroup: String)
+    {
+        this.wishGroup=wishGroup
     }
 
     override fun toString(): String {

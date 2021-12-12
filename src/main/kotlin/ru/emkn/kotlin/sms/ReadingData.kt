@@ -90,5 +90,3 @@ class GroupReader(configurationFolderName:String):Reader(configurationFolderName
         }.toSet().toList()
     }
 }
-
-class ParticipantReader

@@ -101,13 +101,13 @@ fun parseResultProtocol(protocol: File, teams: MutableList<Team>) {
     val participantData = csvReader().readAllWithHeader(protocol.readLines().drop(1).joinToString("\n"))
     participantData.forEach {
         val participant = Participant(
-            nameOfGroup,
             chooseSex(it["Пол"] ?: throw CSVFieldNamesException(protocol.path)),
             it["Фамилия"] ?: throw CSVFieldNamesException(protocol.path),
             it["Имя"] ?: throw CSVFieldNamesException(protocol.path),
             it["Г.р."]?.toInt() ?: throw CSVFieldNamesException(protocol.path),
             it["Разр."] ?: throw CSVFieldNamesException(protocol.path)
         )
+        participant.setGroup(nameOfGroup)
         val currentTime = it["Результат"] ?: throw CSVFieldNamesException(protocol.path)
         try {
             participant.setPoints(
@@ -129,7 +129,7 @@ fun parseResultProtocol(protocol: File, teams: MutableList<Team>) {
 }
 
 fun generateResultProtocolForCollectives(teams: MutableList<Team>) {
-    val file = File("csvFiles/configuration/collectivesResults.csv")
+    val file = File("csvFiles/configuration/teamsResults.csv")
     file.writeText("")
     teams.forEach {
         csvWriter().writeAll(

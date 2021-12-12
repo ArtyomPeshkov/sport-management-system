@@ -1,6 +1,5 @@
 package ru.emkn.kotlin.sms
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -43,8 +42,27 @@ fun main() = application {
                 Box(modifier = Modifier.weight(1f).fillMaxWidth()) { DropDownMenu(phase) }
                 Button(
                     modifier = Modifier.weight(1f),
-                    onClick = { /*TODO("Передает куда-то путь для проверки")*/ },
-                    enabled = false
+                    onClick = {
+                              if (path.value.isNotBlank())
+                              {
+                                  when(path.value) {
+                                      // Для этой фазы нужны: списки участников (папка applications),
+                                      //                      информация о дистанциях (distances.csv),
+                                      //                      информация о событии (event.csv),
+                                      //                      информация о группах (groups.csv)
+                                      "1" -> phase1(path.value) // После этой фазы будут сформированы стартовые протоколы в папке $path/starts
+                                      // Для этой фазы нужны: стартовые протоколы (папка starts),
+                                      //                      информация о дистанциях (distances.csv),
+                                      //                      информация о группах (groups.csv)
+                                      //                      информация о прохождении контрольных точек (points)
+                                      "2" -> phase2(path.value) // После этой фазы будут сформированы протоколы прохождения дистанций в группах $path/results
+                                      // Для этой фазы нужны: протоколы результатов (папка results),
+                                      "3" -> phase3(path.value) // После этой фазы будут сформирован протокол результатов соревнований $path/teamsResults.csv
+                                  }
+                              }
+                              /*TODO("Передает куда-то путь для проверки")*/
+                              },
+                    enabled = true
                 ) { Text("Результат") }
             }
             AllTopButtons(1, buttonStates)
@@ -73,7 +91,7 @@ fun DropDownMenu(phase: MutableState<Int>) {
     val items = listOf("1", "2", "3")
 
     Text(
-        if (phase.value != -1) items[phase.value] else "Phase",
+        if (phase.value != -1) items[phase.value-1] else "Phase",
         modifier = Modifier.border(3.dp, Color.Gray, RoundedCornerShape(6.dp))
             .clickable(onClick = { expanded.value = true })
             .padding(top = 20.dp, start = 5.dp, end = 5.dp, bottom = 20.dp).fillMaxWidth(),
@@ -88,7 +106,7 @@ fun DropDownMenu(phase: MutableState<Int>) {
     ) {
         items.forEachIndexed { index, s ->
             DropdownMenuItem(onClick = {
-                phase.value = index
+                phase.value = index+1
                 expanded.value = false
             }) {
                 Text(s)

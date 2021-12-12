@@ -17,13 +17,14 @@ fun participantsParser(name: String, file: File): List<Participant> {
 fun makeParticipant(name: String, param: Map<String, String>, index: Int, path: String): Participant {
     parseLogger.universalC(Colors.YELLOW._name, "Reading participant number ${index + 1} from $path")
     val participant = Participant(
-        param["Группа"] ?: throw CSVFieldNamesException(path),
         chooseSex(param["Пол"] ?: throw CSVFieldNamesException(path)),
         param["Фамилия"] ?: throw CSVFieldNamesException(path),
         param["Имя"] ?: throw CSVFieldNamesException(path),
         param["Г.р."]?.toInt() ?: throw CSVFieldNamesException(path),
         param["Разр."] ?: throw CSVFieldNamesException(path)
     )
+    participant.setGroup(param["Группа"] ?: throw CSVFieldNamesException(path))
+    //Переместить имя коллектива в конструктор и сделать makeParticipant более общим для 1 и 3 фаз
     participant.setCollective(name)
     return participant
 }
