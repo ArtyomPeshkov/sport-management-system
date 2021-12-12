@@ -2,9 +2,11 @@ package ru.emkn.kotlin.sms
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -25,26 +27,74 @@ val separatorLineWidth = 1.dp
 @OptIn(ExperimentalFoundationApi::class)
 fun main() = application {
     val buttonStates = remember { mutableStateOf(MutableList(10) { it == 0 }) }
+    val path = remember { mutableStateOf("") }
+    val phase = remember { mutableStateOf(-1) }
     Window(
         onCloseRequest = ::exitApplication,
         title = "Test, TEST, AND ANOTHER TEST",
-        state = rememberWindowState(width = 500.dp, height = 300.dp)
+        state = rememberWindowState(width = 800.dp, height = 300.dp)
     ) {
-        Column {
+        Column(modifier = Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Box(modifier = Modifier.weight(4f)) { path.value = PathField() }
+                Box(modifier = Modifier.weight(1f).fillMaxWidth()) { DropDownMenu(phase) }
+                Button(
+                    modifier = Modifier.weight(1f),
+                    onClick = { /*TODO("Передает куда-то путь")*/ },
+                    enabled = false
+                ) { Text("Результат") }
+            }
             AllTopButtons(1, buttonStates)
-//            Box(modifier = Modifier.fillMaxWidth().height(separatorLineWidth).background(Color.Black)) {}
+            Text(text = path.value)
+            Text(phase.value.toString())
         }
     }
 }
 
 @Composable
-fun PathField() {
-
+fun PathField(): String {
+    val textState = remember { mutableStateOf("") }
+    OutlinedTextField(
+        value = textState.value,
+        onValueChange = { textState.value = it },
+        modifier = Modifier.fillMaxWidth().padding(0.dp),
+        singleLine = true,
+        shape = RoundedCornerShape(5.dp)
+    )
+    return textState.value
 }
 
 @Composable
-fun DropDownMenu() {
+fun DropDownMenu(phase: MutableState<Int>) {
+    val expanded = remember { mutableStateOf(false) }
+    val items = listOf("1", "2", "3")
 
+    Text(
+        if (phase.value != -1) items[phase.value] else "Phase",
+        modifier = Modifier.border(3.dp, Color.Gray, RoundedCornerShape(6.dp))
+            .clickable(onClick = { expanded.value = true })
+            .padding(top = 20.dp, start = 5.dp, end = 5.dp, bottom = 20.dp).fillMaxWidth(),
+        textAlign = TextAlign.Center,
+        color = if (phase.value != -1) Color.Black else Color.LightGray
+    )
+    DropdownMenu(
+        expanded = expanded.value,
+        onDismissRequest = { expanded.value = false },
+        modifier = Modifier.padding(top = 5.dp).background(Color.White)
+            .border(3.dp, Color.Gray, RoundedCornerShape(6.dp))
+    ) {
+        items.forEachIndexed { index, s ->
+            DropdownMenuItem(onClick = {
+                phase.value = index
+                expanded.value = false
+            }) {
+                Text(s)
+            }
+        }
+    }
 }
 
 @Composable
@@ -62,11 +112,23 @@ fun AllTopButtons(phase: Int, buttonStates: MutableState<MutableList<Boolean>>)/
     ) {
         values.forEachIndexed { index, s ->
             if (index != values.lastIndex) {
-                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {TopButton(s, index, buttonStates)}
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    TopButton(
+                        s,
+                        index,
+                        buttonStates
+                    )
+                }
                 SeparatorLine()
             }
         }
-        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {TopButton(values.last(), values.lastIndex, buttonStates)}
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+            TopButton(
+                values.last(),
+                values.lastIndex,
+                buttonStates
+            )
+        }
     }
 }
 
