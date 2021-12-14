@@ -6,15 +6,15 @@ import exceptions.ProblemWithCSVException
 import log.universalC
 import java.io.File
 
-fun participantsParser(name: String, file: File): List<Participant> {
+fun participantsParser(team: String, file: File): List<Participant> {
 
     if (file.readLines().size < 3)
         throw ProblemWithCSVException(file.path)
     return csvReader().readAllWithHeader(file.readLines().drop(1).joinToString("\n"))
-        .mapIndexed() { index, it -> makeParticipant(name, it, index, file.path) }
+        .mapIndexed() { index, it -> makeParticipant(it, index, file.path,team) }
 }
 
-fun makeParticipant(name: String, param: Map<String, String>, index: Int, path: String): Participant {
+fun makeParticipant(param: Map<String, String>, index: Int, path: String,team: String="",group:String=""): Participant {
     parseLogger.universalC(Colors.YELLOW._name, "Reading participant number ${index + 1} from $path")
     val participant = Participant(
         chooseSex(param["Пол"] ?: throw CSVFieldNamesException(path)),
@@ -23,8 +23,7 @@ fun makeParticipant(name: String, param: Map<String, String>, index: Int, path: 
         param["Г.р."]?.toInt() ?: throw CSVFieldNamesException(path),
         param["Разр."] ?: throw CSVFieldNamesException(path)
     )
-    participant.setGroup(param["Группа"] ?: throw CSVFieldNamesException(path))
-    //Переместить имя коллектива в конструктор и сделать makeParticipant более общим для 1 и 3 фаз
-    participant.setCollective(name)
+    participant.setGroup(param["Группа"] ?: group)
+    participant.setTeam(param["Коллектив"] ?: team)
     return participant
 }

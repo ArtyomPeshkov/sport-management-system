@@ -65,7 +65,7 @@ fun phase2(path: String) {
     val distances =  DistanceReader(path).getDistances()
     parseLogger.printMap(distances, Colors.BLUE._name)
     val groups = GroupReader(path).getGroups(distances, Phase.SECOND)
-    getStartProtocolFolder(configurationFolder, path, groups)
+    StartProtocolParse(path).getStartProtocolFolder(groups)
     val participantDistanceWithTime: Map<Int, List<ControlPointWithTime>> = ControlPointReader(path).getPoints()
     parseLogger.universalC(Colors.RED._name, "${participantDistanceWithTime.size}", 'd')
     parseLogger.printMap(participantDistanceWithTime, Colors.YELLOW._name)
@@ -75,86 +75,8 @@ fun phase2(path: String) {
 }
 
 fun phase3(path: String) {
-    val teams = mutableListOf<Team>()
-    getResultProtocolFolder(readFile(path).walk().toList(), path, teams)
+    val teams = ResultsReader(path).getGroupsFromResultProtocols()
     generateResultProtocolForCollectives(teams)
-}
-
-fun getResultProtocolFolder(configurationFolder: List<File>, path: String, teams: MutableList<Team>) =
-    getGroupsFromResultProtocols(configurationFolder.find { it.name.substringAfterLast('/') == "results" }
-        ?: throw NotEnoughConfigurationFiles(path), teams)
-
-fun getGroupsFromResultProtocols(resultsFolder: File, teams: MutableList<Team>) {
-    val resultInfo =
-        resultsFolder.walk().toList().filter { it.extension == "csv" }
-    resultInfo.map { parseResultProtocol(it, teams) }
-}
-
-fun parseResultProtocol(protocol: File, teams: MutableList<Team>) {
-    val fileStrings = csvReader().readAll(protocol.readText())
-    val nameOfGroup = fileStrings[0].let {
-        if (it[0] == "")
-            throw CSVStringWithNameException(protocol.path)
-        else it[0]
-    }
-    val bestResult = Time(fileStrings[2][8]) ?: throw CSVFieldNamesException(protocol.path)
-    val participantData = csvReader().readAllWithHeader(protocol.readLines().drop(1).joinToString("\n"))
-    participantData.forEach {
-        val participant = Participant(
-            chooseSex(it["Пол"] ?: throw CSVFieldNamesException(protocol.path)),
-            it["Фамилия"] ?: throw CSVFieldNamesException(protocol.path),
-            it["Имя"] ?: throw CSVFieldNamesException(protocol.path),
-            it["Г.р."]?.toInt() ?: throw CSVFieldNamesException(protocol.path),
-            it["Разр."] ?: throw CSVFieldNamesException(protocol.path)
-        )
-        participant.setGroup(nameOfGroup)
-        val currentTime = it["Результат"] ?: throw CSVFieldNamesException(protocol.path)
-        try {
-            participant.setPoints(
-                max(
-                    0,
-                    (100.0 * (2 - Time(currentTime).timeInSeconds.toDouble() / bestResult.timeInSeconds)).toInt()
-                )
-            )
-        } catch(e: IllegalTimeFormatException) {
-            participant.setParticipantStatus("Снят")
-            participant.setPoints(0)
-        }
-        val collectiveName = it["Коллектив"] ?: throw CSVFieldNamesException(protocol.path)
-        if (teams.find { it.name == collectiveName } == null) teams.add(Team(collectiveName))
-        val collective =
-            teams.find { it.name == collectiveName } ?: throw UnexpectedValueException(collectiveName)
-        collective.addParticipant(participant)
-    }
-}
-
-fun generateResultProtocolForCollectives(teams: MutableList<Team>) {
-    val file = File("csvFiles/configuration/teamsResults.csv")
-    file.writeText("")
-    teams.forEach {
-        csvWriter().writeAll(
-            listOf(
-                listOf("Коллектив", "Баллы"),
-                listOf(it.name, "${it.points}"),
-                listOf(""),
-                listOf("Участник", "Баллы")
-            ), file, append = true
-        )
-        it.athleteList.forEach {
-            csvWriter().writeAll(
-                listOf(listOf("${it.surname} ${it.name}", "${it.points}")),
-                file,
-                append = true
-            )
-        }
-        csvWriter().writeAll(
-            listOf(
-                listOf(""),
-                listOf("<-------------------------------------------------------->"),
-                listOf("")
-            ), file, append = true
-        )
-    }
 }
 
 fun main(args: Array<String>) {

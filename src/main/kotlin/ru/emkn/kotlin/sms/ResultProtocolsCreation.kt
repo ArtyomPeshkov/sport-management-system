@@ -61,12 +61,41 @@ fun makeResultProtocols(groups: List<Group>) {
                 it.name,
                 it.sex,
                 it.yearOfBirth,
-                it.collective,
+                it.team,
                 it.rank,
                 it.status,
                 setPlace(),
                 setTime(it)
             )
         }, resultGroupFile, append = true)
+    }
+}
+
+fun generateResultProtocolForCollectives(teams: MutableList<Team>) {
+    val file = File("csvFiles/configuration/teamsResults.csv")
+    file.writeText("")
+    teams.forEach {
+        csvWriter().writeAll(
+            listOf(
+                listOf("Коллектив", "Баллы"),
+                listOf(it.name, "${it.points}"),
+                listOf(""),
+                listOf("Участник", "Баллы")
+            ), file, append = true
+        )
+        it.athleteList.forEach {
+            csvWriter().writeAll(
+                listOf(listOf("${it.surname} ${it.name}", "${it.points}")),
+                file,
+                append = true
+            )
+        }
+        csvWriter().writeAll(
+            listOf(
+                listOf(""),
+                listOf("<-------------------------------------------------------->"),
+                listOf("")
+            ), file, append = true
+        )
     }
 }

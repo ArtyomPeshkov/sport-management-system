@@ -1,9 +1,7 @@
 package ru.emkn.kotlin.sms
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import exceptions.CSVFieldNamesException
-import exceptions.CSVStringWithNameException
-import exceptions.NotEnoughConfigurationFiles
+import exceptions.*
 import log.universalC
 import java.io.File
 
@@ -89,4 +87,76 @@ class GroupReader(configurationFolderName:String):Reader(configurationFolderName
             group
         }.toSet().toList()
     }
+}
+
+class ResultsReader(configurationFolderName:String):Reader(configurationFolderName)
+{
+
+    fun getGroupsFromResultProtocols():MutableList<Team> {
+        val resultsFolder = universalParser("results")
+        val teams = mutableListOf<Team>()
+        resultsFolder.forEach{ parseResultProtocol(it,teams) }
+        return teams
+    }
+   // fun getTeams():List<Team> = universalParser("applications").map { getParticularTeam(readFile(it.path)) }
+
+    fun parseResultProtocol(protocol: File, teams: MutableList<Team>) {
+        val fileStrings = csvReader().readAll(protocol.readText())
+        val nameOfGroup = fileStrings[0].let {
+            if (it[0] == "")
+                throw CSVStringWithNameException(protocol.path)
+            else it[0]
+        }
+        val bestResult = Time(fileStrings[2][8])
+        val participantData = csvReader().readAllWithHeader(protocol.readLines().drop(1).joinToString("\n"))
+        participantData.forEachIndexed {i,it ->
+            val participant = makeParticipant(it,i,protocol.path,"",nameOfGroup)
+            val currentTime = it["Результат"] ?: throw CSVFieldNamesException(protocol.path)
+            try {
+                participant.setPoints(
+                    Integer.max(
+                        0,
+                        (100.0 * (2 - Time(currentTime).timeInSeconds.toDouble() / bestResult.timeInSeconds)).toInt()
+                    )
+                )
+            } catch(e: IllegalTimeFormatException) {
+                participant.setParticipantStatus("Снят")
+                participant.setPoints(0)
+            }
+            val collectiveName = it["Коллектив"] ?: throw CSVFieldNamesException(protocol.path)
+            if (teams.find { it.name == collectiveName } == null) teams.add(Team(collectiveName))
+            val collective =
+                teams.find { it.name == collectiveName } ?: throw UnexpectedValueException(collectiveName)
+            collective.addParticipant(participant)
+        }
+    }
+}
+
+class StartProtocolParse(configurationFolderName: String):Reader(configurationFolderName)
+{
+    fun getStartProtocolFolder( groups: List<Group>) {
+        val startInfo = universalParser("starts")
+        startInfo.map { parseStartProtocol(it, groups) }
+    }
+
+    fun parseStartProtocol(protocol: File, groups: List<Group>) {
+        val fileStrings = csvReader().readAll(protocol.readText().substringBefore("\n"))
+        val nameOfGroup = fileStrings[0].let {
+            if (it[0] == "")
+                throw CSVStringWithNameException(protocol.path)
+            else it[0]
+        }
+        val indexOfGroup = getGroupIndexByName(nameOfGroup, groups)
+        val participantData = csvReader().readAllWithHeader(protocol.readLines().drop(1).joinToString("\n"))
+        participantData.forEachIndexed {i,it->
+            val participant = makeParticipant(it,i,protocol.path,"",nameOfGroup)
+            participant.setStart(
+                it["Номер"]?.toInt() ?: throw CSVFieldNamesException(protocol.path),
+                Time(it["Стартовое время"] ?: throw CSVFieldNamesException(protocol.path))
+            )
+            groups[indexOfGroup].addParticipant(participant)
+
+        }
+    }
+
 }

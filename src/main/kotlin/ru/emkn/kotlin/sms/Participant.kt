@@ -18,7 +18,7 @@ class Participant(
     val name: String
     val yearOfBirth: Int
     val rank: String
-    var collective: String = ""
+    var team: String = ""
         private set
     var points: Int = 0
         private set
@@ -55,9 +55,9 @@ class Participant(
         this.points = points
     }
 
-    fun setCollective(nameOfCollective: String) {
-        if (this.collective == "") {
-            this.collective = nameOfCollective
+    fun setTeam(nameOfCollective: String) {
+        if (this.team == "") {
+            this.team = nameOfCollective
         }
     }
 
@@ -76,7 +76,7 @@ class Participant(
     }
 
     fun toCSV(): List<String> =
-        listOf("$number", surname, name, sex.toString(), "$yearOfBirth", collective, rank, "$startTime")
+        listOf("$number", surname, name, sex.toString(), "$yearOfBirth", team, rank, "$startTime")
 
     fun headerFormatCSV() = listOf("Номер", "Фамилия", "Имя", "Пол", "Г.р.", "Коллектив", "Разр.", "Стартовое время")
     fun headerFormatCSVResult() = listOf(
