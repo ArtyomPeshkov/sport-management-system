@@ -68,22 +68,28 @@ fun PhaseOneWindow() {
     val currentPhase = 1
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
     val list = mutableStateListOf("Team 1", "Team 2", "Team 3", "Team 4")
-    AllTopButtons(buttonStates, listOfTabs(currentPhase))
-    LazyScrollable(list)
+    Column {
+        AllTopButtons(buttonStates, listOfTabs(currentPhase))
+        LazyScrollable(list)
+    }
 }
 
 @Composable
 fun PhaseTwoWindow() {
     val currentPhase = 2
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
-    AllTopButtons(buttonStates, listOfTabs(currentPhase))
+    Column {
+        AllTopButtons(buttonStates, listOfTabs(currentPhase))
+    }
 }
 
 @Composable
 fun PhaseThreeWindow() {
     val currentPhase = 3
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
-    AllTopButtons(buttonStates, listOfTabs(currentPhase))
+    Column {
+        AllTopButtons(buttonStates, listOfTabs(currentPhase))
+    }
 }
 
 fun main() = application {
@@ -243,11 +249,11 @@ fun AllTopButtons(buttonStates: MutableState<MutableList<Boolean>>, values: List
 @Composable
 fun TopButton(text: String, index: Int, buttonStates: MutableState<MutableList<Boolean>>) {
     Box(
-        modifier = Modifier.fillMaxHeight().fillMaxWidth()
+        modifier = Modifier.fillMaxSize()
             .clickable {
                 buttonStates.value = MutableList(buttonStates.value.size) { it == index }
             }.background(color = if (buttonStates.value[index]) Color.White else Color.LightGray)
-            .padding(start = 5.dp, end = 5.dp),
+           /* .padding(start = 5.dp, end = 5.dp)*/,
         contentAlignment = Alignment.Center
     ) {
         Text(text, textAlign = TextAlign.Center, color = Color.Black)
