@@ -57,7 +57,7 @@ class ControlPointReader(configurationFolderName: String):Reader(configurationFo
 
 class DistanceReader(configurationFolderName: String):Reader(configurationFolderName)
 {
-    fun getDistances(controlPoints: MutableSet<ControlPoint> = mutableSetOf()): Map<String, Distance> {
+    fun getDistances(controlPoints: MutableList<ControlPoint> = mutableListOf()): Map<String, Distance> {
         val distances = universalParser("distances.csv")[0]
         val distanceStrings = csvReader().readAllWithHeader(distances)
         return distanceStrings.associate {
@@ -98,7 +98,6 @@ class ResultsReader(configurationFolderName:String):Reader(configurationFolderNa
         resultsFolder.forEach{ parseResultProtocol(it,teams) }
         return teams
     }
-   // fun getTeams():List<Team> = universalParser("applications").map { getParticularTeam(readFile(it.path)) }
 
     fun parseResultProtocol(protocol: File, teams: MutableList<Team>) {
         val fileStrings = csvReader().readAll(protocol.readText())
@@ -107,7 +106,12 @@ class ResultsReader(configurationFolderName:String):Reader(configurationFolderNa
                 throw CSVStringWithNameException(protocol.path)
             else it[0]
         }
-        val bestResult = Time(fileStrings[2][8])
+        val bestResult: Time = try {
+            Time(fileStrings[2][8])
+        } catch(e: IllegalTimeFormatException) {
+            Time(0)
+        }
+
         val participantData = csvReader().readAllWithHeader(protocol.readLines().drop(1).joinToString("\n"))
         participantData.forEachIndexed {i,it ->
             val participant = makeParticipant(it,i,protocol.path,"",nameOfGroup)

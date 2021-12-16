@@ -21,13 +21,11 @@ fun readFile(path: String): File {
     }
 }
 
-fun chooseSex(sex: String): Sex {
-    return when (sex) {
+fun chooseSex(sex: String) = when (sex) {
         "М", "M", "m", "м", "MALE" -> Sex.MALE
         "Ж", "F", "ж", "f", "FEMALE" -> Sex.FEMALE
         else -> throw SexException(sex)
     }
-}
 
 fun phase1(path: String) {
     parseLogger.universalC(
@@ -36,7 +34,7 @@ fun phase1(path: String) {
         'i'
     )
     //Лог уровня дебаг, информация о содержимом полученных коллекций и переменных
-    val controlPoints = mutableSetOf<ControlPoint>()
+    val controlPoints = mutableListOf<ControlPoint>()
     val distances = DistanceReader(path).getDistances(controlPoints)
 
     val groups = GroupReader(path).getGroups(distances, Phase.FIRST)

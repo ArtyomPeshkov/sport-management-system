@@ -3,13 +3,15 @@ package ru.emkn.kotlin.sms
 import exceptions.UnexpectedValueException
 import exceptions.emptyNameCheck
 
-class Distance(name: String) {
+class Distance(name: String, type: DistanceTypeData) {
     private val pointsList: MutableList<ControlPoint> = mutableListOf()
     val name: String
+    val type: DistanceTypeData
 
     init {
         emptyNameCheck(name, "Пустое имя дистанции")
         this.name = name
+        this.type = type
     }
 
     fun getPointsList(): List<ControlPoint> {
@@ -32,25 +34,31 @@ class Distance(name: String) {
         participant: Participant,
         participantDistance: Map<Int, List<ControlPointWithTime>>
     ): String {
-        val participantControlPoints = participantDistance[participant.number]
-        if (!(participantControlPoints?.map { it.point }?: listOf(
-                ControlPoint(""))).containsAll(pointsList))
-            return "Снят"
-        val first = ControlPointWithTime(ControlPoint("Start"), participant.startTime)
-        val lastControlPointTime =
-            participantControlPoints?.find { it.point == pointsList.last() }?.time ?: return "Снят"
-        participantControlPoints.forEach {
-            val previousControlPointIndex = pointsList.indexOf(it.point)
-            val previousControlPointWithTime = if (previousControlPointIndex != 0) {
-                val previousControlPoint = pointsList[previousControlPointIndex - 1]
-                participantControlPoints.find { previousControlPoint == it.point }
-                    ?: throw UnexpectedValueException(previousControlPoint.name)
-            } else
-                first
-            if (it.time <= previousControlPointWithTime.time)
+        val start = ControlPointWithTime(ControlPoint("Start"), participant.startTime)
+        var participantControlPoints = participantDistance[participant.number] ?: return "Снят"
+        participantControlPoints = participantControlPoints.sortedBy { it.time.timeInSeconds }
+        return when (type.type) {
+            DistanceType.ALL_POINTS -> {
+                if (participantControlPoints.map { it.point } != pointsList)
+                    return "Снят"
+                (participantControlPoints.maxByOrNull { it.time.timeInSeconds }!!.time - start.time).toString()
+            }
+            DistanceType.SOME_POINTS ->{
+                var currentNumberOfPassedPoints = 0
+                participantControlPoints.forEach {
+                    var currentIndex = 0
+                    while (currentIndex != pointsList.size && it.point!=pointsList[currentIndex])
+                        currentIndex++
+                    if (currentIndex==pointsList.size)
+                        return@forEach
+                    if (pointsList[currentIndex]==it.point)
+                        currentNumberOfPassedPoints++
+                    if (currentNumberOfPassedPoints == type.numberOfPoints)
+                        return (it.time - start.time).toString()
+                }
                 return "Снят"
+            }
         }
-        return (lastControlPointTime - first.time).toString()
     }
 
     override fun toString(): String {
