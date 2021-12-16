@@ -66,7 +66,7 @@ fun PhaseChoice(path: MutableState<String>, phase: MutableState<Int>) {
 }
 
 @Composable
-fun <T> PhaseOneWindow(list:SnapshotStateList<T>, save:MutableList<T>) {
+fun <T> PhaseOneWindow(list:SnapshotStateList<T>) {
     var vis by remember { mutableStateOf(false)}
     val currentPhase = 1
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
@@ -102,11 +102,10 @@ fun main() = application {
     val phase = remember { mutableStateOf(-1) }
     val path = remember { mutableStateOf("") }
     var a = arrayOf("1","2","3","4")
-    var b = mutableListOf<String>()
     var list:SnapshotStateList<String> = mutableStateListOf()
 
     Window(
-        onCloseRequest = {    println(b.size);::exitApplication},
+        onCloseRequest = {    ::exitApplication},
         title = if (phase.value == -1) "Application" else "Phase ${phase.value + 1}",
         state = rememberWindowState(width = if (phase.value == -1) 600.dp else 800.dp, height = 400.dp)
     ) {
@@ -114,7 +113,7 @@ fun main() = application {
             -1 -> PhaseChoice(path, phase)
             0 -> {
                 list = mutableStateListOf(*a)
-                PhaseOneWindow(list,b)
+                PhaseOneWindow(list)
             }
             1 -> PhaseTwoWindow()
             2 -> PhaseThreeWindow()
