@@ -38,6 +38,7 @@ fun main() = application {
     var path by remember { mutableStateOf("") }
     val phase = remember { mutableStateOf(-1) }
     var test by remember { mutableStateOf(false) }
+    val list = mutableStateListOf("Team 1", "Team 2", "Team 3", "Team 4") //Пока тут, потому что иначе пересоздает лист
     Window(
         onCloseRequest = ::exitApplication,
         title = "Test, TEST, AND ANOTHER TEST",
@@ -72,12 +73,12 @@ fun main() = application {
                     },
                     enabled = true
                 ) {
-                    Text("Результат")
                     Icon(
                         painter = painterResource("arrow.svg"),
                         contentDescription = null,
-                        modifier = Modifier.width(18.dp).padding(start = 5.dp)
+                        modifier = Modifier.width(10.dp).padding()
                     )
+                    Text("Результат")
                 }
             }
             AllTopButtons(2, buttonStates, listOfTabs(2))
@@ -85,7 +86,6 @@ fun main() = application {
                 Text(if (!test) path else "Scooby-doby-doooooooooooooooooo\nooooooooo\noooooooooooooo")
             }
             Text(phase.value.toString())
-            val list = mutableStateListOf("Team 1", "Team 2", "Team 3", "Team 4")
             LazyScrollable(list)
         }
     }
