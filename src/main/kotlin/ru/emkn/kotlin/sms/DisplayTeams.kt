@@ -1,6 +1,9 @@
 package ru.emkn.kotlin.sms
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,10 +15,12 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
@@ -51,10 +56,12 @@ fun main() = application {
             ) {
                 Box(modifier = Modifier.weight(4f)) { path = PathField() }
                 Box(modifier = Modifier.weight(1f).fillMaxWidth()) { DropDownMenu(phase, listOf(1, 2, 3)) }
+                val isRotated = remember { mutableStateOf(false) }
                 Button(
                     modifier = Modifier.weight(1f),
                     onClick = {
                         test = !test
+                        isRotated.value = !isRotated.value
                         /*TODO("Передает куда-то путь для проверки")*/
                         when (phase.value + 1) {
                             // Для этой фазы нужны: списки участников (папка applications),
@@ -73,15 +80,22 @@ fun main() = application {
                     },
                     enabled = true
                 ) {
+                    val angle: Float by animateFloatAsState(
+                        targetValue = if (isRotated.value) 90F else 0F,
+                        animationSpec = tween(
+                            durationMillis = 500, // milliseconds
+                            easing = FastOutSlowInEasing
+                        )
+                    )
                     Icon(
                         painter = painterResource("arrow.svg"),
                         contentDescription = null,
-                        modifier = Modifier.width(10.dp).padding()
+                        modifier = Modifier.width(10.dp).rotate(angle)
                     )
-                    Text("Результат")
+                    Text(text = "Результат", modifier = Modifier.padding(start = 10.dp), fontSize = 12.sp)
                 }
             }
-            AllTopButtons(2, buttonStates, listOfTabs(2))
+            AllTopButtons(buttonStates, listOfTabs(2))
             AnimatedVisibility(test) {
                 Text(if (!test) path else "Scooby-doby-doooooooooooooooooo\nooooooooo\noooooooooooooo")
             }
@@ -133,7 +147,7 @@ fun DropDownMenu(indexOfChoice: MutableState<Int>, items: List<Any>) {
 }
 
 @Composable
-fun AllTopButtons(phase: Int, buttonStates: MutableState<MutableList<Boolean>>, values: List<String>) {
+fun AllTopButtons(buttonStates: MutableState<MutableList<Boolean>>, values: List<String>) {
     Row(
         modifier = Modifier.height(topRowHeight).fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(0.dp)
@@ -181,7 +195,7 @@ fun SeparatorLine() {
 
 
 @Composable
-fun Inner(str: String, Button: @Composable () -> Unit) {
+fun LazyItem(str: String, Button: @Composable () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(16.dp)) {
         Text(str)
         Button()
@@ -196,7 +210,7 @@ fun LazyScrollable(list: SnapshotStateList<String>) {
 
         LazyColumn(Modifier.fillMaxSize().padding(end = 12.dp), state) {
             items(list) {
-                Inner(it) { Button(onClick = { list.remove(it) }, content = { }) }
+                LazyItem(it) { Button(onClick = { list.remove(it) }) { Text("Hi-Hi-Hi") } }
             }
         }
 
