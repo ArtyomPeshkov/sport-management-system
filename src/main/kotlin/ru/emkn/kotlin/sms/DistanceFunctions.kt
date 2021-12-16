@@ -2,13 +2,39 @@ package ru.emkn.kotlin.sms
 
 import exceptions.UnexpectedValueException
 
+data class DistanceTypeData(val type: DistanceType, var numberOfPoints:Int?,val orderIsEssential: Boolean)
+
+fun chooseType(type:String) = when (type){
+        "all","ALL_POINTS" -> DistanceType.ALL_POINTS
+        "some","SOME_POINTS" -> DistanceType.SOME_POINTS
+        else -> throw UnexpectedValueException("Неожиданный тип: $type")
+    }
+
+
+
+fun checkType(type: String, numberOfPoints:String,orderIsEssential: String):DistanceTypeData{
+    val dType=chooseType(type)
+    var number:Int? = null
+    if (dType != DistanceType.ALL_POINTS)
+    number = numberOfPoints.toIntOrNull() ?: throw UnexpectedValueException("неправильное количество необходимых точек: $numberOfPoints")
+    return DistanceTypeData(dType,number,true)
+    /*return if (dType==DistanceType.ALL_POINTS)
+            DistanceTypeData(dType,number,true)
+        else
+            DistanceTypeData(dType,number,false)*/
+}
+
 fun getDistance(
     distanceName: String,
     configFileString: Map<String, String>,
-    controlPoints: MutableSet<ControlPoint>
+    controlPoints: MutableList<ControlPoint>
 ): Distance {
     val pointsList: MutableList<ControlPoint> = mutableListOf()
-    configFileString.values.drop(1).forEach { pointName ->
+    val type = configFileString["Тип"] ?: throw UnexpectedValueException("Проблемы с типом дистанции $distanceName")
+    val numberOfPoints = configFileString["Количество точек"] ?: throw UnexpectedValueException("Проблемы с количеством необходимых точек у дистанции $distanceName")
+    val orderIsEssential = configFileString["Порядок"] ?: throw UnexpectedValueException("Проблемы с требованием к порядку прохождения точек у дистанции $distanceName")
+
+    configFileString.values.drop(4).forEach { pointName ->
         if (pointName != "") {
             val requiredPoint = ControlPoint(pointName)
             val point = controlPoints.find { it == requiredPoint }
@@ -22,7 +48,9 @@ fun getDistance(
     }
     if (pointsList.isEmpty())
         throw UnexpectedValueException("В дистанции $distanceName нет контрольных точек!")
-    val distance = Distance(distanceName)
+    val distType =  checkType(type,numberOfPoints,orderIsEssential)
+    val distance = Distance(distanceName,distType)
     distance.addAllPoints(pointsList)
+    distType.numberOfPoints=pointsList.size
     return distance
 }

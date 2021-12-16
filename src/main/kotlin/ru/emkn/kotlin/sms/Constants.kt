@@ -16,6 +16,10 @@ enum class Phase {
     FIRST, SECOND, THIRD
 }
 
+enum class DistanceType{
+    ALL_POINTS,SOME_POINTS
+}
+
 enum class Colors(val _name: String) {
 
     RESET("\u001B[0m"),
