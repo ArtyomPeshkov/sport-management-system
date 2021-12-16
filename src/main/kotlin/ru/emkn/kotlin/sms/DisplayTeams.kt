@@ -25,6 +25,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import java.io.File
 
 val topRowHeight = 30.dp
 val separatorLineWidth = 1.dp
@@ -64,13 +66,17 @@ fun PhaseChoice(path: MutableState<String>, phase: MutableState<Int>) {
 }
 
 @Composable
-fun PhaseOneWindow() {
+fun <T> PhaseOneWindow(list:SnapshotStateList<T>, save:MutableList<T>) {
+    var vis by remember { mutableStateOf(false)}
     val currentPhase = 1
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
-    val list = mutableStateListOf("Team 1", "Team 2", "Team 3", "Team 4")
     Column {
         AllTopButtons(buttonStates, listOfTabs(currentPhase))
         LazyScrollable(list)
+        Button(onClick = {File("test.csv").createNewFile(); csvWriter().writeAll(listOf(list.toMutableList()), File("test.csv")) }){Text("Str")}
+        AnimatedVisibility(visible = vis){
+        Text("Some text")
+        }
     }
 }
 
@@ -95,15 +101,21 @@ fun PhaseThreeWindow() {
 fun main() = application {
     val phase = remember { mutableStateOf(-1) }
     val path = remember { mutableStateOf("") }
+    var a = arrayOf("1","2","3","4")
+    var b = mutableListOf<String>()
+    var list:SnapshotStateList<String> = mutableStateListOf()
 
     Window(
-        onCloseRequest = ::exitApplication,
+        onCloseRequest = {    println(b.size);::exitApplication},
         title = if (phase.value == -1) "Application" else "Phase ${phase.value + 1}",
         state = rememberWindowState(width = if (phase.value == -1) 600.dp else 800.dp, height = 400.dp)
     ) {
         when (phase.value) {
             -1 -> PhaseChoice(path, phase)
-            0 -> PhaseOneWindow()
+            0 -> {
+                list = mutableStateListOf(*a)
+                PhaseOneWindow(list,b)
+            }
             1 -> PhaseTwoWindow()
             2 -> PhaseThreeWindow()
         }
@@ -253,7 +265,7 @@ fun TopButton(text: String, index: Int, buttonStates: MutableState<MutableList<B
             .clickable {
                 buttonStates.value = MutableList(buttonStates.value.size) { it == index }
             }.background(color = if (buttonStates.value[index]) Color.White else Color.LightGray)
-           /* .padding(start = 5.dp, end = 5.dp)*/,
+            .padding(start = 5.dp, end = 5.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(text, textAlign = TextAlign.Center, color = Color.Black)
@@ -278,10 +290,10 @@ fun <T> LazyItem(str: T, Button: @Composable () -> Unit) {
 
 @Composable
 fun <T> LazyScrollable(list: SnapshotStateList<T>) {
-    Box(modifier = Modifier.fillMaxSize().padding(10.dp)) {
+    Box(modifier = Modifier.fillMaxWidth().padding(10.dp).heightIn(max=200.dp)) {
         val state = rememberLazyListState()
 
-        LazyColumn(Modifier.fillMaxSize().padding(end = 12.dp), state) {
+        LazyColumn(Modifier.fillMaxWidth().padding(end = 12.dp).heightIn(max=200.dp), state) {
             items(list) {
                 LazyItem(it) { Button(onClick = { list.remove(it) }) { Text("Hi-Hi-Hi") } }
             }
