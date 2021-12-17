@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -26,6 +28,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import java.awt.Window
 import java.io.File
 
 val topRowHeight = 30.dp
@@ -66,16 +69,22 @@ fun PhaseChoice(path: MutableState<String>, phase: MutableState<Int>) {
 }
 
 @Composable
-fun <T> PhaseOneWindow(list:SnapshotStateList<T>) {
+fun PhaseOneWindow(distances:Map<String,Distance>, groups: List<Group>, teams: List<Team>, event:Event) {
     var vis by remember { mutableStateOf(false)}
     val currentPhase = 1
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
+
+    val distanceList = mutableStateMapOf<String,Distance>()
+    distanceList.putAll(distances)
+    val groupList = groups.toMutableStateList()
+    val teamList = teams.toMutableStateList()
+    val eventData = mutableStateOf(event)
     Column {
         AllTopButtons(buttonStates, listOfTabs(currentPhase))
-        LazyScrollable(list)
-        Button(onClick = {File("test.csv").createNewFile(); csvWriter().writeAll(listOf(list.toMutableList()), File("test.csv")) }){Text("Str")}
+        LazyScrollable(teamList)
+        Button(onClick = {File("test.csv").createNewFile(); csvWriter().writeAll(listOf(teamList), File("test.csv")) }){Text("Str")}
         AnimatedVisibility(visible = vis){
-        Text("Some text")
+        Text("SAVED")
         }
     }
 }
@@ -100,20 +109,33 @@ fun PhaseThreeWindow() {
 
 fun main() = application {
     val phase = remember { mutableStateOf(-1) }
-    val path = remember { mutableStateOf("") }
-    var a = arrayOf("1","2","3","4")
-    var list:SnapshotStateList<String> = mutableStateListOf()
-
+    val path = remember { mutableStateOf("csvFiles/configuration") }
     Window(
-        onCloseRequest = {    ::exitApplication},
+        onCloseRequest =  ::exitApplication,
         title = if (phase.value == -1) "Application" else "Phase ${phase.value + 1}",
         state = rememberWindowState(width = if (phase.value == -1) 600.dp else 800.dp, height = 400.dp)
     ) {
         when (phase.value) {
             -1 -> PhaseChoice(path, phase)
             0 -> {
-                list = mutableStateListOf(*a)
-                PhaseOneWindow(list)
+                val configFolder = path.value
+                val controlPoints = mutableListOf<ControlPoint>()
+
+                val distances : SnapshotStateMap<String,Distance> = mutableStateMapOf()
+                distances.putAll( DistanceReader(configFolder).getDistances(controlPoints))
+                val groups = GroupReader(configFolder).getGroups(distances, Phase.FIRST)
+                val teams = TeamReader(configFolder).getTeams()
+
+                val (name, date) = getNameAndDate(readFile(configFolder).walk().toList(), configFolder)
+                val event = Event(name, date, groups, distances, teams)
+
+                event.getDistanceList().forEach {
+                    event.setNumbersAndTime(event.getGroupsByDistance(it.value))
+                }
+                event.makeStartProtocols()
+
+                generateCP(controlPoints, groups)
+                PhaseOneWindow(distances,groups.toMutableStateList(),teams,event)
             }
             1 -> PhaseTwoWindow()
             2 -> PhaseThreeWindow()
@@ -183,7 +205,7 @@ fun window() = application {
                 Text(if (!test) path else "Scooby-doby-doooooooooooooooooo\nooooooooo\noooooooooooooo")
             }
             Text(phase.value.toString())
-            LazyScrollable(list)
+         //   LazyScrollable(list)
         }
     }
 }
@@ -204,6 +226,7 @@ fun PathField(): String {
 @Composable
 fun DropDownMenu(indexOfChoice: MutableState<Int>, items: List<Any>, text: String) {
     var expanded by remember { mutableStateOf(false) }
+    //Column
     Text(
         if (indexOfChoice.value >= 0) items[indexOfChoice.value].toString() else text,
         modifier = Modifier.border(3.dp, Color.Gray, RoundedCornerShape(6.dp))
@@ -279,9 +302,8 @@ fun SeparatorLine() {
 
 @Composable
 fun <T> LazyItem(str: T, Button: @Composable () -> Unit) {
-    str as String
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(16.dp)) {
-        Text(str)
+        Text(str.toString(),modifier = Modifier.fillMaxWidth(0.8f))
         Button()
     }
 }
@@ -289,10 +311,10 @@ fun <T> LazyItem(str: T, Button: @Composable () -> Unit) {
 
 @Composable
 fun <T> LazyScrollable(list: SnapshotStateList<T>) {
-    Box(modifier = Modifier.fillMaxWidth().padding(10.dp).heightIn(max=200.dp)) {
+    Box(modifier = Modifier.fillMaxWidth().padding(10.dp).fillMaxHeight(.75f)) {
         val state = rememberLazyListState()
 
-        LazyColumn(Modifier.fillMaxWidth().padding(end = 12.dp).heightIn(max=200.dp), state) {
+        LazyColumn(Modifier.fillMaxSize().padding(end = 12.dp), state) {
             items(list) {
                 LazyItem(it) { Button(onClick = { list.remove(it) }) { Text("Hi-Hi-Hi") } }
             }
