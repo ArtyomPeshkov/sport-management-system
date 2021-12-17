@@ -4,11 +4,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandHorizontally
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -23,12 +22,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
-import java.awt.Window
 import java.io.File
 
 val topRowHeight = 30.dp
@@ -69,12 +66,11 @@ fun PhaseChoice(path: MutableState<String>, phase: MutableState<Int>) {
 }
 
 @Composable
-fun PhaseOneWindow(distances:Map<String,Distance>, groups: List<Group>, teams: List<Team>, event:Event) {
-    var vis by remember { mutableStateOf(false)}
+fun PhaseOneWindow(distances: Map<String, Distance>, groups: List<Group>, teams: List<Team>, event: Event) {
     val currentPhase = 1
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
 
-    val distanceList = mutableStateMapOf<String,Distance>()
+    val distanceList = mutableStateMapOf<String, Distance>()
     distanceList.putAll(distances)
     val groupList = groups.toMutableStateList()
     val teamList = teams.toMutableStateList()
@@ -82,9 +78,16 @@ fun PhaseOneWindow(distances:Map<String,Distance>, groups: List<Group>, teams: L
     Column {
         AllTopButtons(buttonStates, listOfTabs(currentPhase))
         LazyScrollable(teamList)
-        Button(onClick = {File("test.csv").createNewFile(); csvWriter().writeAll(listOf(teamList), File("test.csv")) }){Text("Str")}
-        AnimatedVisibility(visible = vis){
-        Text("SAVED")
+        Button(onClick = {
+            File("test.csv").createNewFile(); csvWriter().writeAll(
+            listOf(teamList),
+            File("test.csv")
+        )
+        }) { Text("Str")
+            }
+        println(teamList.size)
+        AnimatedVisibility(visible = false) {
+            Text("SAVED")
         }
     }
 }
@@ -111,7 +114,7 @@ fun main() = application {
     val phase = remember { mutableStateOf(-1) }
     val path = remember { mutableStateOf("csvFiles/configuration") }
     Window(
-        onCloseRequest =  ::exitApplication,
+        onCloseRequest = ::exitApplication,
         title = if (phase.value == -1) "Application" else "Phase ${phase.value + 1}",
         state = rememberWindowState(width = if (phase.value == -1) 600.dp else 800.dp, height = 400.dp)
     ) {
@@ -121,8 +124,8 @@ fun main() = application {
                 val configFolder = path.value
                 val controlPoints = mutableListOf<ControlPoint>()
 
-                val distances : SnapshotStateMap<String,Distance> = mutableStateMapOf()
-                distances.putAll( DistanceReader(configFolder).getDistances(controlPoints))
+                val distances: SnapshotStateMap<String, Distance> = mutableStateMapOf()
+                distances.putAll(DistanceReader(configFolder).getDistances(controlPoints))
                 val groups = GroupReader(configFolder).getGroups(distances, Phase.FIRST)
                 val teams = TeamReader(configFolder).getTeams()
 
@@ -135,7 +138,7 @@ fun main() = application {
                 event.makeStartProtocols()
 
                 generateCP(controlPoints, groups)
-                PhaseOneWindow(distances,groups.toMutableStateList(),teams,event)
+                PhaseOneWindow(distances, groups.toMutableStateList(), teams, event)
             }
             1 -> PhaseTwoWindow()
             2 -> PhaseThreeWindow()
@@ -205,7 +208,7 @@ fun window() = application {
                 Text(if (!test) path else "Scooby-doby-doooooooooooooooooo\nooooooooo\noooooooooooooo")
             }
             Text(phase.value.toString())
-         //   LazyScrollable(list)
+            //   LazyScrollable(list)
         }
     }
 }
@@ -299,24 +302,15 @@ fun SeparatorLine() {
     Box(modifier = Modifier.fillMaxHeight().width(separatorLineWidth).background(Color.Black)) {}
 }
 
-
 @Composable
-fun <T> LazyItem(str: T, Button: @Composable () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(16.dp)) {
-        Text(str.toString(),modifier = Modifier.fillMaxWidth(0.8f))
-        Button()
-    }
-}
+fun <T : Scrollable> LazyScrollable(list: SnapshotStateList<T>) {
 
-
-@Composable
-fun <T> LazyScrollable(list: SnapshotStateList<T>) {
     Box(modifier = Modifier.fillMaxWidth().padding(10.dp).fillMaxHeight(.75f)) {
         val state = rememberLazyListState()
 
         LazyColumn(Modifier.fillMaxSize().padding(end = 12.dp), state) {
-            items(list) {
-                LazyItem(it) { Button(onClick = { list.remove(it) }) { Text("Hi-Hi-Hi") } }
+            itemsIndexed(list) { index, it ->
+                it.show(list, index)
             }
         }
 
@@ -328,86 +322,3 @@ fun <T> LazyScrollable(list: SnapshotStateList<T>) {
         )
     }
 }
-
-fun dialog() = application {
-    //Первый вид окон (для него нужны функции снизу)
-    Dialog(onCloseRequest = ::exitApplication) {
-        ComposeDialogDemo()
-    }
-
-    //Второй вид окон
-    val mode = remember { mutableStateOf(0) }
-    when (mode.value) {
-        0 -> Dialog(onCloseRequest = ::exitApplication) {
-            Button(
-                onClick = { mode.value = 1 },
-                content = { Text("A") })
-        }
-        1 -> Dialog(onCloseRequest = ::exitApplication) {
-            Button(
-                onClick = { mode.value = 0 },
-                content = { Text("B") })
-        }
-        else -> throw Exception()
-    }
-}
-
-@Composable
-fun ComposeDialogDemo() {
-    // State to manage if the alert dialog is showing or not.
-    // Default is false (not showing)
-    val (showDialog, setShowDialog) = remember { mutableStateOf(false) }
-    Column(
-        // Make the column fill the whole screen space (width and height).
-        modifier = Modifier.fillMaxSize(),
-        // Place all children at center horizontally.
-        horizontalAlignment = Alignment.CenterHorizontally,
-        // Place all children at center vertically.
-        verticalArrangement = Arrangement.Center
-    ) {
-        Button(
-            onClick = {
-                setShowDialog(true)
-            }) {
-            Text("Show Dialog")
-        }
-        // Create alert dialog, pass the showDialog state to this Composable
-        DialogDemo(showDialog, setShowDialog)
-    }
-}
-
-@Composable
-fun DialogDemo(showDialog: Boolean, setShowDialog: (Boolean) -> Unit) {
-    if (showDialog) {
-        Dialog(
-            onCloseRequest = { setShowDialog(false) },
-            title = "Title",
-        ) {
-            Text("Any")
-        }
-    }
-}
-
-
-// Нормальные окна
-
-//fun main() = application {
-//    var content by remember { mutableStateOf(true) }
-//
-//    if (content)
-//        Window(
-//            onCloseRequest = ::exitApplication,
-//            title = "Window 111",
-//            state = rememberWindowState(width = 200.dp, height = 100.dp)
-//        ) {
-//            Button(onClick = { content = !content }) { Text("Window 1") }
-//        }
-//    else
-//        Window(
-//            onCloseRequest = ::exitApplication,
-//            title = "Window 222",
-//            state = rememberWindowState(width = 800.dp, height = 400.dp)
-//        ) {
-//            Button(onClick = { content = !content }) { Text("Window 2") }
-//        }
-//}
