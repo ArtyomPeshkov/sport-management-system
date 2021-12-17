@@ -33,11 +33,79 @@ val separatorLineWidth = 1.dp
 
 fun listOfTabs(phase: Int): List<String> =
     when (phase) {
-        1 -> listOf("Событие", "Команды", "Дистанции", "Группы", "Старт. прот.")
-        2 -> listOf("Событие", "Старт. прот.", "Дистанции", "Контр. точки")
-        3 -> listOf("Событие", "Результаты", "Общие")
+        1 -> listOf("Команды", "Дистанции", "Группы", "Старт. прот.")
+        2 -> listOf("Старт. прот.", "Дистанции", "Контр. точки")
+        3 -> listOf("Результаты", "Общие")
         else -> emptyList()
     }
+
+@Composable
+fun eventDataOnScreen(eventData: MutableState<Event>) {
+    Column {
+        Text(eventData.value.name)
+        Text(eventData.value.date.toString())
+    }
+}
+
+@Composable
+fun teamsDataOnScreen(teamList: SnapshotStateList<Team>) {
+    Column {
+        LazyScrollable(teamList)
+        Button(onClick = {
+            File("test.csv").createNewFile(); csvWriter().writeAll(
+            listOf(teamList),
+            File("test.csv")
+        )
+        }) {
+            Text("Save")
+        }
+    }
+}
+
+@Composable
+fun distancesDataOnScreen(distanceList: SnapshotStateList<Distance>) {
+    Column {
+        LazyScrollable(distanceList)
+        Button(onClick = {
+            File("test.csv").createNewFile(); csvWriter().writeAll(
+            listOf(distanceList),
+            File("test.csv")
+        )
+        }) {
+            Text("Save")
+        }
+    }
+}
+
+@Composable
+fun groupsDataOnScreen(groupList: SnapshotStateList<Group>) {
+    Column {
+        LazyScrollable(groupList)
+        Button(onClick = {
+            File("test.csv").createNewFile(); csvWriter().writeAll(
+            listOf(groupList),
+            File("test.csv")
+        )
+        }) {
+            Text("Save")
+        }
+    }
+}
+
+@Composable
+fun startProtocolsDataOnScreen() {
+
+}
+
+@Composable
+fun passingOfControlPointsDataOnScreen() {
+
+}
+
+@Composable
+fun resultsOnScreen() {
+
+}
 
 @Composable
 fun PhaseChoice(path: MutableState<String>, phase: MutableState<Int>) {
@@ -66,28 +134,22 @@ fun PhaseChoice(path: MutableState<String>, phase: MutableState<Int>) {
 }
 
 @Composable
-fun PhaseOneWindow(distances: Map<String, Distance>, groups: List<Group>, teams: List<Team>, event: Event) {
+fun PhaseOneWindow(
+    distanceList: SnapshotStateList<Distance>,
+    groupList: SnapshotStateList<Group>,
+    teamList: SnapshotStateList<Team>,
+    eventData: MutableState<Event>
+) {
     val currentPhase = 1
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
-
-    val distanceList = mutableStateMapOf<String, Distance>()
-    distanceList.putAll(distances)
-    val groupList = groups.toMutableStateList()
-    val teamList = teams.toMutableStateList()
-    val eventData = mutableStateOf(event)
     Column {
         AllTopButtons(buttonStates, listOfTabs(currentPhase))
-        LazyScrollable(teamList)
-        Button(onClick = {
-            File("test.csv").createNewFile(); csvWriter().writeAll(
-            listOf(teamList),
-            File("test.csv")
-        )
-        }) { Text("Str")
-            }
-        println(teamList.size)
-        AnimatedVisibility(visible = false) {
-            Text("SAVED")
+        eventDataOnScreen(eventData)
+        when (buttonStates.value.indexOf(true)) {
+            0 -> teamsDataOnScreen(teamList)
+            1 -> distancesDataOnScreen(distanceList)
+            2 -> groupsDataOnScreen(groupList)
+            3 -> teamsDataOnScreen(teamList)
         }
     }
 }
@@ -113,105 +175,54 @@ fun PhaseThreeWindow() {
 fun main() = application {
     val phase = remember { mutableStateOf(-1) }
     val path = remember { mutableStateOf("csvFiles/configuration") }
-    Window(
-        onCloseRequest = ::exitApplication,
-        title = if (phase.value == -1) "Application" else "Phase ${phase.value + 1}",
-        state = rememberWindowState(width = if (phase.value == -1) 600.dp else 800.dp, height = 400.dp)
-    ) {
-        when (phase.value) {
-            -1 -> PhaseChoice(path, phase)
-            0 -> {
-                val configFolder = path.value
-                val controlPoints = mutableListOf<ControlPoint>()
 
-                val distances: SnapshotStateMap<String, Distance> = mutableStateMapOf()
-                distances.putAll(DistanceReader(configFolder).getDistances(controlPoints))
-                val groups = GroupReader(configFolder).getGroups(distances, Phase.FIRST)
-                val teams = TeamReader(configFolder).getTeams()
-
-                val (name, date) = getNameAndDate(readFile(configFolder).walk().toList(), configFolder)
-                val event = Event(name, date, groups, distances, teams)
-
-                event.getDistanceList().forEach {
-                    event.setNumbersAndTime(event.getGroupsByDistance(it.value))
-                }
-                event.makeStartProtocols()
-
-                generateCP(controlPoints, groups)
-                PhaseOneWindow(distances, groups.toMutableStateList(), teams, event)
-            }
-            1 -> PhaseTwoWindow()
-            2 -> PhaseThreeWindow()
-        }
-    }
-}
-
-fun window() = application {
-    val buttonStates = remember { mutableStateOf(MutableList(10) { it == 0 }) }
-    var path by remember { mutableStateOf("") }
-    val phase = remember { mutableStateOf(-1) }
-    var test by remember { mutableStateOf(false) }
-    Window(
-        onCloseRequest = ::exitApplication,
-        title = "Test, TEST, AND ANOTHER TEST",
-        state = rememberWindowState(width = 800.dp, height = 400.dp)
-    ) {
-        val list = mutableStateListOf("Team 1", "Team 2", "Team 3", "Team 4")
-        Column(modifier = Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(
-                modifier = Modifier.padding(start = 10.dp, end = 10.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+    when (phase.value) {
+        -1 -> {
+            Window(
+                onCloseRequest = ::exitApplication,
+                title = "Application",
+                state = rememberWindowState(width = 600.dp, height = 400.dp)
             ) {
-                Box(modifier = Modifier.weight(4f)) { path = PathField() }
-                Box(modifier = Modifier.weight(1f).fillMaxWidth()) { DropDownMenu(phase, listOf(1, 2, 3), "Phase") }
-                val isRotated = remember { mutableStateOf(false) }
-                Button(
-                    modifier = Modifier.weight(1f),
-                    onClick = {
-                        test = !test
-                        isRotated.value = !isRotated.value
-                        /*TODO("Передает куда-то путь для проверки")*/
-                        when (phase.value + 1) {
-                            // Для этой фазы нужны: списки участников (папка applications),
-                            //                      информация о дистанциях (distances.csv),
-                            //                      информация о событии (event.csv),
-                            //                      информация о группах (groups.csv)
-                            1 -> phase1(path) // После этой фазы будут сформированы стартовые протоколы в папке $path/starts
-                            // Для этой фазы нужны: стартовые протоколы (папка starts),
-                            //                      информация о дистанциях (distances.csv),
-                            //                      информация о группах (groups.csv)
-                            //                      информация о прохождении контрольных точек (points)
-                            2 -> phase2(path) // После этой фазы будут сформированы протоколы прохождения дистанций в группах $path/results
-                            // Для этой фазы нужны: протоколы результатов (папка results),
-                            3 -> phase3(path) // После этой фазы будут сформирован протокол результатов соревнований $path/teamsResults.csv
-                        }
-                    },
-                    enabled = true
-                ) {
-                    val angle: Float by animateFloatAsState(
-                        targetValue = if (isRotated.value) 90F else 0F,
-                        animationSpec = tween(
-                            durationMillis = 500,
-                            easing = FastOutSlowInEasing
-                        )
-                    )
-                    Icon(
-                        painter = painterResource("arrow.svg"),
-                        contentDescription = null,
-                        modifier = Modifier.width(10.dp).rotate(angle)
-                    )
-                    Text(text = "Результат", modifier = Modifier.padding(start = 10.dp), fontSize = 12.sp)
-                }
+                PhaseChoice(path, phase)
             }
-            AllTopButtons(buttonStates, listOfTabs(2))
-            AnimatedVisibility(test) {
-                Text(if (!test) path else "Scooby-doby-doooooooooooooooooo\nooooooooo\noooooooooooooo")
-            }
-            Text(phase.value.toString())
-            //   LazyScrollable(list)
         }
+        0 -> {
+            val configFolder = path.value
+            val controlPoints = mutableListOf<ControlPoint>()
+
+            val distances = DistanceReader(configFolder).getDistances(controlPoints)
+            val groups = GroupReader(configFolder).getGroups(distances, Phase.FIRST)
+            val teams = TeamReader(configFolder).getTeams()
+
+            val (name, date) = getNameAndDate(readFile(configFolder).walk().toList(), configFolder)
+            val event = Event(name, date, groups, distances, teams)
+            event.getDistanceList().forEach {
+                event.setNumbersAndTime(event.getGroupsByDistance(it.value))
+            }
+            event.makeStartProtocols()
+            generateCP(controlPoints, groups)
+
+            Window(
+                onCloseRequest = ::exitApplication,
+                title = "Phase ${phase.value + 1}",
+                state = rememberWindowState(width = if (phase.value == -1) 600.dp else 800.dp, height = 400.dp)
+            ) {
+                val distanceList = remember { distances.values.toMutableStateList() }
+                val groupList = remember { groups.toMutableStateList() }
+                val teamList = remember { teams.toMutableStateList() }
+                val eventData = remember { mutableStateOf(event) }
+
+                PhaseOneWindow(distanceList, groupList, teamList, eventData)
+
+                println(teamList.size)
+            }
+
+        }
+        1 -> PhaseTwoWindow()
+        2 -> PhaseThreeWindow()
     }
 }
+
 
 @Composable
 fun PathField(): String {

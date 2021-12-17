@@ -8,7 +8,7 @@ import java.time.LocalDate
 
 class Event(
     val name: String,
-    private val date: LocalDate,
+    val date: LocalDate,
     groupList: List<Group>/*MutableList<Group>*/,
     distanceList: Map<String, Distance> /*MutableMap<String,String>*/,
     teams: List<Team>
