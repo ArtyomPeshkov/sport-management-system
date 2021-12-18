@@ -1,9 +1,5 @@
 package ru.emkn.kotlin.sms
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,15 +9,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
@@ -128,7 +120,7 @@ fun PhaseChoice(path: MutableState<String>, phase: MutableState<Int>) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Box(modifier = Modifier.weight(4f)) { path.value = PathField() }
+            Box(modifier = Modifier.weight(4f)) { PathField(path) }
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 DropDownMenu(
                     phaseFromDropDown,
@@ -161,7 +153,10 @@ fun PhaseOneWindow(
             0 -> teamsDataOnScreen(teamList)
             1 -> distancesDataOnScreen(distanceList)
             2 -> groupsDataOnScreen(groupList)
-            3 -> teamsDataOnScreen(teamList)
+            3 -> {
+                val allParticipants = groupList.flatMap { it.listParticipants }.toMutableStateList()
+                startProtocolsDataOnScreen(allParticipants)
+            }
         }
     }
 }
@@ -273,16 +268,18 @@ fun main() = application {
 
 
 @Composable
-fun PathField(): String {
+fun PathField(path: MutableState<String>) {
     var textState by remember { mutableStateOf("") }
     OutlinedTextField(
         value = textState,
-        onValueChange = { textState = it },
+        onValueChange = {
+            textState = it
+            path.value = it
+        },
         modifier = Modifier.fillMaxWidth().padding(0.dp),
         singleLine = true,
         shape = RoundedCornerShape(5.dp)
     )
-    return textState
 }
 
 @Composable

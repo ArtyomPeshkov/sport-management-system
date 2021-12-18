@@ -1,24 +1,20 @@
 package ru.emkn.kotlin.sms
 
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
-import androidx.compose.material.Icon
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import exceptions.UnexpectedValueException
 import exceptions.emptyNameCheck
 
-class Group(name: String, dist: Distance): Scrollable {
+class Group(name: String, dist: Distance) : Scrollable {
     val groupName: String
     val distance: Distance
     var ageFrom: Int = 0
@@ -61,28 +57,34 @@ class Group(name: String, dist: Distance): Scrollable {
 
     @Composable
     override fun <T> show(list: SnapshotStateList<T>, index: Int) {
-        var isOpened by remember { mutableStateOf(false) }
-
-        val angle: Float by animateFloatAsState(
-            targetValue = if (isOpened) 90F else 0F,
-            animationSpec = tween(
-                durationMillis = 500,
-                easing = FastOutSlowInEasing
-            )
-        )
-
-        Box(modifier = Modifier.fillMaxSize().clickable { isOpened = !isOpened }) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(5.dp)) {
-                Icon(
-                    painter = painterResource("arrow.svg"),
-                    contentDescription = null,
-                    modifier = Modifier.width(10.dp).rotate(angle)
+        Row(
+            modifier = Modifier.fillMaxHeight(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            Text(this@Group.groupName, modifier = Modifier.weight(1f))
+            Text(this@Group.distance.name, modifier = Modifier.weight(1f))
+            Text(this@Group.ageFrom.toString(), modifier = Modifier.weight(1f))
+            Text(this@Group.ageTo.toString(), modifier = Modifier.weight(1f))
+            Button(
+                onClick = {
+                    list.removeAt(index)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color.Red,
+                    contentColor = Color.White
+                ),
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Delete",
+                    modifier = Modifier.fillMaxHeight(),
+                    textAlign = TextAlign.Center
                 )
-                Text(this@Group.groupName, modifier = Modifier.fillMaxWidth(0.8f).padding(start = 5.dp))
-                Button(onClick = { list.removeAt(index) }) { Text("Delete") }
             }
         }
     }
+
 
     override fun toString(): String {
         val s = StringBuilder("Название: $groupName\nДистанция: $distance\nСписок участников: $listParticipants\n")

@@ -71,8 +71,17 @@ class Team(name: String) : Scrollable {
             AnimatedVisibility(isOpened) {
                 Column {
                     listOfParticipant.forEachIndexed { i, it ->
-                        Row {
-                            Text(it.name)
+                        Row(
+                            modifier = Modifier.fillMaxHeight(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            Text(it.surname, modifier = Modifier.weight(1f))
+                            Text(it.name, modifier = Modifier.weight(1f))
+                            Text(if (it.sex == Sex.MALE) "M" else "Ж", modifier = Modifier.weight(1f))
+                            Text(it.surname, modifier = Modifier.weight(1f))
+                            Text(it.yearOfBirth.toString(), modifier = Modifier.weight(1f))
+                            Text(it.rank.ifBlank { "-" }, modifier = Modifier.weight(1f))
                             Button(
                                 onClick = {
                                     listOfParticipant.removeAt(i)
@@ -81,7 +90,8 @@ class Team(name: String) : Scrollable {
                                 colors = ButtonDefaults.buttonColors(
                                     backgroundColor = Color.Red,
                                     contentColor = Color.White
-                                )
+                                ),
+                                modifier = Modifier.weight(1f)
                             ) {
                                 Text(
                                     text = "Delete",
