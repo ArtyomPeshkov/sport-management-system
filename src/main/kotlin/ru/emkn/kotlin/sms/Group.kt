@@ -36,12 +36,12 @@ class Group(name: String, dist: Distance): Scrollable {
         distance = dist
     }
 
-    val listParticipants: MutableList<Participant> = mutableListOf()
-    fun addParticipant(participant: Participant) {
+    val listParticipants: MutableList<ParticipantStart> = mutableListOf()
+    fun addParticipant(participant: ParticipantStart) {
         listParticipants.add(participant)
     }
 
-    fun addParticipants(participants: Collection<Participant>) {
+    fun addParticipants(participants: Collection<ParticipantStart>) {
         listParticipants.addAll(participants)
     }
 

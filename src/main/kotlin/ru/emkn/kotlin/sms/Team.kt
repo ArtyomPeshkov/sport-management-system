@@ -28,7 +28,7 @@ class Team(name: String) : Scrollable {
         this.name = name
     }
 
-    fun addParticipant(participant: Participant) {
+    fun addParticipant(participant: ParticipantStart) {
         athleteList.add(participant)
         if (participant.points < 0)
             throw UnexpectedValueException("Количество очков у участника ${participant.number} отрицательно")

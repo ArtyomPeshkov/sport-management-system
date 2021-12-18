@@ -50,7 +50,7 @@ class Event(
                     participant.wishGroup,
                     yearOfCompetition - participant.yearOfBirth,
                     participant.sex
-                )?.addParticipant(participant)
+                )?.addParticipant(ParticipantStart(participant))
                     ?: parseLogger.universalC(
                         Colors.YELLOW._name,
                         "Для участника $participant не нашлось подходящей группы"

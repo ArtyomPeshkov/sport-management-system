@@ -36,7 +36,7 @@ fun makeResultProtocols(groups: List<Group>) {
             ), resultGroupFile, append = false
         )
         val (participants, deletedParticipants) = group.listParticipants.partition { it.status != "Снят" }
-        val result: List<Participant> = participants.sortedBy { Time(it.status).timeInSeconds } + deletedParticipants
+        val result: List<ParticipantStart> = participants.sortedBy { Time(it.status).timeInSeconds } + deletedParticipants
         var number = 1
         var place = 1
 

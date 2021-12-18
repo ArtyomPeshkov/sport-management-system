@@ -98,7 +98,7 @@ fun groupsDataOnScreen(groupList: SnapshotStateList<Group>) {
 
 @Composable
 fun startProtocolsDataOnScreen(
-    participantList: SnapshotStateList<Participant>
+    participantList: SnapshotStateList<ParticipantStart>
 ) {
     Column {
         LazyScrollable(participantList)
@@ -174,7 +174,7 @@ fun PhaseOneWindow(
 fun PhaseTwoWindow(
     distanceList: SnapshotStateList<Distance>,
     eventData: MutableState<Event>,
-    participantList: SnapshotStateList<Participant>
+    participantList: SnapshotStateList<ParticipantStart>
 ) {
     val currentPhase = 2
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }

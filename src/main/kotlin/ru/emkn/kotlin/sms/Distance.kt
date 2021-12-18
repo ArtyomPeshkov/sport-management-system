@@ -46,7 +46,7 @@ class Distance(name: String, type: DistanceTypeData): Scrollable {
     }
 
     fun checkProtocolPointsCorrectness(
-        participant: Participant,
+        participant: ParticipantStart,
         participantDistance: Map<Int, List<ControlPointWithTime>>
     ): String {
         val start = ControlPointWithTime(ControlPoint("Start"), participant.startTime)
