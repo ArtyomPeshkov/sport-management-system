@@ -9,9 +9,9 @@ import java.time.LocalDate
 class Event(
     val name: String,
     val date: LocalDate,
-    groupList: List<Group>/*MutableList<Group>*/,
-    distanceList: Map<String, Distance> /*MutableMap<String,String>*/,
-    teams: List<Team>
+    groupList: List<Group>,/*MutableList<Group>*/
+    distanceList: Map<String, Distance>, /*MutableMap<String,String>*/
+    //teams: List<Team>
 ) {
     var yearOfCompetition: Int = date.year
     var teamList: List<Team> = listOf() //список заявленных коллективов
@@ -26,6 +26,15 @@ class Event(
         this.groupList = groupList
         this.distanceList = distanceList
         parseLogger.printCollection(groupList, Colors.PURPLE._name)
+    }
+
+    constructor(
+        name: String,
+        date: LocalDate,
+        groupList: List<Group>/*MutableList<Group>*/,
+        distanceList: Map<String, Distance> /*MutableMap<String,String>*/,
+        teams: List<Team>
+    ) : this(name, date, groupList, distanceList) {
         if (teams.any { it.athleteList.isEmpty() })
             throw UnexpectedValueException("В коллективе нет участников")
         if (teams.isEmpty())

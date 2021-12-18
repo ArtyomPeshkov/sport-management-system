@@ -26,7 +26,11 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import log.printCollection
+import log.printMap
+import log.universalC
 import java.io.File
+import java.lang.Float.max
 
 val topRowHeight = 30.dp
 val separatorLineWidth = 1.dp
@@ -34,7 +38,7 @@ val separatorLineWidth = 1.dp
 fun listOfTabs(phase: Int): List<String> =
     when (phase) {
         1 -> listOf("Команды", "Дистанции", "Группы", "Старт. прот.")
-        2 -> listOf("Старт. прот.", "Дистанции", "Контр. точки")
+        2 -> listOf("Старт. прот.", "Дистанции")
         3 -> listOf("Результаты", "Общие")
         else -> emptyList()
     }
@@ -93,8 +97,20 @@ fun groupsDataOnScreen(groupList: SnapshotStateList<Group>) {
 }
 
 @Composable
-fun startProtocolsDataOnScreen() {
-
+fun startProtocolsDataOnScreen(
+    participantList: SnapshotStateList<Participant>
+) {
+    Column {
+        LazyScrollable(participantList)
+        Button(onClick = {
+            File("test.csv").createNewFile(); csvWriter().writeAll(
+            listOf(participantList),
+            File("test.csv")
+        )
+        }) {
+            Text("Save")
+        }
+    }
 }
 
 @Composable
@@ -155,11 +171,20 @@ fun PhaseOneWindow(
 }
 
 @Composable
-fun PhaseTwoWindow() {
+fun PhaseTwoWindow(
+    distanceList: SnapshotStateList<Distance>,
+    eventData: MutableState<Event>,
+    participantList: SnapshotStateList<Participant>
+) {
     val currentPhase = 2
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
     Column {
         AllTopButtons(buttonStates, listOfTabs(currentPhase))
+        eventDataOnScreen(eventData)
+        when (buttonStates.value.indexOf(true)) {
+            0 -> startProtocolsDataOnScreen(participantList)
+            1 -> distancesDataOnScreen(distanceList)
+        }
     }
 }
 
@@ -218,7 +243,34 @@ fun main() = application {
             }
 
         }
-        1 -> PhaseTwoWindow()
+        1 -> {
+            val configurationFolder = path.value
+
+            val distances = DistanceReader(configurationFolder).getDistances()
+
+            val groups = GroupReader(configurationFolder).getGroups(distances, Phase.SECOND)
+            StartProtocolParse(configurationFolder).getStartProtocolFolder(groups)
+            val (name, date) = getNameAndDate(readFile(configurationFolder).walk().toList(), configurationFolder)
+            val event = Event(name, date, groups, distances)
+            val participantDistanceWithTime: Map<Int, List<ControlPointWithTime>> =
+                ControlPointReader(configurationFolder).getPoints()
+            setStatusForAllParticipants(groups, distances, participantDistanceWithTime)
+
+            makeResultProtocols(groups)
+            Window(
+                onCloseRequest = ::exitApplication,
+                title = "Phase ${phase.value + 1}",
+                state = rememberWindowState(width = if (phase.value == -1) 600.dp else 800.dp, height = 400.dp)
+            ) {
+                val distanceList = remember { distances.values.toMutableStateList() }
+                val participantList = remember { groups.flatMap { it.listParticipants }.toMutableStateList() }
+                val eventData = remember { mutableStateOf(event) }
+
+                PhaseTwoWindow(distanceList, eventData, participantList)
+
+                println(participantList.size)
+            }
+        }
         2 -> PhaseThreeWindow()
     }
 }
