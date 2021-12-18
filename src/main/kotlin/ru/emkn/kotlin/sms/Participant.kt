@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -13,6 +14,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import exceptions.UnexpectedValueException
@@ -25,7 +27,7 @@ class Participant(
     name: String,
     yearOfBirth: Int,
     rank: String
-): Scrollable {
+) : Scrollable {
     var wishGroup: String = ""
         private set
     val sex: Sex
@@ -42,7 +44,7 @@ class Participant(
     init {
         emptyNameCheck(name, "Пустое имя участника обнаружено")
         emptyNameCheck(surname, "Пустая фамилия участника обнаружена")
-        if (yearOfBirth <= 1900 || yearOfBirth>LocalDateTime.now().year)
+        if (yearOfBirth <= 1900 || yearOfBirth > LocalDateTime.now().year)
             throw UnexpectedValueException("Unreal date of birth: $yearOfBirth")
         this.sex = sex
         this.surname = surname
@@ -66,7 +68,7 @@ class Participant(
     }
 
     fun setPoints(points: Int) {
-        require(points>=0)
+        require(points >= 0)
         this.points = points
     }
 
@@ -76,9 +78,8 @@ class Participant(
         }
     }
 
-    fun setGroup(wishGroup: String)
-    {
-        this.wishGroup=wishGroup
+    fun setGroup(wishGroup: String) {
+        this.wishGroup = wishGroup
     }
 
     @Composable
@@ -94,7 +95,7 @@ class Participant(
             )
         )
 
-        Box(modifier = Modifier.fillMaxSize().clickable { isOpened = !isOpened }) {
+        Box(modifier = Modifier.fillMaxSize().clickable { isOpened = !isOpened }.padding(start = 20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(5.dp)) {
                 Icon(
                     painter = painterResource("arrow.svg"),
@@ -103,7 +104,10 @@ class Participant(
                 )
                 //Где-то тут должно вызываться drop down menu
                 Text(this@Participant.number.toString(), modifier = Modifier.fillMaxWidth(0.8f).padding(start = 5.dp))
-                Button(onClick = { list.removeAt(index) }) { Text("Delete") }
+                Button(
+                    onClick = { list.removeAt(index) },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red, contentColor = Color.White)
+                ) { Text("Delete") }
             }
         }
     }
