@@ -26,11 +26,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
-import log.printCollection
-import log.printMap
-import log.universalC
 import java.io.File
-import java.lang.Float.max
 
 val topRowHeight = 30.dp
 val separatorLineWidth = 1.dp
