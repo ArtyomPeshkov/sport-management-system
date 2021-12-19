@@ -80,6 +80,18 @@ class Distance(name: String, type: DistanceTypeData): Scrollable {
         }
     }
 
+    fun createCSVHeader(numberOfPoints:Int):List<String>{
+        val res = mutableListOf("Название","Тип","Количество точек","Порядок")
+        res.addAll(MutableList(numberOfPoints){"$it"})
+        return res
+    }
+    fun createCSVString(numberOfPoints:Int):List<String>{
+        val res = mutableListOf(name,"${type.type}","${type.numberOfPoints}","${type.orderIsEssential}")
+        res.addAll(pointsList.map { it.name })
+        while(res.size<numberOfPoints)
+            res.add("")
+        return res
+    }
     @Composable
     override fun <T> show(list: SnapshotStateList<T>, index: Int) {
         var isOpened by remember { mutableStateOf(false) }

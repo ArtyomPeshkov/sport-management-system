@@ -50,7 +50,8 @@ fun getDistance(
         throw UnexpectedValueException("В дистанции $distanceName нет контрольных точек!")
     val distType =  checkType(type,numberOfPoints,orderIsEssential)
     val distance = Distance(distanceName,distType)
+    if (distType.type==DistanceType.ALL_POINTS)
+        distType.numberOfPoints=pointsList.size
     distance.addAllPoints(pointsList)
-    distType.numberOfPoints=pointsList.size
     return distance
 }

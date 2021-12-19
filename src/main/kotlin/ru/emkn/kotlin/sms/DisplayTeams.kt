@@ -54,14 +54,29 @@ fun teamsDataOnScreen(teamList: SnapshotStateList<Team>) {
     }
 }
 
+
+
 @Composable
-fun distancesDataOnScreen(distanceList: SnapshotStateList<Distance>) {
+fun distancesDataOnScreen(distanceList: SnapshotStateList<Distance>,configurationFolder:String) {
     Column {
         LazyScrollable(distanceList)
         Button(onClick = {
-            File("test.csv").createNewFile(); csvWriter().writeAll(
-            listOf(distanceList),
-            File("test.csv")
+
+            //Создать функции для сохранения различных видов структур и обработать возможные ошибки (Например: удалили дистанцию D4000, значит с группой, которая отвечает за эту дистанцию надо что-то сделать)
+            // Возможное решение: находить все конфликты после попытки сохранить новые данные и если удалённая структура где-то использовалась предложить пользователю поменять эту структуру в этом месте или отказаться от изменений
+            // Создать для каждой фазы отдельный класс, хранящий все данные фазы и через него проверять все конфликты после удаления
+            // (Функция будет принимать класс, реализующий интерфейс Phase, внутри которого будет функция checkConflicts, а Phase будет реализован в Phase1 Phase2 Phase3)
+            // Например функция distancesDataOnScreen может принимать как Phase1, так и Phase2, но конфликты в них могут возникнуть разные (или одинаковые, хрен его знает, 4 часа ночи. Я не буду думать, что там разное, а что одинаковое)
+            File("$configurationFolder/distances.csv").createNewFile();
+
+            val maxNumberOfPoints = distanceList.maxOf { it.getPointsList().size }
+            val distances = mutableListOf(distanceList[0].createCSVHeader(maxNumberOfPoints))
+            distanceList.forEach {
+                distances.add(it.createCSVString(maxNumberOfPoints))
+            }
+            csvWriter().writeAll(distances,
+            File("$configurationFolder/distances.csv"),
+                append = false
         )
         }) {
             Text("Save")
@@ -142,7 +157,8 @@ fun PhaseOneWindow(
     distanceList: SnapshotStateList<Distance>,
     groupList: SnapshotStateList<Group>,
     teamList: SnapshotStateList<Team>,
-    eventData: MutableState<Event>
+    eventData: MutableState<Event>,
+    configurationFolder: String
 ) {
     val currentPhase = 1
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
@@ -151,7 +167,7 @@ fun PhaseOneWindow(
         eventDataOnScreen(eventData)
         when (buttonStates.value.indexOf(true)) {
             0 -> teamsDataOnScreen(teamList)
-            1 -> distancesDataOnScreen(distanceList)
+            1 -> distancesDataOnScreen(distanceList,configurationFolder)
             2 -> groupsDataOnScreen(groupList)
             3 -> {
                 val allParticipants = groupList.flatMap { it.listParticipants }.toMutableStateList()
@@ -165,7 +181,8 @@ fun PhaseOneWindow(
 fun PhaseTwoWindow(
     distanceList: SnapshotStateList<Distance>,
     eventData: MutableState<Event>,
-    participantList: SnapshotStateList<ParticipantStart>
+    participantList: SnapshotStateList<ParticipantStart>,
+    configurationFolder: String
 ) {
     val currentPhase = 2
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
@@ -174,7 +191,7 @@ fun PhaseTwoWindow(
         eventDataOnScreen(eventData)
         when (buttonStates.value.indexOf(true)) {
             0 -> startProtocolsDataOnScreen(participantList)
-            1 -> distancesDataOnScreen(distanceList)
+            1 -> distancesDataOnScreen(distanceList,configurationFolder)
         }
     }
 }
@@ -228,23 +245,23 @@ fun main() = application {
                 val teamList = remember { teams.toMutableStateList() }
                 val eventData = remember { mutableStateOf(event) }
 
-                PhaseOneWindow(distanceList, groupList, teamList, eventData)
+                PhaseOneWindow(distanceList, groupList, teamList, eventData,configFolder)
 
-                println(teamList.size)
+                println("${distanceList[0].getPointsList().size} ${teams.size}")
             }
 
         }
         1 -> {
-            val configurationFolder = path.value
+            val configFolder = path.value
 
-            val distances = DistanceReader(configurationFolder).getDistances()
+            val distances = DistanceReader(configFolder).getDistances()
 
-            val groups = GroupReader(configurationFolder).getGroups(distances, Phase.SECOND)
-            StartProtocolParse(configurationFolder).getStartProtocolFolder(groups)
-            val (name, date) = getNameAndDate(readFile(configurationFolder).walk().toList(), configurationFolder)
+            val groups = GroupReader(configFolder).getGroups(distances, Phase.SECOND)
+            StartProtocolParse(configFolder).getStartProtocolFolder(groups)
+            val (name, date) = getNameAndDate(readFile(configFolder).walk().toList(), configFolder)
             val event = Event(name, date, groups, distances)
             val participantDistanceWithTime: Map<Int, List<ControlPointWithTime>> =
-                ControlPointReader(configurationFolder).getPoints()
+                ControlPointReader(configFolder).getPoints()
             setStatusForAllParticipants(groups, distances, participantDistanceWithTime)
 
             makeResultProtocols(groups)
@@ -257,7 +274,7 @@ fun main() = application {
                 val participantList = remember { groups.flatMap { it.listParticipants }.toMutableStateList() }
                 val eventData = remember { mutableStateOf(event) }
 
-                PhaseTwoWindow(distanceList, eventData, participantList)
+                PhaseTwoWindow(distanceList, eventData, participantList,configFolder)
 
                 println(participantList.size)
             }
