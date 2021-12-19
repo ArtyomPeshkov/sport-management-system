@@ -40,14 +40,20 @@ fun eventDataOnScreen(eventData: MutableState<Event>) {
 }
 
 @Composable
-fun teamsDataOnScreen(teamList: SnapshotStateList<Team>) {
+fun teamsDataOnScreen(teamList: SnapshotStateList<Team>,configurationFolder:String) {
     Column {
         LazyScrollable(teamList)
         Button(onClick = {
-            File("test.csv").createNewFile(); csvWriter().writeAll(
-            listOf(teamList),
-            File("test.csv")
-        )
+            File("$configurationFolder/save/application").mkdirs();
+            File("$configurationFolder/save/application").createNewFile();
+            teamList.forEach {
+                val teams = it.createCSVHeader()
+                teams.addAll(it.createCSVStrings())
+                csvWriter().writeAll(teams,
+                    File("$configurationFolder/save/application/application_${it.name}.csv"),
+                    append = false
+                )
+            }
         }) {
             Text("Save")
         }
@@ -67,7 +73,10 @@ fun distancesDataOnScreen(distanceList: SnapshotStateList<Distance>,configuratio
             // Создать для каждой фазы отдельный класс, хранящий все данные фазы и через него проверять все конфликты после удаления
             // (Функция будет принимать класс, реализующий интерфейс Phase, внутри которого будет функция checkConflicts, а Phase будет реализован в Phase1 Phase2 Phase3)
             // Например функция distancesDataOnScreen может принимать как Phase1, так и Phase2, но конфликты в них могут возникнуть разные (или одинаковые, хрен его знает, 4 часа ночи. Я не буду думать, что там разное, а что одинаковое)
-            File("$configurationFolder/distances.csv").createNewFile();
+            // Выпадающий список с доступными дистанциями
+            // Создать папку saves внутри папки переданной пользователем и проверить корректность работы программы. Если что-то работает не так, попросить пользователя внести необходимые правки.
+            File("$configurationFolder/save/").mkdirs();
+            File("$configurationFolder/save/distances.csv").createNewFile();
 
             val maxNumberOfPoints = distanceList.maxOf { it.getPointsList().size }
             val distances = mutableListOf(distanceList[0].createCSVHeader(maxNumberOfPoints))
@@ -75,7 +84,7 @@ fun distancesDataOnScreen(distanceList: SnapshotStateList<Distance>,configuratio
                 distances.add(it.createCSVString(maxNumberOfPoints))
             }
             csvWriter().writeAll(distances,
-            File("$configurationFolder/distances.csv"),
+            File("$configurationFolder/save/distances.csv"),
                 append = false
         )
         }) {
@@ -101,10 +110,10 @@ fun groupsDataOnScreen(groupList: SnapshotStateList<Group>) {
 
 @Composable
 fun startProtocolsDataOnScreen(
-    participantList: SnapshotStateList<ParticipantStart>
+    participantList: SnapshotStateList<ParticipantStart>, isDeletable: Boolean = true
 ) {
     Column {
-        LazyScrollable(participantList)
+        LazyScrollable(participantList,isDeletable)
         Button(onClick = {
             File("test.csv").createNewFile(); csvWriter().writeAll(
             listOf(participantList),
@@ -166,12 +175,12 @@ fun PhaseOneWindow(
         AllTopButtons(buttonStates, listOfTabs(currentPhase))
         eventDataOnScreen(eventData)
         when (buttonStates.value.indexOf(true)) {
-            0 -> teamsDataOnScreen(teamList)
+            0 -> teamsDataOnScreen(teamList,configurationFolder)
             1 -> distancesDataOnScreen(distanceList,configurationFolder)
             2 -> groupsDataOnScreen(groupList)
             3 -> {
                 val allParticipants = groupList.flatMap { it.listParticipants }.toMutableStateList()
-                startProtocolsDataOnScreen(allParticipants)
+                startProtocolsDataOnScreen(allParticipants,false)
             }
         }
     }
@@ -376,14 +385,14 @@ fun SeparatorLine() {
 }
 
 @Composable
-fun <T : Scrollable> LazyScrollable(list: SnapshotStateList<T>) {
+fun <T : Scrollable> LazyScrollable(list: SnapshotStateList<T>, isDeletable:Boolean=true) {
 
     Box(modifier = Modifier.fillMaxWidth().padding(10.dp).fillMaxHeight(.75f)) {
         val state = rememberLazyListState()
 
         LazyColumn(Modifier.fillMaxSize().padding(end = 12.dp), state) {
             itemsIndexed(list) { index, it ->
-                it.show(list, index)
+                it.show(list, index, isDeletable)
             }
         }
 

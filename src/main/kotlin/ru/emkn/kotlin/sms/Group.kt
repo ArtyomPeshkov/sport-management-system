@@ -56,7 +56,7 @@ class Group(name: String, dist: Distance) : Scrollable {
     }
 
     @Composable
-    override fun <T> show(list: SnapshotStateList<T>, index: Int) {
+    override fun <T> show(list: SnapshotStateList<T>, index: Int,isDeletable:Boolean) {
         Row(
             modifier = Modifier.fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically,

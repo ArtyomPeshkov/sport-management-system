@@ -43,8 +43,21 @@ class Team(name: String) : Scrollable {
         athleteList.addAll(participants)
     }
 
+    fun createCSVHeader()= mutableListOf(
+        listOf(name, "", "", "", "", ""),
+        listOf("Группа", "Фамилия", "Имя", "Пол", "Г.р.", "Разр.")
+    )
+
+  fun createCSVStrings():MutableList<List<String>>{
+      val res = mutableListOf<List<String>>()
+      athleteList.forEach {
+          res.add(listOf(it.wishGroup,it.surname,it.name,it.sex.toString(),it.yearOfBirth.toString(),it.rank))
+      }
+      return res
+  }
+
     @Composable
-    override fun <T> show(list: SnapshotStateList<T>, index: Int) {
+    override fun <T> show(list: SnapshotStateList<T>, index: Int,isDeletable:Boolean) {
         var isOpened by remember { mutableStateOf(false) }
         val listOfParticipant = athleteList.toMutableStateList()
 

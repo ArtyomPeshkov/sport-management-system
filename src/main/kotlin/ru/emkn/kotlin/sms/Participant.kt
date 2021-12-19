@@ -51,7 +51,7 @@ class ParticipantStart(val participant: Participant) : Participant(participant) 
     }
 
     @Composable
-    override fun <T> show(list: SnapshotStateList<T>, index: Int) {
+    override fun <T> show(list: SnapshotStateList<T>, index: Int,isDeletable: Boolean) {
         Row(
             modifier = Modifier.fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically,
@@ -62,6 +62,7 @@ class ParticipantStart(val participant: Participant) : Participant(participant) 
             Text(this@ParticipantStart.participant.surname, modifier = Modifier.weight(1f))
             Text(this@ParticipantStart.participant.name, modifier = Modifier.weight(1f))
             Text(this@ParticipantStart.participant.wishGroup, modifier = Modifier.weight(1f))
+            if (isDeletable)  Button(onClick = { list.removeAt(index) }) { Text("Delete") }
         }
     }
 
@@ -132,7 +133,7 @@ open class Participant(
     }
 
     @Composable
-    override fun <T> show(list: SnapshotStateList<T>, index: Int) {
+    override fun <T> show(list: SnapshotStateList<T>, index: Int, isDeletable:Boolean) {
         //Тут нужна кнопочка по которой из participant вылезает прохождение им контрольных точек (условно при нажатии на номер участника, мы видим, как он прошёл дистанцию)
         var isOpened by remember { mutableStateOf(false) }
 

@@ -93,7 +93,7 @@ class Distance(name: String, type: DistanceTypeData): Scrollable {
         return res
     }
     @Composable
-    override fun <T> show(list: SnapshotStateList<T>, index: Int) {
+    override fun <T> show(list: SnapshotStateList<T>, index: Int,isDeletable:Boolean) {
         var isOpened by remember { mutableStateOf(false) }
         val listOfParticipant = pointsList.toMutableStateList()
 
