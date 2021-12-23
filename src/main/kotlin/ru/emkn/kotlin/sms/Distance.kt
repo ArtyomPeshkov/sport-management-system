@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import exceptions.UnexpectedValueException
 import exceptions.emptyNameCheck
 
-class Distance(name: String, type: DistanceTypeData): Scrollable {
+class Distance(name: String, type: DistanceTypeData) : Scrollable {
     private val pointsList: MutableList<ControlPoint> = mutableListOf()
     val name: String
     val type: DistanceTypeData
@@ -62,15 +62,15 @@ class Distance(name: String, type: DistanceTypeData): Scrollable {
                     return "Снят"
                 (participantControlPoints.maxByOrNull { it.time.timeInSeconds }!!.time - start.time).toString()
             }
-            DistanceType.SOME_POINTS ->{
+            DistanceType.SOME_POINTS -> {
                 var currentNumberOfPassedPoints = 0
                 participantControlPoints.forEach {
                     var currentIndex = 0
-                    while (currentIndex != pointsList.size && it.point!=pointsList[currentIndex])
+                    while (currentIndex != pointsList.size && it.point != pointsList[currentIndex])
                         currentIndex++
-                    if (currentIndex==pointsList.size)
+                    if (currentIndex == pointsList.size)
                         return@forEach
-                    if (pointsList[currentIndex]==it.point)
+                    if (pointsList[currentIndex] == it.point)
                         currentNumberOfPassedPoints++
                     if (currentNumberOfPassedPoints == type.numberOfPoints)
                         return (it.time - start.time).toString()
@@ -80,20 +80,27 @@ class Distance(name: String, type: DistanceTypeData): Scrollable {
         }
     }
 
-    fun createCSVHeader(numberOfPoints:Int):List<String>{
-        val res = mutableListOf("Название","Тип","Количество точек","Порядок")
-        res.addAll(MutableList(numberOfPoints){"$it"})
+    fun createCSVHeader(numberOfPoints: Int): List<String> {
+        val res = mutableListOf("Название", "Тип", "Количество точек", "Порядок")
+        res.addAll(MutableList(numberOfPoints) { "$it" })
         return res
     }
-    fun createCSVString(numberOfPoints:Int):List<String>{
-        val res = mutableListOf(name,"${type.type}","${type.numberOfPoints}","${type.orderIsEssential}")
+
+    fun createCSVString(numberOfPoints: Int): List<String> {
+        val res = mutableListOf(name, "${type.type}", "${type.numberOfPoints}", "${type.orderIsEssential}")
         res.addAll(pointsList.map { it.name })
-        while(res.size<numberOfPoints)
+        while (res.size < numberOfPoints)
             res.add("")
         return res
     }
+
     @Composable
-    override fun <T> show(list: SnapshotStateList<T>, index: Int,isDeletable:Boolean) {
+    override fun <T, E : Any> show(
+        list: SnapshotStateList<T>,
+        index: Int,
+        isDeletable: Boolean,
+        toDelete: List<SnapshotStateList<out E>>
+    ) {
         var isOpened by remember { mutableStateOf(false) }
         val listOfParticipant = pointsList.toMutableStateList()
 
@@ -113,7 +120,18 @@ class Distance(name: String, type: DistanceTypeData): Scrollable {
                         modifier = Modifier.width(10.dp).rotate(angle)
                     )
                     Text(this@Distance.name, modifier = Modifier.fillMaxWidth(0.8f).padding(start = 5.dp))
-                    Button(onClick = { list.removeAt(index) }) { Text("Delete") }
+                    Button(onClick = { list.removeAt(index)
+                        toDelete[0].removeIf { group ->
+                            group as Group
+                        if (group.distance==this@Distance) {
+                            toDelete[1].removeIf {
+                                it as ParticipantStart
+                                it.wishGroup==group.groupName
+                            }
+                        }
+                            this@Distance == group.distance
+                        }
+                    }) { Text("Delete") }
                 }
             }
 

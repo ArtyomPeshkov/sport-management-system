@@ -51,7 +51,12 @@ class ParticipantStart(val participant: Participant) : Participant(participant) 
     }
 
     @Composable
-    override fun <T> show(list: SnapshotStateList<T>, index: Int,isDeletable: Boolean) {
+    override fun <T, E : Any> show(
+        list: SnapshotStateList<T>,
+        index: Int,
+        isDeletable: Boolean,
+        toDelete: List<SnapshotStateList<out E>>
+    ) {
         Row(
             modifier = Modifier.fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically,
@@ -62,7 +67,13 @@ class ParticipantStart(val participant: Participant) : Participant(participant) 
             Text(this@ParticipantStart.participant.surname, modifier = Modifier.weight(1f))
             Text(this@ParticipantStart.participant.name, modifier = Modifier.weight(1f))
             Text(this@ParticipantStart.participant.wishGroup, modifier = Modifier.weight(1f))
-            if (isDeletable)  Button(onClick = { list.removeAt(index) }) { Text("Delete") }
+            if (isDeletable) Button(onClick = {
+                list.removeAt(index)
+                toDelete[0].forEach {
+                    it as Group
+                    it.listParticipants.removeIf { it == this@ParticipantStart }
+                }
+            }) { Text("Delete") }
         }
     }
 
@@ -133,7 +144,12 @@ open class Participant(
     }
 
     @Composable
-    override fun <T> show(list: SnapshotStateList<T>, index: Int, isDeletable:Boolean) {
+    override fun <T, E : Any> show(
+        list: SnapshotStateList<T>,
+        index: Int,
+        isDeletable: Boolean,
+        toDelete: List<SnapshotStateList<out E>>
+    ) {
         //Тут нужна кнопочка по которой из participant вылезает прохождение им контрольных точек (условно при нажатии на номер участника, мы видим, как он прошёл дистанцию)
         var isOpened by remember { mutableStateOf(false) }
 
@@ -143,7 +159,13 @@ open class Participant(
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(5.dp)) {
                 //Где-то тут должно вызываться drop down menu
                 Text(this@Participant.name, modifier = Modifier.fillMaxWidth(0.8f).padding(start = 5.dp))
-                Button(onClick = { list.removeAt(index) }) { Text("Delete") }
+                Button(onClick = {
+                    list.removeAt(index)
+                    toDelete[0].removeIf {
+                        it as Group
+                        it.listParticipants.removeIf { it.participant == this@Participant }
+                    }
+                }) { Text("Delete") }
             }
         }
     }

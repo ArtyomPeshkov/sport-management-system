@@ -57,7 +57,12 @@ class Team(name: String) : Scrollable {
   }
 
     @Composable
-    override fun <T> show(list: SnapshotStateList<T>, index: Int,isDeletable:Boolean) {
+    override fun <T, E : Any> show(
+        list: SnapshotStateList<T>,
+        index: Int,
+        isDeletable: Boolean,
+        toDelete: List<SnapshotStateList<out E>>
+    ) {
         var isOpened by remember { mutableStateOf(false) }
         val listOfParticipant = athleteList.toMutableStateList()
 
@@ -77,7 +82,17 @@ class Team(name: String) : Scrollable {
                         modifier = Modifier.width(10.dp).rotate(angle)
                     )
                     Text(this@Team.name, modifier = Modifier.fillMaxWidth(0.8f).padding(start = 5.dp))
-                    Button(onClick = { list.removeAt(index) }) { Text("Delete") }
+                    Button(onClick = { list.removeAt(index)
+                        toDelete[0].forEach { group ->
+                            group as Group
+                            group.listParticipants.removeIf {
+                                it.wishGroup == group.groupName
+                            }
+                        }
+                        toDelete[1].removeIf {
+                            it as ParticipantStart
+                            it.team == this@Team.name
+                        }}) { Text("Delete") }
                 }
             }
 

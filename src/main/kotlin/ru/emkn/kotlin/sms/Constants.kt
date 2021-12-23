@@ -34,5 +34,5 @@ enum class Colors(val _name: String) {
 
 interface Scrollable {
     @Composable
-    fun <T> show(list: SnapshotStateList<T>, index: Int, isDeletable:Boolean)
+    fun <T,E:Any> show(list: SnapshotStateList<T>, index: Int, isDeletable:Boolean, toDelete: List<SnapshotStateList<out E>> )
 }

@@ -56,7 +56,12 @@ class Group(name: String, dist: Distance) : Scrollable {
     }
 
     @Composable
-    override fun <T> show(list: SnapshotStateList<T>, index: Int,isDeletable:Boolean) {
+    override fun <T, E : Any> show(
+        list: SnapshotStateList<T>,
+        index: Int,
+        isDeletable: Boolean,
+        toDelete: List<SnapshotStateList<out E>>
+    ) {
         Row(
             modifier = Modifier.fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically,
@@ -69,6 +74,9 @@ class Group(name: String, dist: Distance) : Scrollable {
             Button(
                 onClick = {
                     list.removeAt(index)
+                    toDelete[0].removeIf{ it as ParticipantStart
+                        it.wishGroup == this@Group.groupName
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color.Red,
