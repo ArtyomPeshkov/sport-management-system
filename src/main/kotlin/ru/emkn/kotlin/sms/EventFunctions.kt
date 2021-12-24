@@ -9,7 +9,6 @@ import log.universalC
 import java.io.File
 import java.time.LocalDate
 
-
 data class NameDate(val name: String, val date: LocalDate)
 
 /** позволяет считать из csv-файла название и дату соревнования */
