@@ -34,6 +34,7 @@ class Event(
         setupGroups()
     }
 
+    /** распределяет участников из списка коллективов в список групп */
     private fun setupGroups() {
         teamList.forEach { collective ->
             collective.athleteList.forEach { participant ->
@@ -52,6 +53,7 @@ class Event(
 
     fun getDistanceList() = distanceList
 
+    /** функция подбирает подходящую участнику группу, исходя из его возраста, пола и желаемой группы */
     private fun chooseGroupByParams(wishedGroup: String, age: Int, gender: Gender): Group? {
         val wish = getGroupByName(wishedGroup, groupList)
         if (wish != null && (gender == Gender.FEMALE || gender == wish.gender) && age >= wish.ageFrom && age <= wish.ageTo) {
@@ -60,6 +62,7 @@ class Event(
         return groupList.find { it.gender == gender && it.ageTo >= age && it.ageFrom <= age }
     }
 
+    /** позволяет найти группы, проходящие определенную дистанцию */
     fun getGroupsByDistance(distance: Distance): List<Group> {
         return groupList.filter { it.distance == distance }
     }

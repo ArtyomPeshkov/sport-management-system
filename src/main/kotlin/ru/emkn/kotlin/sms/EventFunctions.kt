@@ -12,6 +12,7 @@ import java.time.LocalDate
 
 data class NameDate(val name: String, val date: LocalDate)
 
+/** позволяет считать из csv-файла название и дату соревнования */
 fun getNameAndDate(configurationFolder: List<File>, path: String): NameDate {
     val rows = csvReader().readAllWithHeader(configurationFolder.find { it.name.substringAfterLast('/') == "event.csv" }
         ?: throw NotEnoughConfigurationFiles(path))
@@ -26,6 +27,7 @@ fun getNameAndDate(configurationFolder: List<File>, path: String): NameDate {
         throw CSVStringWithNameException(path)
 }
 
+/** функция, используя полученные ранее данные, формирует стартовые протоколы */
 fun Event.makeStartProtocols() {
     val startDir = File("csvFiles/configuration/starts/")
     startDir.mkdirs()
@@ -43,6 +45,7 @@ fun Event.makeStartProtocols() {
     parseLogger.universalC(Colors.BLUE._name, "you created start protocols in folder csvFiles/configuration/starts", 'i' )
 }
 
+/** функция подбирает каждому участнику в каждой группе номер и время старта */
 fun Event.setNumbersAndTime(groups:List<Group>) {
     parseLogger.universalC(Colors.BLUE._name, "the start time is selected for each participant", 'i' )
     val numberOfParticipants = groups.sumOf { it.listParticipants.size }
