@@ -95,13 +95,21 @@ fun distancesDataOnScreen(distanceList: SnapshotStateList<Distance>, configurati
 }
 
 @Composable
-fun groupsDataOnScreen(groupList: SnapshotStateList<Group>, participantList:SnapshotStateList<ParticipantStart>) {
+fun groupsDataOnScreen(groupList: SnapshotStateList<Group>, configurationFolder:String, participantList:SnapshotStateList<ParticipantStart>) {
     Column {
         LazyScrollable(groupList,true, listOf(participantList))
         Button(onClick = {
-            File("test.csv").createNewFile(); csvWriter().writeAll(
-            listOf(groupList),
-            File("test.csv")
+            File("$configurationFolder/save/").mkdirs();
+            File("$configurationFolder/save/distances.csv").createNewFile();
+
+            val groups = try{mutableListOf(groupList[0].createCSVHeader())} catch (e:IndexOutOfBoundsException){
+                mutableListOf( Group( "Any",Distance("Any", DistanceTypeData(DistanceType.ALL_POINTS,100,true))).createCSVHeader())}
+            groupList.forEach {
+                groups.add(it.createCSVString())
+            }
+            csvWriter().writeAll(groups,
+                File("$configurationFolder/save/groups.csv"),
+                append = false
         )
         }) {
             Text("Save")
@@ -115,6 +123,7 @@ fun startProtocolsDataOnScreen(
 ) {
     Column {
         LazyScrollable(participantList,isDeletable, listOf(groupList))
+      if (isDeletable)
         Button(onClick = {
             File("test.csv").createNewFile(); csvWriter().writeAll(
             listOf(participantList),
@@ -179,7 +188,7 @@ fun PhaseOneWindow(
         when (buttonStates.value.indexOf(true)) {
             0 -> teamsDataOnScreen(teamList,configurationFolder,groupList,participantList)
             1 -> distancesDataOnScreen(distanceList,configurationFolder,groupList,participantList)
-            2 -> groupsDataOnScreen(groupList,participantList)
+            2 -> groupsDataOnScreen(groupList,configurationFolder,participantList)
             3 -> startProtocolsDataOnScreen(participantList,false,groupList)
         }
     }

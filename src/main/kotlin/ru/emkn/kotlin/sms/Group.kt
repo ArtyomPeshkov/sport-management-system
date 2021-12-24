@@ -93,6 +93,11 @@ class Group(name: String, dist: Distance) : Scrollable {
         }
     }
 
+    fun createCSVHeader() = mutableListOf("Название", "Дистанция", "Пол", "ВозрастОт", "ВозрастДо")
+
+
+    fun createCSVString() = mutableListOf(groupName, distance.name, "$sex", "$ageFrom", "$ageTo")
+
 
     override fun toString(): String {
         val s = StringBuilder("Название: $groupName\nДистанция: $distance\nСписок участников: $listParticipants\n")
