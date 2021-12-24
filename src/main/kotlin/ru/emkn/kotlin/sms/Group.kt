@@ -10,7 +10,7 @@ class Group(name: String, dist: Distance) {
         private set
     var ageTo: Int = 0
         private set
-    lateinit var sex: Sex
+    lateinit var gender: Gender
         private set
 
     init {
@@ -30,17 +30,17 @@ class Group(name: String, dist: Distance) {
         listParticipants.addAll(participants)
     }
 
-    fun addDataWhenInitialise(ageFrom: Int, ageTo: Int, sex: Sex) {
+    fun addDataWhenInitialise(ageFrom: Int, ageTo: Int, gender: Gender) {
         if (ageTo < 0 || ageFrom < 0 || ageFrom > ageTo)
             throw UnexpectedValueException("Проблема с возрастными ограничениями группы: Минимальный возраст = $ageFrom; Максимальный возраст = $ageTo")
         this.ageFrom = ageFrom
         this.ageTo = ageTo
-        this.sex = sex
+        this.gender = gender
     }
 
     fun toStringFull(): String {
         val s = StringBuilder(this.toString())
-        s.append("Пол: $sex; Минимальный возраст: $ageFrom; Максимальный возраст: $ageTo")
+        s.append("Пол: $gender; Минимальный возраст: $ageFrom; Максимальный возраст: $ageTo")
         return s.toString()
     }
 

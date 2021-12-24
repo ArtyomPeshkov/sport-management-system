@@ -40,7 +40,7 @@ class Event(
                 chooseGroupByParams(
                     participant.wishGroup,
                     yearOfCompetition - participant.yearOfBirth,
-                    participant.sex
+                    participant.gender
                 )?.addParticipant(participant)
                     ?: parseLogger.universalC(
                         Colors.YELLOW._name,
@@ -52,12 +52,12 @@ class Event(
 
     fun getDistanceList() = distanceList
 
-    private fun chooseGroupByParams(wishedGroup: String, age: Int, sex: Sex): Group? {
+    private fun chooseGroupByParams(wishedGroup: String, age: Int, gender: Gender): Group? {
         val wish = getGroupByName(wishedGroup, groupList)
-        if (wish != null && (sex == Sex.FEMALE || sex == wish.sex) && age >= wish.ageFrom && age <= wish.ageTo) {
+        if (wish != null && (gender == Gender.FEMALE || gender == wish.gender) && age >= wish.ageFrom && age <= wish.ageTo) {
             return wish
         }
-        return groupList.find { it.sex == sex && it.ageTo >= age && it.ageFrom <= age }
+        return groupList.find { it.gender == gender && it.ageTo >= age && it.ageFrom <= age }
     }
 
     fun getGroupsByDistance(distance: Distance): List<Group> {

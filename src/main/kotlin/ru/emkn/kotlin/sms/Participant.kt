@@ -5,7 +5,7 @@ import exceptions.emptyNameCheck
 import java.time.LocalDateTime
 
 class Participant(
-    sex: Sex,
+    gender: Gender,
     surname: String,
     name: String,
     yearOfBirth: Int,
@@ -13,7 +13,7 @@ class Participant(
 ) {
     var wishGroup: String = ""
         private set
-    val sex: Sex
+    val gender: Gender
     val surname: String
     val name: String
     val yearOfBirth: Int
@@ -29,7 +29,7 @@ class Participant(
         emptyNameCheck(surname, "Пустая фамилия участника обнаружена")
         if (yearOfBirth <= 1900 || yearOfBirth>LocalDateTime.now().year)
             throw UnexpectedValueException("Unreal date of birth: $yearOfBirth")
-        this.sex = sex
+        this.gender = gender
         this.surname = surname
         this.name = name
         this.yearOfBirth = yearOfBirth
@@ -72,11 +72,11 @@ class Participant(
 
 
     fun fullToString(): String {
-        return this.toString() + "Пол: $sex; Год рождения: $yearOfBirth; Разряд: $rank"
+        return this.toString() + "Пол: $gender; Год рождения: $yearOfBirth; Разряд: $rank"
     }
 
     fun toCSV(): List<String> =
-        listOf("$number", surname, name, sex.toString(), "$yearOfBirth", team, rank, "$startTime")
+        listOf("$number", surname, name, gender.toString(), "$yearOfBirth", team, rank, "$startTime")
 
     fun headerFormatCSV() = listOf("Номер", "Фамилия", "Имя", "Пол", "Г.р.", "Коллектив", "Разр.", "Стартовое время")
     fun headerFormatCSVResult() = listOf(

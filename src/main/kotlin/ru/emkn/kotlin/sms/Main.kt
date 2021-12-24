@@ -1,13 +1,10 @@
 package ru.emkn.kotlin.sms
 
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import exceptions.*
 import log.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.lang.Integer.max
 
 val parseLogger: Logger = LoggerFactory.getLogger("Parse")
 
@@ -22,8 +19,8 @@ fun readFile(path: String): File {
 }
 
 fun chooseSex(sex: String) = when (sex) {
-        "М", "M", "m", "м", "MALE" -> Sex.MALE
-        "Ж", "F", "ж", "f", "FEMALE" -> Sex.FEMALE
+        "М", "M", "m", "м", "MALE" -> Gender.MALE
+        "Ж", "F", "ж", "f", "FEMALE" -> Gender.FEMALE
         else -> throw SexException(sex)
     }
 
