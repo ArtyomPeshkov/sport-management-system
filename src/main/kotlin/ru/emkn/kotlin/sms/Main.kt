@@ -8,7 +8,7 @@ import java.io.File
 
 val parseLogger: Logger = LoggerFactory.getLogger("Parse")
 
-
+/** функция считывающая файл */
 fun readFile(path: String): File {
     parseLogger.universalC(Colors.YELLOW._name, "Reading file: $path")
     try {
@@ -18,12 +18,14 @@ fun readFile(path: String): File {
     }
 }
 
-fun chooseSex(sex: String) = when (sex) {
+/** возвращает гендер (в файлах допускается использование разного написания названия гендеров) */
+fun chooseGender(gender: String) = when (gender) {
         "М", "M", "m", "м", "MALE" -> Gender.MALE
         "Ж", "F", "ж", "f", "FEMALE" -> Gender.FEMALE
-        else -> throw SexException(sex)
+        else -> throw SexException(gender)
     }
 
+/** запускает фазу 1 работы программы */
 fun phase1(path: String) {
     parseLogger.universalC(
         Colors.YELLOW._name,
@@ -49,6 +51,7 @@ fun phase1(path: String) {
     parseLogger.universalC(Colors.PURPLE._name, "some info about event: $event", 'i')
 }
 
+/** запускает фазу 2 работы программы */
 fun phase2(path: String) {
     parseLogger.universalC(
         Colors.YELLOW._name,
@@ -69,6 +72,7 @@ fun phase2(path: String) {
     makeResultProtocols(groups)
 }
 
+/** запускает фазу 3 работы программы */
 fun phase3(path: String) {
     val teams = ResultsReader(path).getGroupsFromResultProtocols()
     generateResultProtocolForCollectives(teams)

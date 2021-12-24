@@ -10,7 +10,7 @@ fun Group.modifyGroup(
     this.addDataWhenInitialise(
         configFileString["ВозрастОт"]?.toInt() ?: throw CSVFieldNamesException(path),
         configFileString["ВозрастДо"]?.toInt() ?: throw CSVFieldNamesException(path),
-        chooseSex(configFileString["Пол"] ?: throw CSVFieldNamesException(path))
+        chooseGender(configFileString["Пол"] ?: throw CSVFieldNamesException(path))
     )
 }
 

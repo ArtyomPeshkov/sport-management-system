@@ -17,7 +17,7 @@ fun participantsParser(team: String, file: File): List<Participant> {
 fun makeParticipant(param: Map<String, String>, index: Int, path: String,team: String="",group:String=""): Participant {
     parseLogger.universalC(Colors.YELLOW._name, "Reading participant number ${index + 1} from $path")
     val participant = Participant(
-        chooseSex(param["Пол"] ?: throw CSVFieldNamesException(path)),
+        chooseGender(param["Пол"] ?: throw CSVFieldNamesException(path)),
         param["Фамилия"] ?: throw CSVFieldNamesException(path),
         param["Имя"] ?: throw CSVFieldNamesException(path),
         param["Г.р."]?.toInt() ?: throw CSVFieldNamesException(path),
