@@ -6,10 +6,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -43,18 +41,18 @@ class Team(name: String) : Scrollable {
         athleteList.addAll(participants)
     }
 
-    fun createCSVHeader()= mutableListOf(
+    fun createCSVHeader() = mutableListOf(
         listOf(name, "", "", "", "", ""),
         listOf("Группа", "Фамилия", "Имя", "Пол", "Г.р.", "Разр.")
     )
 
-  fun createCSVStrings():MutableList<List<String>>{
-      val res = mutableListOf<List<String>>()
-      athleteList.forEach {
-          res.add(listOf(it.wishGroup,it.surname,it.name,it.sex.toString(),it.yearOfBirth.toString(),it.rank))
-      }
-      return res
-  }
+    fun createCSVStrings(): MutableList<List<String>> {
+        val res = mutableListOf<List<String>>()
+        athleteList.forEach {
+            res.add(listOf(it.wishGroup, it.surname, it.name, it.sex.toString(), it.yearOfBirth.toString(), it.rank))
+        }
+        return res
+    }
 
     @Composable
     override fun <T, E : Any> show(
@@ -64,6 +62,7 @@ class Team(name: String) : Scrollable {
         toDelete: List<SnapshotStateList<out E>>
     ) {
         var isOpened by remember { mutableStateOf(false) }
+        var isVisible by remember { mutableStateOf(false) }
         val listOfParticipant = athleteList.toMutableStateList()
 
         val angle: Float by animateFloatAsState(
@@ -75,24 +74,180 @@ class Team(name: String) : Scrollable {
         )
         Column {
             Box(modifier = Modifier.fillMaxSize().clickable { isOpened = !isOpened }) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(5.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(5.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
                     Icon(
                         painter = painterResource("arrow.svg"),
                         contentDescription = null,
                         modifier = Modifier.width(10.dp).rotate(angle)
                     )
                     Text(this@Team.name, modifier = Modifier.fillMaxWidth(0.8f).padding(start = 5.dp))
-                    Button(onClick = { list.removeAt(index)
-                        toDelete[0].forEach { group ->
-                            group as Group
-                            group.listParticipants.removeIf {
-                                it.wishGroup == group.groupName
+                    Button(
+                        onClick = {
+                            isVisible = false
+                            list.removeAt(index)
+                            toDelete[0].forEach { group ->
+                                group as Group
+                                group.listParticipants.removeIf {
+                                    it.wishGroup == group.groupName
+                                }
                             }
-                        }
-                        toDelete[1].removeIf {
-                            it as ParticipantStart
-                            it.team == this@Team.name
-                        }}) { Text("Delete") }
+                            toDelete[1].removeIf {
+                                it as ParticipantStart
+                                it.team == this@Team.name
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red, contentColor = Color.White)
+                    ) { Text("Delete") }
+                    Button(
+                        onClick = { isVisible = !isVisible },
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = Color(red = 0, green = 200, blue = 0),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("Add")
+                    }
+                }
+            }
+
+            AnimatedVisibility(isVisible) {
+                Column {
+                    var name by remember { mutableStateOf("") }
+                    var surname by remember { mutableStateOf("") }
+                    var yearOfBirth: Int? by remember { mutableStateOf(null) }
+                    var isYearCorrect by remember { mutableStateOf(false) }
+                    var isWishCorrect by remember { mutableStateOf(false) }
+                    var isMale by remember { mutableStateOf(true) }
+                    var rank by remember { mutableStateOf("") }
+                    var wishGroupStr by remember { mutableStateOf("") }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Name")
+                        OutlinedTextField(
+                            value = name,
+                            onValueChange = {
+                                name = it
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(0.dp),
+                            singleLine = true,
+                            shape = RoundedCornerShape(5.dp)
+                        )
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Surname")
+                        OutlinedTextField(
+                            value = surname,
+                            onValueChange = {
+                                surname = it
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(0.dp),
+                            singleLine = true,
+                            shape = RoundedCornerShape(5.dp)
+                        )
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Rank")
+                        OutlinedTextField(
+                            value = rank,
+                            onValueChange = {
+                                rank = it
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(0.dp),
+                            singleLine = true,
+                            shape = RoundedCornerShape(5.dp)
+                        )
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Wish Group")
+                        OutlinedTextField(
+                            value = wishGroupStr,
+                            onValueChange = {
+                                wishGroupStr = it
+                                isWishCorrect = toDelete[0].map { group ->
+                                    group as Group
+                                    group.groupName
+                                }.contains(wishGroupStr)
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(0.dp),
+                            singleLine = true,
+                            shape = RoundedCornerShape(5.dp),
+                            isError = !isWishCorrect
+                        )
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Year of birth")
+                        OutlinedTextField(
+                            value = yearOfBirth?.toString() ?: "",
+                            onValueChange = { s ->
+                                yearOfBirth = s.toIntOrNull().let {
+                                    if (it != null) {
+                                        isYearCorrect = true
+                                        it
+                                    } else {
+                                        isYearCorrect = false
+                                        null
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(0.dp),
+                            singleLine = true,
+                            shape = RoundedCornerShape(5.dp),
+                            isError = !isYearCorrect
+                        )
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = { isMale = true },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = if (isMale) Color(
+                                    red = 50,
+                                    green = 50,
+                                    blue = 255
+                                ) else Color.Gray, contentColor = Color.White
+                            )
+                        ) { Text("Male") }
+                        Button(
+                            onClick = { isMale = false },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = if (!isMale) Color(
+                                    red = 255,
+                                    green = 28,
+                                    blue = 89
+                                ) else Color.Gray, contentColor = Color.White
+                            )
+                        ) { Text("Female") }
+                    }
+                    Button(onClick = {
+                        val part =
+                            Participant(if (isMale) Sex.MALE else Sex.FEMALE, surname, name, yearOfBirth ?: 0, rank)
+                        part.setGroup(wishGroupStr)
+                        listOfParticipant.add(part)
+                        athleteList.add(part)
+                        isVisible = false
+                    }, enabled = isYearCorrect && isWishCorrect) { Text("Add part.") }
                 }
             }
 

@@ -124,6 +124,15 @@ open class Participant(
         this.points = participant.points
     }
 
+    fun chooseGroupByParams(groupList: List<Group>, yearOfCompetition: Int): Group? {
+        val age = yearOfCompetition - yearOfBirth
+        val wish = getGroupByName(wishGroup, groupList)
+        if (wish != null && (sex == Sex.FEMALE || sex == wish.sex) && age >= wish.ageFrom && age <= wish.ageTo) {
+            return wish
+        }
+        return groupList.find { it.sex == sex && it.ageTo >= age && it.ageFrom <= age }
+    }
+
     fun setParticipantStatus(stat: String) {
         status = stat
     }

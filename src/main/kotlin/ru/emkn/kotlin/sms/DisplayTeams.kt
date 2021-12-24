@@ -1,5 +1,6 @@
 package ru.emkn.kotlin.sms
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,11 +42,12 @@ fun eventDataOnScreen(eventData: MutableState<Event>) {
 
 @Composable
 fun teamsDataOnScreen(teamList: SnapshotStateList<Team>,configurationFolder:String,groupList: SnapshotStateList<Group>,participantList: SnapshotStateList<ParticipantStart>) {
+    var isVisible by remember { mutableStateOf(false) }
     Column {
         LazyScrollable(teamList, false, listOf(groupList,participantList))
         Button(onClick = {
-            File("$configurationFolder/save/application").mkdirs();
-            File("$configurationFolder/save/application").createNewFile();
+            File("$configurationFolder/save/application").mkdirs()
+            File("$configurationFolder/save/application").createNewFile()
             teamList.forEach {
                 val teams = it.createCSVHeader()
                 teams.addAll(it.createCSVStrings())
@@ -56,6 +58,127 @@ fun teamsDataOnScreen(teamList: SnapshotStateList<Team>,configurationFolder:Stri
             }
         }) {
             Text("Save")
+        }
+        Button(
+            onClick = { isVisible = !isVisible },
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = Color(red = 0, green = 200, blue = 0),
+                contentColor = Color.White
+            )
+        ) {
+            Text("Add team")
+        }
+
+
+        AnimatedVisibility(isVisible) {
+            Column {
+                var name by remember { mutableStateOf("") }
+                var surname by remember { mutableStateOf("") }
+                var yearOfBirth: Int? by remember { mutableStateOf(null) }
+                var isYearCorrect by remember { mutableStateOf(false) }
+                var isMale by remember { mutableStateOf(true) }
+                var rank by remember { mutableStateOf("") }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Group Name")
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = {
+                            name = it
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(0.dp),
+                        singleLine = true,
+                        shape = RoundedCornerShape(5.dp)
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Surname")
+                    OutlinedTextField(
+                        value = surname,
+                        onValueChange = {
+                            surname = it
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(0.dp),
+                        singleLine = true,
+                        shape = RoundedCornerShape(5.dp)
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Rank")
+                    OutlinedTextField(
+                        value = rank,
+                        onValueChange = {
+                            rank = it
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(0.dp),
+                        singleLine = true,
+                        shape = RoundedCornerShape(5.dp)
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Year of birth")
+                    OutlinedTextField(
+                        value = yearOfBirth?.toString() ?: "",
+                        onValueChange = { s ->
+                            yearOfBirth = s.toIntOrNull().let {
+                                if (it != null) {
+                                    isYearCorrect = true
+                                    it
+                                } else {
+                                    isYearCorrect = false
+                                    null
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(0.dp),
+                        singleLine = true,
+                        shape = RoundedCornerShape(5.dp),
+                        isError = !isYearCorrect
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(
+                        onClick = { isMale = true },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = if (isMale) Color(
+                                red = 50,
+                                green = 50,
+                                blue = 255
+                            ) else Color.Gray, contentColor = Color.White
+                        )
+                    ) { Text("Male") }
+                    Button(
+                        onClick = { isMale = false },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = if (!isMale) Color(
+                                red = 255,
+                                green = 28,
+                                blue = 89
+                            ) else Color.Gray, contentColor = Color.White
+                        )
+                    ) { Text("Артём") }
+                }
+                Button(onClick = {
+
+                    isVisible = false
+                }, enabled = isYearCorrect) { Text("Add part.") }
+            }
         }
     }
 }
@@ -75,8 +198,8 @@ fun distancesDataOnScreen(distanceList: SnapshotStateList<Distance>, configurati
             // Например функция distancesDataOnScreen может принимать как Phase1, так и Phase2, но конфликты в них могут возникнуть разные (или одинаковые, хрен его знает, 4 часа ночи. Я не буду думать, что там разное, а что одинаковое)
             // Выпадающий список с доступными дистанциями
             // Создать папку saves внутри папки переданной пользователем и проверить корректность работы программы. Если что-то работает не так, попросить пользователя внести необходимые правки.
-            File("$configurationFolder/save/").mkdirs();
-            File("$configurationFolder/save/distances.csv").createNewFile();
+            File("$configurationFolder/save/").mkdirs()
+            File("$configurationFolder/save/distances.csv").createNewFile()
 
             val maxNumberOfPoints = try{ distanceList.maxOf { it.getPointsList().size }} catch (e:NoSuchElementException){0}
             val distances = try{mutableListOf(distanceList[0].createCSVHeader(maxNumberOfPoints))} catch (e:IndexOutOfBoundsException){
@@ -99,8 +222,8 @@ fun groupsDataOnScreen(groupList: SnapshotStateList<Group>, configurationFolder:
     Column {
         LazyScrollable(groupList,true, listOf(participantList))
         Button(onClick = {
-            File("$configurationFolder/save/").mkdirs();
-            File("$configurationFolder/save/distances.csv").createNewFile();
+            File("$configurationFolder/save/").mkdirs()
+            File("$configurationFolder/save/distances.csv").createNewFile()
 
             val groups = try{mutableListOf(groupList[0].createCSVHeader())} catch (e:IndexOutOfBoundsException){
                 mutableListOf( Group( "Any",Distance("Any", DistanceTypeData(DistanceType.ALL_POINTS,100,true))).createCSVHeader())}
@@ -255,7 +378,7 @@ fun main() = application {
             Window(
                 onCloseRequest = ::exitApplication,
                 title = "Phase ${phase.value + 1}",
-                state = rememberWindowState(width = if (phase.value == -1) 600.dp else 800.dp, height = 400.dp)
+                state = rememberWindowState(width = if (phase.value == -1) 600.dp else 850.dp, height = 400.dp)
             ) {
                 val distanceList = remember { distances.values.toMutableStateList() }
                 val groupList = remember { groups.toMutableStateList() }
@@ -285,7 +408,7 @@ fun main() = application {
             Window(
                 onCloseRequest = ::exitApplication,
                 title = "Phase ${phase.value + 1}",
-                state = rememberWindowState(width = if (phase.value == -1) 600.dp else 800.dp, height = 400.dp)
+                state = rememberWindowState(width = if (phase.value == -1) 600.dp else 850.dp, height = 400.dp)
             ) {
                 val distanceList = remember { distances.values.toMutableStateList() }
                 val participantList = remember { groups.flatMap { it.listParticipants }.toMutableStateList() }
@@ -395,7 +518,7 @@ fun SeparatorLine() {
 @Composable
 fun <T : Scrollable, E:Any> LazyScrollable(list: SnapshotStateList<T>, isDeletable:Boolean=true, toDelete: List<SnapshotStateList<out E>>) {
 
-    Box(modifier = Modifier.fillMaxWidth().padding(10.dp).fillMaxHeight(.75f)) {
+    Box(modifier = Modifier.fillMaxWidth().padding(10.dp).fillMaxHeight(.5f)) {
         val state = rememberLazyListState()
 
         LazyColumn(Modifier.fillMaxSize().padding(end = 12.dp), state) {
