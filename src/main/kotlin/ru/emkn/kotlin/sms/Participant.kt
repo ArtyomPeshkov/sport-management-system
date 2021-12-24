@@ -79,6 +79,7 @@ class Participant(
         listOf("$number", surname, name, gender.toString(), "$yearOfBirth", team, rank, "$startTime")
 
     fun headerFormatCSV() = listOf("Номер", "Фамилия", "Имя", "Пол", "Г.р.", "Коллектив", "Разр.", "Стартовое время")
+
     fun headerFormatCSVResult() = listOf(
         "Порядковый номер",
         "Номер",

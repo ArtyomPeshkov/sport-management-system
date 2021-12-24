@@ -6,8 +6,8 @@ import exceptions.ProblemWithCSVException
 import log.universalC
 import java.io.File
 
+/** считывает участников из csv-файла */
 fun participantsParser(team: String, file: File): List<Participant> {
-
     if (file.readLines().size < 3)
         throw ProblemWithCSVException(file.path)
     return csvReader().readAllWithHeader(file.readLines().drop(1).joinToString("\n"))
