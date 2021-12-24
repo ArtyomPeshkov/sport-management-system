@@ -22,6 +22,7 @@ fun setStatusForAllParticipants(
     }
 }
 
+/** функция, используя собранные ранее данные, создает протоколы результатов для групп */
 fun makeResultProtocols(groups: List<Group>) {
     parseLogger.universalC(Colors.BLUE._name, "making result protocols", 'i')
     val resultDir = File("csvFiles/configuration/results/")
@@ -59,7 +60,7 @@ fun makeResultProtocols(groups: List<Group>) {
                 it.number,
                 it.surname,
                 it.name,
-                it.sex,
+                it.gender,
                 it.yearOfBirth,
                 it.team,
                 it.rank,
@@ -71,6 +72,7 @@ fun makeResultProtocols(groups: List<Group>) {
     }
 }
 
+/** функция создает протокол результатов для команд */
 fun generateResultProtocolForCollectives(teams: MutableList<Team>) {
     val file = File("csvFiles/configuration/teamsResults.csv")
     file.writeText("")

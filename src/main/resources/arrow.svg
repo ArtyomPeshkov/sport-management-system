@@ -1,0 +1,14 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    id="vector">
+    <path
+        id="path"
+        d="M 9 3 L 19 12 L 9 21"
+        fill="none"
+        stroke="#ffffff"
+        stroke-width="4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill-rule="evenodd"/>
+</svg>

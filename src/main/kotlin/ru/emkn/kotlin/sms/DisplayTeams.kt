@@ -1,20 +1,26 @@
 package ru.emkn.kotlin.sms
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
@@ -23,107 +29,125 @@ val topRowHeight = 30.dp
 val topButtonWidth = 100.dp
 val separatorLineWidth = 1.dp
 
-//@OptIn(ExperimentalFoundationApi::class)
+fun listOfTabs(phase: Int): List<String> =
+    when (phase) {
+        1 -> listOf("Событие", "Команды", "Дистанции", "Группы", "Старт. прот.")
+        2 -> listOf("Событие", "Старт. прот.", "Дистанции", "Контр. точки")
+        3 -> listOf("Событие", "Результаты", "Общие")
+        else -> emptyList()
+    }
+
+
 fun main() = application {
     val buttonStates = remember { mutableStateOf(MutableList(10) { it == 0 }) }
-    val path = remember { mutableStateOf("") }
+    var path by remember { mutableStateOf("") }
     val phase = remember { mutableStateOf(-1) }
+    var test by remember { mutableStateOf(false) }
+    val list = mutableStateListOf("Team 1", "Team 2", "Team 3", "Team 4") //Пока тут, потому что иначе пересоздает лист
     Window(
         onCloseRequest = ::exitApplication,
         title = "Test, TEST, AND ANOTHER TEST",
-        state = rememberWindowState(width = 800.dp, height = 300.dp)
+        state = rememberWindowState(width = 800.dp, height = 400.dp)
     ) {
         Column(modifier = Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(
                 modifier = Modifier.padding(start = 10.dp, end = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Box(modifier = Modifier.weight(4f)) { path.value = PathField() }
-                Box(modifier = Modifier.weight(1f).fillMaxWidth()) { DropDownMenu(phase) }
+                Box(modifier = Modifier.weight(4f)) { path = PathField() }
+                Box(modifier = Modifier.weight(1f).fillMaxWidth()) { DropDownMenu(phase, listOf(1, 2, 3)) }
+                val isRotated = remember { mutableStateOf(false) }
                 Button(
                     modifier = Modifier.weight(1f),
                     onClick = {
-                              if (path.value.isNotBlank())
-                              {
-                                  when(path.value) {
-                                      // Для этой фазы нужны: списки участников (папка applications),
-                                      //                      информация о дистанциях (distances.csv),
-                                      //                      информация о событии (event.csv),
-                                      //                      информация о группах (groups.csv)
-                                      "1" -> phase1(path.value) // После этой фазы будут сформированы стартовые протоколы в папке $path/starts
-                                      // Для этой фазы нужны: стартовые протоколы (папка starts),
-                                      //                      информация о дистанциях (distances.csv),
-                                      //                      информация о группах (groups.csv)
-                                      //                      информация о прохождении контрольных точек (points)
-                                      "2" -> phase2(path.value) // После этой фазы будут сформированы протоколы прохождения дистанций в группах $path/results
-                                      // Для этой фазы нужны: протоколы результатов (папка results),
-                                      "3" -> phase3(path.value) // После этой фазы будут сформирован протокол результатов соревнований $path/teamsResults.csv
-                                  }
-                              }
-                              /*TODO("Передает куда-то путь для проверки")*/
-                              },
+                        test = !test
+                        isRotated.value = !isRotated.value
+                        /*TODO("Передает куда-то путь для проверки")*/
+                        when (phase.value + 1) {
+                            // Для этой фазы нужны: списки участников (папка applications),
+                            //                      информация о дистанциях (distances.csv),
+                            //                      информация о событии (event.csv),
+                            //                      информация о группах (groups.csv)
+                            1 -> phase1(path/*.value*/) // После этой фазы будут сформированы стартовые протоколы в папке $path/starts
+                            // Для этой фазы нужны: стартовые протоколы (папка starts),
+                            //                      информация о дистанциях (distances.csv),
+                            //                      информация о группах (groups.csv)
+                            //                      информация о прохождении контрольных точек (points)
+                            2 -> phase2(path/*.value*/) // После этой фазы будут сформированы протоколы прохождения дистанций в группах $path/results
+                            // Для этой фазы нужны: протоколы результатов (папка results),
+                            3 -> phase3(path/*.value*/) // После этой фазы будут сформирован протокол результатов соревнований $path/teamsResults.csv
+                        }
+                    },
                     enabled = true
-                ) { Text("Результат") }
+                ) {
+                    val angle: Float by animateFloatAsState(
+                        targetValue = if (isRotated.value) 90F else 0F,
+                        animationSpec = tween(
+                            durationMillis = 500, // milliseconds
+                            easing = FastOutSlowInEasing
+                        )
+                    )
+                    Icon(
+                        painter = painterResource("arrow.svg"),
+                        contentDescription = null,
+                        modifier = Modifier.width(10.dp).rotate(angle)
+                    )
+                    Text(text = "Результат", modifier = Modifier.padding(start = 10.dp), fontSize = 12.sp)
+                }
             }
-            AllTopButtons(1, buttonStates)
-            Text(text = path.value)
+            AllTopButtons(buttonStates, listOfTabs(2))
+            AnimatedVisibility(test) {
+                Text(if (!test) path else "Scooby-doby-doooooooooooooooooo\nooooooooo\noooooooooooooo")
+            }
             Text(phase.value.toString())
+            LazyScrollable(list)
         }
     }
 }
 
 @Composable
 fun PathField(): String {
-    val textState = remember { mutableStateOf("") }
+    var textState by remember { mutableStateOf("") }
     OutlinedTextField(
-        value = textState.value,
-        onValueChange = { textState.value = it },
+        value = textState/*.value*/,
+        onValueChange = { textState/*.value*/ = it },
         modifier = Modifier.fillMaxWidth().padding(0.dp),
         singleLine = true,
         shape = RoundedCornerShape(5.dp)
     )
-    return textState.value
+    return textState
 }
 
 @Composable
-fun DropDownMenu(phase: MutableState<Int>) {
-    val expanded = remember { mutableStateOf(false) }
-    val items = listOf("1", "2", "3")
-
+fun DropDownMenu(indexOfChoice: MutableState<Int>, items: List<Any>) {
+    var expanded by remember { mutableStateOf(false) }
     Text(
-        if (phase.value != -1) items[phase.value-1] else "Phase",
+        if (indexOfChoice.value >= 0) items[indexOfChoice.value].toString() else "Phase",
         modifier = Modifier.border(3.dp, Color.Gray, RoundedCornerShape(6.dp))
-            .clickable(onClick = { expanded.value = true })
+            .clickable(onClick = { expanded/*.value*/ = true })
             .padding(top = 20.dp, start = 5.dp, end = 5.dp, bottom = 20.dp).fillMaxWidth(),
         textAlign = TextAlign.Center,
-        color = if (phase.value != -1) Color.Black else Color.LightGray
+        color = if (indexOfChoice.value >= 0) Color.Black else Color.LightGray
     )
     DropdownMenu(
-        expanded = expanded.value,
-        onDismissRequest = { expanded.value = false },
+        expanded = expanded/*.value*/,
+        onDismissRequest = { expanded/*.value*/ = false },
         modifier = Modifier.padding(top = 5.dp).background(Color.White)
             .border(3.dp, Color.Gray, RoundedCornerShape(6.dp))
     ) {
         items.forEachIndexed { index, s ->
             DropdownMenuItem(onClick = {
-                phase.value = index+1
-                expanded.value = false
+                indexOfChoice.value = index
+                expanded/*.value*/ = false
             }) {
-                Text(s)
+                Text(s.toString())
             }
         }
     }
 }
 
 @Composable
-fun AllTopButtons(phase: Int, buttonStates: MutableState<MutableList<Boolean>>)/*: MutableList<Boolean>*/ {
-    //TODO("Какие вкладки в какой фазу")
-    val values =
-        when (phase) {
-            1 -> listOf("1", "2", "3", "4")
-            2 -> listOf("4", "5", "6")
-            else -> listOf("7", "8", "9")
-        }
+fun AllTopButtons(buttonStates: MutableState<MutableList<Boolean>>, values: List<String>) {
     Row(
         modifier = Modifier.height(topRowHeight).fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(0.dp)
@@ -167,4 +191,34 @@ fun TopButton(text: String, index: Int, buttonStates: MutableState<MutableList<B
 @Composable
 fun SeparatorLine() {
     Box(modifier = Modifier.fillMaxHeight().width(separatorLineWidth).background(Color.Black)) {}
+}
+
+
+@Composable
+fun LazyItem(str: String, Button: @Composable () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(16.dp)) {
+        Text(str)
+        Button()
+    }
+}
+
+
+@Composable
+fun LazyScrollable(list: SnapshotStateList<String>) {
+    Box(modifier = Modifier.fillMaxSize().padding(10.dp)) {
+        val state = rememberLazyListState()
+
+        LazyColumn(Modifier.fillMaxSize().padding(end = 12.dp), state) {
+            items(list) {
+                LazyItem(it) { Button(onClick = { list.remove(it) }) { Text("Hi-Hi-Hi") } }
+            }
+        }
+
+        VerticalScrollbar(
+            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+            adapter = rememberScrollbarAdapter(
+                scrollState = state
+            )
+        )
+    }
 }
