@@ -41,10 +41,15 @@ fun eventDataOnScreen(eventData: MutableState<Event>) {
 }
 
 @Composable
-fun teamsDataOnScreen(teamList: SnapshotStateList<Team>,configurationFolder:String,groupList: SnapshotStateList<Group>,participantList: SnapshotStateList<ParticipantStart>) {
+fun teamsDataOnScreen(
+    teamList: SnapshotStateList<Team>,
+    configurationFolder: String,
+    groupList: SnapshotStateList<Group>,
+    participantList: SnapshotStateList<ParticipantStart>
+) {
     var isVisible by remember { mutableStateOf(false) }
     Column {
-        LazyScrollable(teamList, false, listOf(groupList,participantList))
+        LazyScrollable(teamList, false, listOf(groupList, participantList))
         Button(onClick = {
             // НЕ РАБОТАЕТ
             if (  File("$configurationFolder/save/application").exists())
@@ -54,7 +59,8 @@ fun teamsDataOnScreen(teamList: SnapshotStateList<Team>,configurationFolder:Stri
             teamList.forEach {
                 val teams = it.createCSVHeader()
                 teams.addAll(it.createCSVStrings())
-                csvWriter().writeAll(teams,
+                csvWriter().writeAll(
+                    teams,
                     File("$configurationFolder/save/application/application_${it.name}.csv"),
                     append = false
                 )
@@ -63,7 +69,9 @@ fun teamsDataOnScreen(teamList: SnapshotStateList<Team>,configurationFolder:Stri
             Text("Save")
         }
         Button(
-            onClick = { isVisible = !isVisible },
+            onClick = {
+                isVisible = !isVisible
+            },
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = Color(red = 0, green = 200, blue = 0),
                 contentColor = Color.White
@@ -75,123 +83,43 @@ fun teamsDataOnScreen(teamList: SnapshotStateList<Team>,configurationFolder:Stri
 
         AnimatedVisibility(isVisible) {
             Column {
-                var name by remember { mutableStateOf("") }
-                var surname by remember { mutableStateOf("") }
-                var yearOfBirth: Int? by remember { mutableStateOf(null) }
-                var isYearCorrect by remember { mutableStateOf(false) }
-                var isMale by remember { mutableStateOf(true) }
-                var rank by remember { mutableStateOf("") }
+                var groupName by remember { mutableStateOf("") }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text("Group Name")
                     OutlinedTextField(
-                        value = name,
+                        value = groupName,
                         onValueChange = {
-                            name = it
+                            groupName = it
                         },
                         modifier = Modifier.fillMaxWidth().padding(0.dp),
                         singleLine = true,
                         shape = RoundedCornerShape(5.dp)
                     )
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(5.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Surname")
-                    OutlinedTextField(
-                        value = surname,
-                        onValueChange = {
-                            surname = it
-                        },
-                        modifier = Modifier.fillMaxWidth().padding(0.dp),
-                        singleLine = true,
-                        shape = RoundedCornerShape(5.dp)
-                    )
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(5.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Rank")
-                    OutlinedTextField(
-                        value = rank,
-                        onValueChange = {
-                            rank = it
-                        },
-                        modifier = Modifier.fillMaxWidth().padding(0.dp),
-                        singleLine = true,
-                        shape = RoundedCornerShape(5.dp)
-                    )
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(5.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Year of birth")
-                    OutlinedTextField(
-                        value = yearOfBirth?.toString() ?: "",
-                        onValueChange = { s ->
-                            yearOfBirth = s.toIntOrNull().let {
-                                if (it != null) {
-                                    isYearCorrect = true
-                                    it
-                                } else {
-                                    isYearCorrect = false
-                                    null
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth().padding(0.dp),
-                        singleLine = true,
-                        shape = RoundedCornerShape(5.dp),
-                        isError = !isYearCorrect
-                    )
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(5.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Button(
-                        onClick = { isMale = true },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = if (isMale) Color(
-                                red = 50,
-                                green = 50,
-                                blue = 255
-                            ) else Color.Gray, contentColor = Color.White
-                        )
-                    ) { Text("Male") }
-                    Button(
-                        onClick = { isMale = false },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = if (!isMale) Color(
-                                red = 255,
-                                green = 28,
-                                blue = 89
-                            ) else Color.Gray, contentColor = Color.White
-                        )
-                    ) { Text("Артём") }
                 }
                 Button(onClick = {
-
+                    teamList.add(Team(groupName))
                     isVisible = false
-                }, enabled = isYearCorrect) { Text("Add part.") }
+                }) { Text("Add team") }
             }
         }
     }
 }
 
 
-
 @Composable
-fun distancesDataOnScreen(distanceList: SnapshotStateList<Distance>, configurationFolder:String, groupList: SnapshotStateList<Group>,participantList: SnapshotStateList<ParticipantStart>) {
+fun distancesDataOnScreen(
+    distanceList: SnapshotStateList<Distance>,
+    configurationFolder: String,
+    groupList: SnapshotStateList<Group>,
+    participantList: SnapshotStateList<ParticipantStart>
+) {
+    var isVisible by remember { mutableStateOf(false) }
+
     Column {
-        LazyScrollable(distanceList,true,listOf(groupList,participantList))
+        LazyScrollable(distanceList, true, listOf(groupList, participantList))
         Button(onClick = {
 
             //Создать функции для сохранения различных видов структур и обработать возможные ошибки (Например: удалили дистанцию D4000, значит с группой, которая отвечает за эту дистанцию надо что-то сделать)
@@ -204,39 +132,159 @@ fun distancesDataOnScreen(distanceList: SnapshotStateList<Distance>, configurati
             File("$configurationFolder/save/").mkdirs()
             File("$configurationFolder/save/distances.csv").createNewFile()
 
-            val maxNumberOfPoints = try{ distanceList.maxOf { it.getPointsList().size }} catch (e:NoSuchElementException){0}
-            val distances = try{mutableListOf(distanceList[0].createCSVHeader(maxNumberOfPoints))} catch (e:IndexOutOfBoundsException){
-               mutableListOf( Distance("Any", DistanceTypeData(DistanceType.ALL_POINTS,100,true)).createCSVHeader(maxNumberOfPoints))}
+            val maxNumberOfPoints = try {
+                distanceList.maxOf { it.getPointsList().size }
+            } catch (e: NoSuchElementException) {
+                0
+            }
+            val distances = try {
+                mutableListOf(distanceList[0].createCSVHeader(maxNumberOfPoints))
+            } catch (e: IndexOutOfBoundsException) {
+                mutableListOf(
+                    Distance("Any", DistanceTypeData(DistanceType.ALL_POINTS, 100, true)).createCSVHeader(
+                        maxNumberOfPoints
+                    )
+                )
+            }
             distanceList.forEach {
                 distances.add(it.createCSVString(maxNumberOfPoints))
             }
-            csvWriter().writeAll(distances,
-            File("$configurationFolder/save/distances.csv"),
+            csvWriter().writeAll(
+                distances,
+                File("$configurationFolder/save/distances.csv"),
                 append = false
-        )
+            )
         }) {
             Text("Save")
+        }
+        Button(
+            onClick = { isVisible = !isVisible },
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = Color(red = 0, green = 200, blue = 0),
+                contentColor = Color.White
+            )
+        ) { Text("Add distance") }
+
+        AnimatedVisibility(isVisible) {
+            Column {
+                var distanceName by remember { mutableStateOf("") }
+                var type by remember { mutableStateOf(true) }
+                var numberOfPoints: Int? by remember { mutableStateOf(null) }
+                var isNameCorrect by remember { mutableStateOf(false) }
+                var isNumberCorrect by remember { mutableStateOf(true) }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Distance Name")
+                    OutlinedTextField(
+                        value = distanceName,
+                        onValueChange = { str ->
+                            distanceName = str
+                            isNameCorrect = !distanceList.map { it.name }.contains(distanceName) && str.isNotBlank()
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(0.dp),
+                        singleLine = true,
+                        shape = RoundedCornerShape(5.dp),
+                        isError = !isNameCorrect
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Number of need points\nIf all points, ignore it")
+                    OutlinedTextField(
+                        value = numberOfPoints?.toString() ?: "",
+                        onValueChange = { str ->
+                            numberOfPoints = str.toIntOrNull()
+                            isNameCorrect = !distanceList.map { it.name }.contains(distanceName) && str.isNotBlank()
+                            isNumberCorrect = if (type) true else numberOfPoints != null && numberOfPoints != 0
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(0.dp),
+                        singleLine = true,
+                        shape = RoundedCornerShape(5.dp),
+                        isError = !isNameCorrect || !isNumberCorrect
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(
+                        onClick = { type = true },
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = if (type) Color.Blue else Color.Gray,
+                            contentColor = Color.White
+                        ),
+                        modifier = Modifier.weight(1f)
+                    ) { Text("All points") }
+                    Button(
+                        onClick = { type = false },
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = if (!type) Color.Blue else Color.Gray,
+                            contentColor = Color.White
+                        ),
+                        modifier = Modifier.weight(1f)
+                    ) { Text("Some points") }
+                }
+                Button(
+                    onClick = {
+                        val dist = Distance(
+                            distanceName,
+                            DistanceTypeData(
+                                if (type) DistanceType.ALL_POINTS else DistanceType.SOME_POINTS,
+                                if (type) 1 else numberOfPoints ?: 1,
+                                true
+                            )
+                        )
+                        if (type) {
+                            dist.addPoint(ControlPoint("100"))
+                        } else
+                            for (i in 1..(numberOfPoints ?: 0))
+                                dist.addPoint(ControlPoint(i.toString()))
+                        distanceList.add(dist)
+                        isVisible = false
+                    },
+                    enabled = isNameCorrect && isNumberCorrect
+                ) { Text("Add distance") }
+            }
         }
     }
 }
 
+
+
 @Composable
-fun groupsDataOnScreen(groupList: SnapshotStateList<Group>, configurationFolder:String, participantList:SnapshotStateList<ParticipantStart>) {
+fun groupsDataOnScreen(
+    groupList: SnapshotStateList<Group>,
+    configurationFolder: String,
+    participantList: SnapshotStateList<ParticipantStart>
+) {
     Column {
-        LazyScrollable(groupList,true, listOf(participantList))
+        LazyScrollable(groupList, true, listOf(participantList))
         Button(onClick = {
             File("$configurationFolder/save/").mkdirs()
             File("$configurationFolder/save/distances.csv").createNewFile()
 
-            val groups = try{mutableListOf(groupList[0].createCSVHeader())} catch (e:IndexOutOfBoundsException){
-                mutableListOf( Group( "Any", Distance("Any", DistanceTypeData(DistanceType.ALL_POINTS,100,true))).createCSVHeader())}
+            val groups = try {
+                mutableListOf(groupList[0].createCSVHeader())
+            } catch (e: IndexOutOfBoundsException) {
+                mutableListOf(
+                    Group(
+                        "Any",
+                        Distance("Any", DistanceTypeData(DistanceType.ALL_POINTS, 100, true))
+                    ).createCSVHeader()
+                )
+            }
             groupList.forEach {
                 groups.add(it.createCSVString())
             }
-            csvWriter().writeAll(groups,
+            csvWriter().writeAll(
+                groups,
                 File("$configurationFolder/save/groups.csv"),
                 append = false
-        )
+            )
         }) {
             Text("Save")
         }
@@ -245,19 +293,21 @@ fun groupsDataOnScreen(groupList: SnapshotStateList<Group>, configurationFolder:
 
 @Composable
 fun startProtocolsDataOnScreen(
-    participantList: SnapshotStateList<ParticipantStart>, isDeletable: Boolean = true,groupList: SnapshotStateList<Group>
+    participantList: SnapshotStateList<ParticipantStart>,
+    isDeletable: Boolean = true,
+    groupList: SnapshotStateList<Group>
 ) {
     Column {
-        LazyScrollable(participantList,isDeletable, listOf(groupList))
-      if (isDeletable)
-        Button(onClick = {
-            File("test.csv").createNewFile(); csvWriter().writeAll(
-            listOf(participantList),
-            File("test.csv")
-        )
-        }) {
-            Text("Save")
-        }
+        LazyScrollable(participantList, isDeletable, listOf(groupList))
+        if (isDeletable)
+            Button(onClick = {
+                File("test.csv").createNewFile(); csvWriter().writeAll(
+                listOf(participantList),
+                File("test.csv")
+            )
+            }) {
+                Text("Save")
+            }
     }
 }
 
@@ -304,7 +354,7 @@ fun PhaseOneWindow(
     teamList: SnapshotStateList<Team>,
     eventData: MutableState<Event>,
     configurationFolder: String,
-    participantList:SnapshotStateList<ParticipantStart>
+    participantList: SnapshotStateList<ParticipantStart>
 ) {
     val currentPhase = 1
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
@@ -312,10 +362,10 @@ fun PhaseOneWindow(
         AllTopButtons(buttonStates, listOfTabs(currentPhase))
         eventDataOnScreen(eventData)
         when (buttonStates.value.indexOf(true)) {
-            0 -> teamsDataOnScreen(teamList,configurationFolder,groupList,participantList)
-            1 -> distancesDataOnScreen(distanceList,configurationFolder,groupList,participantList)
-            2 -> groupsDataOnScreen(groupList,configurationFolder,participantList)
-            3 -> startProtocolsDataOnScreen(participantList,false,groupList)
+            0 -> teamsDataOnScreen(teamList, configurationFolder, groupList, participantList)
+            1 -> distancesDataOnScreen(distanceList, configurationFolder, groupList, participantList)
+            2 -> groupsDataOnScreen(groupList, configurationFolder, participantList)
+            3 -> startProtocolsDataOnScreen(participantList, false, groupList)
         }
     }
 }
@@ -333,8 +383,8 @@ fun PhaseTwoWindow(
         AllTopButtons(buttonStates, listOfTabs(currentPhase))
         eventDataOnScreen(eventData)
         when (buttonStates.value.indexOf(true)) {
-            0 -> startProtocolsDataOnScreen(participantList,true,SnapshotStateList())
-            1 -> distancesDataOnScreen(distanceList,configurationFolder, SnapshotStateList(),participantList)
+            0 -> startProtocolsDataOnScreen(participantList, true, SnapshotStateList())
+            1 -> distancesDataOnScreen(distanceList, configurationFolder, SnapshotStateList(), participantList)
         }
     }
 }
@@ -386,10 +436,10 @@ fun main() = application {
                 val distanceList = remember { distances.values.toMutableStateList() }
                 val groupList = remember { groups.toMutableStateList() }
                 val teamList = remember { teams.toMutableStateList() }
-                val participantList = remember { groupList.flatMap { it.listParticipants }.toMutableStateList()  }
+                val participantList = remember { groupList.flatMap { it.listParticipants }.toMutableStateList() }
                 val eventData = remember { mutableStateOf(event) }
 
-                PhaseOneWindow(distanceList, groupList, teamList, eventData,configFolder,participantList)
+                PhaseOneWindow(distanceList, groupList, teamList, eventData, configFolder, participantList)
 
             }
 
@@ -417,7 +467,7 @@ fun main() = application {
                 val participantList = remember { groups.flatMap { it.listParticipants }.toMutableStateList() }
                 val eventData = remember { mutableStateOf(event) }
 
-                PhaseTwoWindow(distanceList, eventData, participantList,configFolder)
+                PhaseTwoWindow(distanceList, eventData, participantList, configFolder)
 
                 println(participantList.size)
             }
@@ -519,14 +569,18 @@ fun SeparatorLine() {
 }
 
 @Composable
-fun <T : Scrollable, E:Any> LazyScrollable(list: SnapshotStateList<T>, isDeletable:Boolean=true, toDelete: List<SnapshotStateList<out E>>) {
+fun <T : Scrollable, E : Any> LazyScrollable(
+    list: SnapshotStateList<T>,
+    isDeletable: Boolean = true,
+    toDelete: List<SnapshotStateList<out E>>
+) {
 
     Box(modifier = Modifier.fillMaxWidth().padding(10.dp).fillMaxHeight(.5f)) {
         val state = rememberLazyListState()
 
         LazyColumn(Modifier.fillMaxSize().padding(end = 12.dp), state) {
             itemsIndexed(list) { index, it ->
-                it.show(list, index, isDeletable,toDelete)
+                it.show(list, index, isDeletable, toDelete)
             }
         }
 

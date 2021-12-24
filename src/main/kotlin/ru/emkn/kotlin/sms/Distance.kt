@@ -6,10 +6,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -102,7 +100,8 @@ class Distance(name: String, type: DistanceTypeData) : Scrollable {
         toDelete: List<SnapshotStateList<out E>>
     ) {
         var isOpened by remember { mutableStateOf(false) }
-        val listOfParticipant = pointsList.toMutableStateList()
+        var isVisible by remember { mutableStateOf(false) }
+        val listOfPoints = pointsList.toMutableStateList()
 
         val angle: Float by animateFloatAsState(
             targetValue = if (isOpened) 90F else 0F,
@@ -113,31 +112,103 @@ class Distance(name: String, type: DistanceTypeData) : Scrollable {
         )
         Column {
             Box(modifier = Modifier.fillMaxSize().clickable { isOpened = !isOpened }) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(5.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(5.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
                     Icon(
                         painter = painterResource("arrow.svg"),
                         contentDescription = null,
                         modifier = Modifier.width(10.dp).rotate(angle)
                     )
                     Text(this@Distance.name, modifier = Modifier.fillMaxWidth(0.8f).padding(start = 5.dp))
-                    Button(onClick = { list.removeAt(index)
-                        toDelete[0].removeIf { group ->
-                            group as Group
-                        if (group.distance==this@Distance) {
-                            toDelete[1].removeIf {
-                                it as ParticipantStart
-                                it.wishGroup==group.groupName
+
+                    Button(
+                        onClick = { isVisible = !isVisible },
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = Color(red = 0, green = 200, blue = 0),
+                            contentColor = Color.White
+                        )
+                    ) { Text("Add CP") }
+
+                    Button(
+                        onClick = {
+                            list.removeAt(index)
+                            toDelete[0].removeIf { group ->
+                                group as Group
+                                if (group.distance == this@Distance) {
+                                    toDelete[1].removeIf {
+                                        it as ParticipantStart
+                                        it.wishGroup == group.groupName
+                                    }
+                                }
+                                this@Distance == group.distance
                             }
-                        }
-                            this@Distance == group.distance
-                        }
-                    }) { Text("Delete") }
+                        },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red, contentColor = Color.White)
+                    ) { Text("Delete") }
+                }
+            }
+
+            AnimatedVisibility(isVisible) {
+                var controlName by remember { mutableStateOf("") }
+                var isNameCorrect by remember { mutableStateOf(false) }
+                var index: Int? by remember { mutableStateOf(null) }
+                Column {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("CP name")
+                        OutlinedTextField(
+                            value = controlName,
+                            onValueChange = { str ->
+                                controlName = str
+                                isNameCorrect =
+                                    !this@Distance.pointsList.map { it.name }.contains(controlName) && str.isNotBlank()
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(0.dp),
+                            singleLine = true,
+                            shape = RoundedCornerShape(5.dp),
+                            isError = !isNameCorrect
+                        )
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Index")
+                        OutlinedTextField(
+                            value = index?.toString() ?: "",
+                            onValueChange = { str ->
+                                index = str.toIntOrNull()
+                                println(if (index != null) index.toString() else "null")
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(0.dp),
+                            singleLine = true,
+                            shape = RoundedCornerShape(5.dp),
+                        )
+                    }
+                    Button(onClick = {
+                        isVisible = false
+                        listOfPoints.add(
+                            if (index != null && index in 1..this@Distance.pointsList.size) index?.minus(1)
+                                ?: this@Distance.pointsList.size else this@Distance.pointsList.size,
+                            ControlPoint(controlName)
+                        )
+                        pointsList.add(
+                            if (index != null && index in 0 until this@Distance.pointsList.size) index
+                                ?: this@Distance.pointsList.size else this@Distance.pointsList.size,
+                            ControlPoint(controlName)
+                        )
+                    }, enabled = isNameCorrect) { Text("Save CP") }
                 }
             }
 
             AnimatedVisibility(isOpened) {
                 Column {
-                    listOfParticipant.forEachIndexed { i, it ->
+                    listOfPoints.forEachIndexed { i, it ->
                         Row(
                             modifier = Modifier.fillMaxHeight(),
                             verticalAlignment = Alignment.CenterVertically,
@@ -146,14 +217,21 @@ class Distance(name: String, type: DistanceTypeData) : Scrollable {
                             Text(it.name, modifier = Modifier.weight(1f))
                             Button(
                                 onClick = {
-                                    listOfParticipant.removeAt(i)
+                                    if (this@Distance.type.type == DistanceType.ALL_POINTS) this@Distance.type.numberOfPoints =
+                                        this@Distance.type.numberOfPoints?.minus(1) ?: 0
+                                    listOfPoints.removeAt(i)
                                     pointsList.removeAt(i)
                                 },
                                 colors = ButtonDefaults.buttonColors(
                                     backgroundColor = Color.Red,
                                     contentColor = Color.White
                                 ),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                enabled = if (this@Distance.type.type == DistanceType.ALL_POINTS)
+                                    pointsList.size > 1
+                                else
+                                    pointsList.size > (this@Distance.type.numberOfPoints
+                                        ?: 1)
                             ) {
                                 Text(
                                     text = "Delete",
