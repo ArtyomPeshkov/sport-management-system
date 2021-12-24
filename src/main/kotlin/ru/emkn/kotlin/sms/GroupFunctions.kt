@@ -14,7 +14,6 @@ fun Group.modifyGroup(
     )
 }
 
-
 fun getGroupByName(name: String, groups: List<Group>): Group? {
     return groups.find { it.groupName == name }
 }
