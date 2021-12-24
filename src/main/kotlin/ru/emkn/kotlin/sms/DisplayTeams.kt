@@ -46,6 +46,9 @@ fun teamsDataOnScreen(teamList: SnapshotStateList<Team>,configurationFolder:Stri
     Column {
         LazyScrollable(teamList, false, listOf(groupList,participantList))
         Button(onClick = {
+            // НЕ РАБОТАЕТ
+            if (  File("$configurationFolder/save/application").exists())
+                File("$configurationFolder/save/application").deleteRecursively()
             File("$configurationFolder/save/application").mkdirs()
             File("$configurationFolder/save/application").createNewFile()
             teamList.forEach {
@@ -226,7 +229,7 @@ fun groupsDataOnScreen(groupList: SnapshotStateList<Group>, configurationFolder:
             File("$configurationFolder/save/distances.csv").createNewFile()
 
             val groups = try{mutableListOf(groupList[0].createCSVHeader())} catch (e:IndexOutOfBoundsException){
-                mutableListOf( Group( "Any",Distance("Any", DistanceTypeData(DistanceType.ALL_POINTS,100,true))).createCSVHeader())}
+                mutableListOf( Group( "Any", Distance("Any", DistanceTypeData(DistanceType.ALL_POINTS,100,true))).createCSVHeader())}
             groupList.forEach {
                 groups.add(it.createCSVString())
             }

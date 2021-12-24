@@ -267,6 +267,10 @@ class Team(name: String) : Scrollable {
                             Text(it.rank.ifBlank { "-" }, modifier = Modifier.weight(1f))
                             Button(
                                 onClick = {
+                                    toDelete[1].removeIf{
+                                        it as ParticipantStart
+                                        it.participant == listOfParticipant[i]
+                                    }
                                     listOfParticipant.removeAt(i)
                                     athleteList.removeAt(i)
                                 },
