@@ -1,15 +1,22 @@
 package ru.emkn.kotlin.sms
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import exceptions.UnexpectedValueException
@@ -57,23 +64,47 @@ class ParticipantStart(val participant: Participant) : Participant(participant) 
         isDeletable: Boolean,
         toDelete: List<SnapshotStateList<out E>>
     ) {
-        Row(
-            modifier = Modifier.fillMaxHeight(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(5.dp)
-        ) {
-            Text(this@ParticipantStart.number.toString(), modifier = Modifier.weight(1f))
-            Text(this@ParticipantStart.startTime.toString(), modifier = Modifier.weight(1f))
-            Text(this@ParticipantStart.participant.surname, modifier = Modifier.weight(1f))
-            Text(this@ParticipantStart.participant.name, modifier = Modifier.weight(1f))
-            Text(this@ParticipantStart.participant.wishGroup, modifier = Modifier.weight(1f))
-            if (isDeletable) Button(onClick = {
-                list.removeAt(index)
-                toDelete[0].forEach {
-                    it as Group
-                    it.listParticipants.removeIf { it == this@ParticipantStart }
+        var isOpened by remember { mutableStateOf(false) }
+        val angle: Float by animateFloatAsState(
+            targetValue = if (isOpened) 90F else 0F,
+            animationSpec = tween(
+                durationMillis = 500,
+                easing = FastOutSlowInEasing
+            )
+        )
+        Column {
+            Row(
+                modifier = Modifier.fillMaxHeight().clickable { isOpened = !isOpened },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                Icon(
+                    painter = painterResource("arrow.svg"),
+                    contentDescription = null,
+                    modifier = Modifier.width(10.dp).rotate(angle)
+                )
+                Text(this@ParticipantStart.number.toString(), modifier = Modifier.weight(1f))
+                Text(this@ParticipantStart.startTime.toString(), modifier = Modifier.weight(1f))
+                Text(this@ParticipantStart.participant.surname, modifier = Modifier.weight(1f))
+                Text(this@ParticipantStart.participant.name, modifier = Modifier.weight(1f))
+                Text(this@ParticipantStart.participant.wishGroup, modifier = Modifier.weight(1f))
+                if (isDeletable) Button(onClick = {
+                    list.removeAt(index)
+                    toDelete[0].forEach { group ->
+                        group as Group
+                        group.listParticipants.removeIf { it == this@ParticipantStart }
+                    }
+                }) { Text("Delete") }
+            }
+
+            AnimatedVisibility(isOpened) {
+                Column {
+                    val cp = toDelete[0][index] as List<ControlPointWithTime> //Да я отвечаю все норм
+                    cp.sortedBy { it.time.timeInSeconds }.forEach {
+                        Text("${it.point.name}: ${it.time}")
+                    }
                 }
-            }) { Text("Delete") }
+            }
         }
     }
 

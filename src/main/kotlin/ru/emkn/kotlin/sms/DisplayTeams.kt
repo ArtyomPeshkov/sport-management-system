@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,6 +20,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import exceptions.UnexpectedValueException
 import java.io.File
 
 val topRowHeight = 30.dp
@@ -26,7 +28,15 @@ val separatorLineWidth = 1.dp
 
 fun listOfTabs(phase: Int): List<String> =
     when (phase) {
-        1 -> listOf("Команды", "Дистанции", "Группы", "Старт. прот.")
+        1 -> listOf(
+            "Команды",
+            "Дистанции",
+            "Группы",
+            "Старт. прот.",
+            "Контр. точки",
+            "Групповые результаты",
+            "Командные результаты"
+        )
         2 -> listOf("Старт. прот.", "Дистанции")
         3 -> listOf("Результаты", "Общие")
         else -> emptyList()
@@ -52,7 +62,7 @@ fun teamsDataOnScreen(
         LazyScrollable(teamList, false, listOf(groupList, participantList))
         Button(onClick = {
             // НЕ РАБОТАЕТ
-            if (  File("$configurationFolder/save/application").exists())
+            if (File("$configurationFolder/save/application").exists())
                 File("$configurationFolder/save/application").deleteRecursively()
             File("$configurationFolder/save/application").mkdirs()
             File("$configurationFolder/save/application").createNewFile()
@@ -254,7 +264,6 @@ fun distancesDataOnScreen(
 }
 
 
-
 @Composable
 fun groupsDataOnScreen(
     groupList: SnapshotStateList<Group>,
@@ -354,7 +363,8 @@ fun PhaseOneWindow(
     teamList: SnapshotStateList<Team>,
     eventData: MutableState<Event>,
     configurationFolder: String,
-    participantList: SnapshotStateList<ParticipantStart>
+    participantList: SnapshotStateList<ParticipantStart>,
+    controlPoints: SnapshotStateList<ControlPoint>
 ) {
     val currentPhase = 1
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
@@ -366,8 +376,22 @@ fun PhaseOneWindow(
             1 -> distancesDataOnScreen(distanceList, configurationFolder, groupList, participantList)
             2 -> groupsDataOnScreen(groupList, configurationFolder, participantList)
             3 -> startProtocolsDataOnScreen(participantList, false, groupList)
+            4 -> {
+                val listWithCP = mutableStateMapOf<ParticipantStart, List<ControlPointWithTime>>()
+                generateCP(controlPoints, groupList)
+                val allParticipants = groupList.flatMap { it.listParticipants }
+                listWithCP.putAll(
+                    ControlPointReader("csvFiles/configuration").getPoints()
+                        .mapKeys { entry -> allParticipants.find { it.number == entry.key } ?: throw UnexpectedValueException("") })
+                controlPointsDataOnScreen(listWithCP)
+            }
         }
     }
+}
+
+@Composable
+fun controlPointsDataOnScreen(participantList: SnapshotStateMap<ParticipantStart, List<ControlPointWithTime>>) {
+    LazyScrollable(participantList.keys.toMutableStateList(), false, listOf(participantList.values.toMutableStateList()))
 }
 
 @Composable
@@ -439,7 +463,7 @@ fun main() = application {
                 val participantList = remember { groupList.flatMap { it.listParticipants }.toMutableStateList() }
                 val eventData = remember { mutableStateOf(event) }
 
-                PhaseOneWindow(distanceList, groupList, teamList, eventData, configFolder, participantList)
+                PhaseOneWindow(distanceList, groupList, teamList, eventData, configFolder, participantList, controlPoints.toMutableStateList())
 
             }
 
