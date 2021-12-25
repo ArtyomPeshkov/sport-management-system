@@ -37,8 +37,6 @@ class Event(
     ) : this(name, date, groupList, distanceList) {
         if (teams.any { it.athleteList.isEmpty() })
             throw UnexpectedValueException("В коллективе нет участников")
-        if (teams.isEmpty())
-            throw UnexpectedValueException("Нет коллективов")
         teamList = teams
         setupGroups()
     }

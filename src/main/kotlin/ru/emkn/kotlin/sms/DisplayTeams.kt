@@ -385,7 +385,6 @@ fun PhaseOneWindow(
             1 -> distancesDataOnScreen(distanceList, configurationFolder, groupList, participantList)
             2 -> groupsDataOnScreen(groupList, configurationFolder, participantList)
             3 -> {
-                groupList.toList().forEach { println(it.listParticipants.size) }
                 startProtocolsDataOnScreen(
                 participantList,
                 false,
