@@ -22,10 +22,12 @@ fun setStatusForAllParticipants(
     }
 }
 
+
 /** функция, используя собранные ранее данные, создает протоколы результатов для групп */
-fun makeResultProtocols(groups: List<Group>) {
+fun makeResultProtocols(groups: List<Group>, configurationFolder: String) {
     parseLogger.universalC(Colors.BLUE._name, "making result protocols", 'i')
-    val resultDir = File("csvFiles/configuration/results/")
+    val resultDir = File("$configurationFolder/results/")
+    resultDir.deleteRecursively()
     resultDir.mkdirs()
     groups.filter { it.listParticipants.size > 0 }.forEach { group ->
         val resultGroupFile = File("${resultDir.path}/result_${group.groupName}.csv")
@@ -37,7 +39,7 @@ fun makeResultProtocols(groups: List<Group>) {
             ), resultGroupFile, append = false
         )
         val (participants, deletedParticipants) = group.listParticipants.partition { it.status != "Снят" }
-        val result: List<Participant> = participants.sortedBy { Time(it.status).timeInSeconds } + deletedParticipants
+        val result: List<ParticipantStart> = participants.sortedBy { Time(it.status).timeInSeconds } + deletedParticipants
         var number = 1
         var place = 1
 
@@ -72,8 +74,9 @@ fun makeResultProtocols(groups: List<Group>) {
     }
 }
 
+
 /** функция создает протокол результатов для команд */
-fun generateResultProtocolForCollectives(teams: MutableList<Team>) {
+fun generateResultProtocolForCollectives(teams: MutableList<Team>,configurationFolder:String) {
     val file = File("csvFiles/configuration/teamsResults.csv")
     file.writeText("")
     teams.forEach {

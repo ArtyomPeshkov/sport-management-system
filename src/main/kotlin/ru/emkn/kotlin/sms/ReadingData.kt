@@ -137,7 +137,7 @@ class ResultsReader(configurationFolderName:String):Reader(configurationFolderNa
             if (teams.find { it.name == collectiveName } == null) teams.add(Team(collectiveName))
             val collective =
                 teams.find { it.name == collectiveName } ?: throw UnexpectedValueException(collectiveName)
-            collective.addParticipant(participant)
+            collective.addParticipant(ParticipantStart(participant))
         }
     }
 }
@@ -160,7 +160,7 @@ class StartProtocolParse(configurationFolderName: String):Reader(configurationFo
         val indexOfGroup = getGroupIndexByName(nameOfGroup, groups)
         val participantData = csvReader().readAllWithHeader(protocol.readLines().drop(1).joinToString("\n"))
         participantData.forEachIndexed {i,it->
-            val participant = makeParticipant(it,i,protocol.path,"",nameOfGroup)
+            val participant = ParticipantStart( makeParticipant(it,i,protocol.path,"",nameOfGroup))
             participant.setStart(
                 it["Номер"]?.toInt() ?: throw CSVFieldNamesException(protocol.path),
                 Time(it["Стартовое время"] ?: throw CSVFieldNamesException(protocol.path))

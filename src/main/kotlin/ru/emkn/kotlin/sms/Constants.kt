@@ -1,5 +1,7 @@
 package ru.emkn.kotlin.sms
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import java.time.format.DateTimeFormatter
 
 val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
@@ -37,4 +39,9 @@ enum class Colors(val _name: String) {
     YELLOW("\u001B[33m"),
     BLUE("\u001B[34m"),
     PURPLE("\u001B[35m")
+}
+
+interface Scrollable {
+    @Composable
+    fun <T,E:Any> show(list: SnapshotStateList<T>, index: Int, isDeletable:Boolean, toDelete: List<SnapshotStateList<out E>> )
 }

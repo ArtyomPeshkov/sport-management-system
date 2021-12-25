@@ -86,5 +86,4 @@ class Time {
         res.append(":" + "$seconds".padStart(2, '0'))
         return res.toString()
     }
-
 }

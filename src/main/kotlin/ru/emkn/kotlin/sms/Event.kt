@@ -8,10 +8,10 @@ import java.time.LocalDate
 
 class Event(
     val name: String,
-    private val date: LocalDate,
-    groupList: List<Group>/*MutableList<Group>*/,
-    distanceList: Map<String, Distance> /*MutableMap<String,String>*/,
-    teams: List<Team>
+    val date: LocalDate,
+    groupList: List<Group>,/*MutableList<Group>*/
+    distanceList: Map<String, Distance>, /*MutableMap<String,String>*/
+    //teams: List<Team>
 ) {
     var yearOfCompetition: Int = date.year
     var teamList: List<Team> = listOf() //список заявленных коллективов
@@ -26,10 +26,17 @@ class Event(
         this.groupList = groupList
         this.distanceList = distanceList
         parseLogger.printCollection(groupList, Colors.PURPLE._name)
+    }
+
+    constructor(
+        name: String,
+        date: LocalDate,
+        groupList: List<Group>/*MutableList<Group>*/,
+        distanceList: Map<String, Distance> /*MutableMap<String,String>*/,
+        teams: List<Team>
+    ) : this(name, date, groupList, distanceList) {
         if (teams.any { it.athleteList.isEmpty() })
             throw UnexpectedValueException("В коллективе нет участников")
-        if (teams.isEmpty())
-            throw UnexpectedValueException("Нет коллективов")
         teamList = teams
         setupGroups()
     }
@@ -38,11 +45,9 @@ class Event(
     private fun setupGroups() {
         teamList.forEach { collective ->
             collective.athleteList.forEach { participant ->
-                chooseGroupByParams(
-                    participant.wishGroup,
-                    yearOfCompetition - participant.yearOfBirth,
-                    participant.gender
-                )?.addParticipant(participant)
+                participant.chooseGroupByParams(groupList, yearOfCompetition
+                )?.addParticipant(ParticipantStart(participant))
+
                     ?: parseLogger.universalC(
                         Colors.YELLOW._name,
                         "Для участника $participant не нашлось подходящей группы"
