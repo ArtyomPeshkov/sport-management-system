@@ -30,13 +30,15 @@ class Team(name: String) : Scrollable {
         this.name = name
     }
 
-    fun addParticipant(participant: ParticipantStart) {
+    /** добавляет переданного в функцию участника в список участников для данной команды (коллектива) */
+    fun addParticipant(participant: Participant) {
         athleteList.add(participant)
         if (participant.points < 0)
             throw UnexpectedValueException("Количество очков у участника ${participant.number} отрицательно")
         points += participant.points
     }
 
+    /** добавляет всех участников из переданного в функцию списка в список участников для данной команды (коллектива) */
     fun addParticipants(participants: Collection<Participant>) {
         athleteList.addAll(participants)
     }

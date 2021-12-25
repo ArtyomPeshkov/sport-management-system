@@ -31,22 +31,29 @@ class Distance(name: String, type: DistanceTypeData) : Scrollable {
         this.type = type
     }
 
+    /** возвращает список контрольных точек для данной дистанции */
     fun getPointsList(): List<ControlPoint> {
         return pointsList.toMutableList()
     }
 
+    /** добавляет переданную точку в список контрольных точек для данной дистанции */
     fun addPoint(point: ControlPoint) {
         if (point.name.isBlank())
             throw UnexpectedValueException("Пустое имя контрольной точки")
         pointsList.add(point)
     }
 
+    /** добавляет все точки из переданного в функцию списка в список контрольных точек для данной дистанции */
     fun addAllPoints(points: Collection<ControlPoint>) {
         if (points.any { it.name.isBlank() })
             throw UnexpectedValueException("Пустое имя контрольной точки")
         pointsList.addAll(points)
     }
 
+    /**
+     * функция проверяет, как участник прошел контрольные точки в дистанции
+     * (если участник прошел недостаточное кол-во контрольных точек, ему присуждается статус "Снят")
+     */
     fun checkProtocolPointsCorrectness(
         participant: ParticipantStart,
         participantDistance: Map<Int, List<ControlPointWithTime>>

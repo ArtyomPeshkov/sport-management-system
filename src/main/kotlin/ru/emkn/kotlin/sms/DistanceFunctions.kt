@@ -2,18 +2,19 @@ package ru.emkn.kotlin.sms
 
 import exceptions.UnexpectedValueException
 
-data class DistanceTypeData(val type: DistanceType, var numberOfPoints: Int?, val orderIsEssential: Boolean)
 
-fun chooseType(type: String) = when (type) {
-    "all", "ALL_POINTS" -> DistanceType.ALL_POINTS
-    "some", "SOME_POINTS" -> DistanceType.SOME_POINTS
-    else -> throw UnexpectedValueException("Неожиданный тип: $type")
-}
+data class DistanceTypeData(val type: DistanceType, var numberOfPoints:Int?,val orderIsEssential: Boolean)
 
+/** присуждает дистанции тип, в зависимости от того, что указано в файле (может быть указано в двух видах) */
+fun chooseType(type:String) = when (type){
+        "all","ALL_POINTS" -> DistanceType.ALL_POINTS
+        "some","SOME_POINTS" -> DistanceType.SOME_POINTS
+        else -> throw UnexpectedValueException("Неожиданный тип: $type")
+    }
 
-fun checkType(type: String, numberOfPoints: String, orderIsEssential: String): DistanceTypeData {
-    val dType = chooseType(type)
-    var number: Int? = null
+fun checkType(type: String, numberOfPoints:String,orderIsEssential: String):DistanceTypeData{
+    val dType=chooseType(type)
+    var number:Int? = null
     if (dType != DistanceType.ALL_POINTS)
         number = numberOfPoints.toIntOrNull()
             ?: throw UnexpectedValueException("неправильное количество необходимых точек: $numberOfPoints")
@@ -24,6 +25,7 @@ fun checkType(type: String, numberOfPoints: String, orderIsEssential: String): D
             DistanceTypeData(dType,number,false)*/
 }
 
+/** возвращает дистанцию с необходимыми значениями (работает с отформатированнной строкой полученной ранее из файла) */
 fun getDistance(
     distanceName: String,
     configFileString: Map<String, String>,

@@ -5,6 +5,7 @@ import exceptions.*
 import log.universalC
 import java.io.File
 
+/** абстрактный класс для считывания различных csv-файлов */
 abstract class Reader(configurationFolderPath: String){
     private val configurationFolder: List<File>
     init{
@@ -18,6 +19,7 @@ abstract class Reader(configurationFolderPath: String){
     }
 }
 
+/** считывает csv-файлы с заявочными протоколами */
 class TeamReader(configurationFolderName:String):Reader(configurationFolderName)
 {
     fun getTeams():List<Team> = universalParser("applications").map { getParticularTeam(readFile(it.path)) }
@@ -36,6 +38,7 @@ class TeamReader(configurationFolderName:String):Reader(configurationFolderName)
     }
 }
 
+/** считывает csv-файлы с протоколами прохождения контрольных точек */
 class ControlPointReader(configurationFolderName: String):Reader(configurationFolderName)
 {
     fun getPoints(): Map<Int, List<ControlPointWithTime>> {
@@ -55,6 +58,7 @@ class ControlPointReader(configurationFolderName: String):Reader(configurationFo
     }
 }
 
+/** считывает csv-файл со списком дистанций и контрольных точек для каждой из них */
 class DistanceReader(configurationFolderName: String):Reader(configurationFolderName)
 {
     fun getDistances(controlPoints: MutableList<ControlPoint> = mutableListOf()): Map<String, Distance> {
@@ -70,6 +74,7 @@ class DistanceReader(configurationFolderName: String):Reader(configurationFolder
     }
 }
 
+/** считывает csv-файл со списком из групп и соответствующих каждой дистанцией */
 class GroupReader(configurationFolderName:String):Reader(configurationFolderName)
 {
     fun getGroups(distanceList: Map<String, Distance>, currentPhase: Phase):List<Group> {
@@ -89,6 +94,7 @@ class GroupReader(configurationFolderName:String):Reader(configurationFolderName
     }
 }
 
+/** считывает csv-файлы с протоколами рещультатов для групп */
 class ResultsReader(configurationFolderName:String):Reader(configurationFolderName)
 {
 
@@ -136,6 +142,7 @@ class ResultsReader(configurationFolderName:String):Reader(configurationFolderNa
     }
 }
 
+/** считывает csv-файлы со стартовыми протоколами */
 class StartProtocolParse(configurationFolderName: String):Reader(configurationFolderName)
 {
     fun getStartProtocolFolder( groups: List<Group>) {
@@ -162,5 +169,4 @@ class StartProtocolParse(configurationFolderName: String):Reader(configurationFo
 
         }
     }
-
 }

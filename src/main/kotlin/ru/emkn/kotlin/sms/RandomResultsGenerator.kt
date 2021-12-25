@@ -6,6 +6,10 @@ import log.universalC
 import java.io.File
 
 
+/**
+ * функция создающая файлы с результатами прохождения каждой контрольной точки,
+ * рандомно сгенерированными для каждого участника
+ */
 fun generateCP(controlPoints: List<ControlPoint>, groups: List<Group>, configurationFolder:String) {
     parseLogger.universalC(
         Colors.RED._name,
@@ -18,17 +22,15 @@ fun generateCP(controlPoints: List<ControlPoint>, groups: List<Group>, configura
         val file = File("${generationDir}control-point_${controlPoint.name}.csv")
         csvWriter().writeAll(listOf(listOf(controlPoint.name, "")), file, append = false)
     }
-        groups.forEach { group ->
-            group.listParticipants.forEach { participant ->
-                val pointList = group.distance.getPointsList().toMutableList()
-                var lastTime = participant.startTime
-                pointList.forEach {
-                    val newTime = lastTime + Time((10..20).random())
-                    lastTime = newTime
-                    csvWriter().writeAll(listOf(listOf(participant.number.toString(),newTime.toString())), File("${generationDir}control-point_${it.name}.csv"), append = true)
-                }
-
-
+    groups.forEach { group ->
+        group.listParticipants.forEach { participant ->
+            val pointList = group.distance.getPointsList().toMutableList()
+            var lastTime = participant.startTime
+            pointList.forEach {
+                val newTime = lastTime + Time((10..20).random())
+                lastTime = newTime
+                csvWriter().writeAll(listOf(listOf(participant.number.toString(),newTime.toString())), File("${generationDir}control-point_${it.name}.csv"), append = true)
+            }
                /* if (pointList.contains(controlPoint)) {
                     val curIndex = pointList.indexOf(controlPoint)
                     if (curIndex == 0) {
@@ -52,5 +54,4 @@ fun generateCP(controlPoints: List<ControlPoint>, groups: List<Group>, configura
                 }*/
             }
         }
-
 }

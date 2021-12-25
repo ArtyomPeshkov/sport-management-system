@@ -147,7 +147,7 @@ open class Participant(
 ) : Scrollable {
     var wishGroup: String = ""
         private set
-    val sex: Sex
+    val gender: Gender
     val surname: String
     val name: String
     val yearOfBirth: Int
@@ -163,7 +163,7 @@ open class Participant(
         emptyNameCheck(surname, "Пустая фамилия участника обнаружена")
         if (yearOfBirth <= 1900 || yearOfBirth > LocalDateTime.now().year)
             throw UnexpectedValueException("Unreal date of birth: $yearOfBirth")
-        this.sex = sex
+        this.gender = gender
         this.surname = surname
         this.name = name
         this.yearOfBirth = yearOfBirth
@@ -221,8 +221,6 @@ open class Participant(
         //Тут нужна кнопочка по которой из participant вылезает прохождение им контрольных точек (условно при нажатии на номер участника, мы видим, как он прошёл дистанцию)
         var isOpened by remember { mutableStateOf(false) }
 
-
-
         Box(modifier = Modifier.fillMaxSize().clickable { isOpened = !isOpened }) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(5.dp)) {
                 //Где-то тут должно вызываться drop down menu
@@ -242,5 +240,27 @@ open class Participant(
     override fun toString(): String {
         return "Группа: ${Colors.BLUE._name}$wishGroup${Colors.PURPLE._name}; Статус: ${Colors.YELLOW._name}$status${Colors.PURPLE._name}"
     }
+    fun fullToString(): String {
+        return this.toString() + "Пол: $gender; Год рождения: $yearOfBirth; Разряд: $rank"
+    }
+
+    fun toCSV(): List<String> =
+        listOf("$number", surname, name, gender.toString(), "$yearOfBirth", team, rank, "$startTime")
+
+    fun headerFormatCSV() = listOf("Номер", "Фамилия", "Имя", "Пол", "Г.р.", "Коллектив", "Разр.", "Стартовое время")
+
+    fun headerFormatCSVResult() = listOf(
+        "Порядковый номер",
+        "Номер",
+        "Фамилия",
+        "Имя",
+        "Пол",
+        "Г.р.",
+        "Коллектив",
+        "Разр.",
+        "Результат",
+        "Место",
+        "Отставание"
+    )
 
 }
