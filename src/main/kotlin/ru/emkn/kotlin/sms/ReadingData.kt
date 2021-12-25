@@ -12,7 +12,7 @@ abstract class Reader(configurationFolderPath: String){
         this.configurationFolder = File(configurationFolderPath).walk().toList()
     }
     fun universalParser(name: String): List<File> {
-        val folder = configurationFolder.find { it.name.substringAfterLast('/') == name }
+        val folder = configurationFolder.find { it.path.contains("${configurationFolder[0]}\\$name") }
             ?: throw NotEnoughConfigurationFiles(name)
         parseLogger.universalC(Colors.BLUE._name, "reading from  ${configurationFolder[0]}\\$name", 'i')
         return folder.walk().toList().filter { it.extension == "csv" }

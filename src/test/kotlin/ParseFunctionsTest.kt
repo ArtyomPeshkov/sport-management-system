@@ -75,7 +75,7 @@ internal class ParseCollectiveTest {
     fun `correct input test (participant)`() {
         val path = "src/test/resources/participant-test/correctParticipant.csv"
         assertEquals(
-            listOf(Participant("М12", Gender.MALE, "АВРАМЕНКО", "ДАНИИЛ", 2009, "3р")).map{it.toString()},
+            listOf(Participant("М12", Sex.MALE, "АВРАМЕНКО", "ДАНИИЛ", 2009, "3р")).map{it.toString()},
             participantsParser(csvReader().readAll(readFile(path))[0][0], readFile(path)).map{it.toString()}
         )
     }
@@ -102,9 +102,9 @@ internal class ParseCollectiveTest {
     @Test
     fun `correct input test (multiple participants)`() {
         val answer = listOf(
-            Participant("М09", Gender.MALE, "Белов", "Станислав", 2009, ""),
-            Participant("Ж12", Gender.FEMALE, "Треглазова", "Виталия", 2012, "2р"),
-            Participant("Ж10", Gender.FEMALE, "Романенко", "Варвара", 2010, "")
+            Participant("М09", Sex.MALE, "Белов", "Станислав", 2009, ""),
+            Participant("Ж12", Sex.FEMALE, "Треглазова", "Виталия", 2012, "2р"),
+            Participant("Ж10", Sex.FEMALE, "Романенко", "Варвара", 2010, "")
         )
         val path = "src/test/resources/participant-test/correctParticipants.csv"
         assertEquals(

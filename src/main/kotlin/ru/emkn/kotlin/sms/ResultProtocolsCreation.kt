@@ -62,7 +62,7 @@ fun makeResultProtocols(groups: List<Group>, configurationFolder: String) {
                 it.number,
                 it.surname,
                 it.name,
-                it.gender,
+                it.sex,
                 it.yearOfBirth,
                 it.team,
                 it.rank,

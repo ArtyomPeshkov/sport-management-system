@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter
 val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
 /** разряд, присуждаемый спортсмену */
-enum class Gender {
+enum class Sex {
     MALE, FEMALE, NS //(NS - not stated (не указан))
 }
 

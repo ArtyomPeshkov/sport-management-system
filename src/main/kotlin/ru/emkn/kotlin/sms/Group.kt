@@ -21,7 +21,7 @@ class Group(name: String, dist: Distance) : Scrollable {
         private set
     var ageTo: Int = 0
         private set
-    lateinit var gender: Gender
+    lateinit var sex: Sex
         private set
 
     init {
@@ -30,30 +30,30 @@ class Group(name: String, dist: Distance) : Scrollable {
         distance = dist
     }
 
-    val listParticipants: MutableList<Participant> = mutableListOf()
+    val listParticipants: MutableList<ParticipantStart> = mutableListOf()
 
     /** добавляет переданного в функцию участника в список участников для данной группы */
-    fun addParticipant(participant: Participant) {
+    fun addParticipant(participant: ParticipantStart) {
         listParticipants.add(participant)
     }
 
     /** добавляет всех участников из переданного в функцию списка в список участников для данной группы */
-    fun addParticipants(participants: Collection<Participant>) {
+    fun addParticipants(participants: Collection<ParticipantStart>) {
         listParticipants.addAll(participants)
     }
 
     /** выставляет возрастные и гендерные ограничения для данной группы */
-    fun addDataWhenInitialise(ageFrom: Int, ageTo: Int, gender: Gender) {
+    fun addDataWhenInitialise(ageFrom: Int, ageTo: Int, sex: Sex) {
         if (ageTo < 0 || ageFrom < 0 || ageFrom > ageTo)
             throw UnexpectedValueException("Проблема с возрастными ограничениями группы: Минимальный возраст = $ageFrom; Максимальный возраст = $ageTo")
         this.ageFrom = ageFrom
         this.ageTo = ageTo
-        this.gender = gender
+        this.sex = sex
     }
 
     fun toStringFull(): String {
         val s = StringBuilder(this.toString())
-        s.append("Пол: $gender; Минимальный возраст: $ageFrom; Максимальный возраст: $ageTo")
+        s.append("Пол: $sex; Минимальный возраст: $ageFrom; Максимальный возраст: $ageTo")
         return s.toString()
     }
 

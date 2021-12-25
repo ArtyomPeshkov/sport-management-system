@@ -59,12 +59,12 @@ class Event(
     fun getDistanceList() = distanceList
 
     /** функция подбирает подходящую участнику группу, исходя из его возраста, пола и желаемой группы */
-    private fun chooseGroupByParams(wishedGroup: String, age: Int, gender: Gender): Group? {
+    private fun chooseGroupByParams(wishedGroup: String, age: Int, sex: Sex): Group? {
         val wish = getGroupByName(wishedGroup, groupList)
-        if (wish != null && (gender == Gender.FEMALE || gender == wish.gender) && age >= wish.ageFrom && age <= wish.ageTo) {
+        if (wish != null && (sex == Sex.FEMALE || sex == wish.sex) && age >= wish.ageFrom && age <= wish.ageTo) {
             return wish
         }
-        return groupList.find { it.gender == gender && it.ageTo >= age && it.ageFrom <= age }
+        return groupList.find { it.sex == sex && it.ageTo >= age && it.ageFrom <= age }
     }
 
     /** позволяет найти группы, проходящие определенную дистанцию */

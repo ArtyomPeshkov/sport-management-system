@@ -7,7 +7,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -15,9 +14,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import exceptions.UnexpectedValueException
 import exceptions.emptyNameCheck
@@ -147,7 +144,7 @@ open class Participant(
 ) : Scrollable {
     var wishGroup: String = ""
         private set
-    val gender: Gender
+    val sex: Sex
     val surname: String
     val name: String
     val yearOfBirth: Int
@@ -163,7 +160,7 @@ open class Participant(
         emptyNameCheck(surname, "Пустая фамилия участника обнаружена")
         if (yearOfBirth <= 1900 || yearOfBirth > LocalDateTime.now().year)
             throw UnexpectedValueException("Unreal date of birth: $yearOfBirth")
-        this.gender = gender
+        this.sex = sex
         this.surname = surname
         this.name = name
         this.yearOfBirth = yearOfBirth
@@ -241,26 +238,7 @@ open class Participant(
         return "Группа: ${Colors.BLUE._name}$wishGroup${Colors.PURPLE._name}; Статус: ${Colors.YELLOW._name}$status${Colors.PURPLE._name}"
     }
     fun fullToString(): String {
-        return this.toString() + "Пол: $gender; Год рождения: $yearOfBirth; Разряд: $rank"
+        return this.toString() + "Пол: $sex; Год рождения: $yearOfBirth; Разряд: $rank"
     }
-
-    fun toCSV(): List<String> =
-        listOf("$number", surname, name, gender.toString(), "$yearOfBirth", team, rank, "$startTime")
-
-    fun headerFormatCSV() = listOf("Номер", "Фамилия", "Имя", "Пол", "Г.р.", "Коллектив", "Разр.", "Стартовое время")
-
-    fun headerFormatCSVResult() = listOf(
-        "Порядковый номер",
-        "Номер",
-        "Фамилия",
-        "Имя",
-        "Пол",
-        "Г.р.",
-        "Коллектив",
-        "Разр.",
-        "Результат",
-        "Место",
-        "Отставание"
-    )
 
 }

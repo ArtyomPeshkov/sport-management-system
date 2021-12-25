@@ -20,8 +20,8 @@ fun readFile(path: String): File {
 
 /** возвращает гендер (в файлах допускается использование разного написания названия гендеров) */
 fun chooseGender(gender: String) = when (gender) {
-        "М", "M", "m", "м", "MALE" -> Gender.MALE
-        "Ж", "F", "ж", "f", "FEMALE" -> Gender.FEMALE
+        "М", "M", "m", "м", "MALE" -> Sex.MALE
+        "Ж", "F", "ж", "f", "FEMALE" -> Sex.FEMALE
         else -> throw SexException(gender)
     }
 
