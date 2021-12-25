@@ -6,13 +6,13 @@ import log.universalC
 import java.io.File
 
 
-fun generateCP(controlPoints: List<ControlPoint>, groups: List<Group>) {
+fun generateCP(controlPoints: List<ControlPoint>, groups: List<Group>, configurationFolder:String) {
     parseLogger.universalC(
         Colors.RED._name,
         "ATTENTION: BLACK MAGIC HAPPENS. WE ARE GENERATING CONTROL POINTS. EVERYTHING CAN GO WRONG AT ANY MOMENT. ADVISE YOU TO PREPARE FOR THE WORST",
         'i'
     )
-    val generationDir = "csvFiles/configuration/points/"
+    val generationDir = "$configurationFolder/points/"
     controlPoints.forEach { controlPoint ->
         File(generationDir).mkdirs()
         val file = File("${generationDir}control-point_${controlPoint.name}.csv")

@@ -46,9 +46,9 @@ fun phase1(path: String) {
     event.getDistanceList().forEach {
         event.setNumbersAndTime(event.getGroupsByDistance(it.value))
     }
-    event.makeStartProtocols()
+    event.makeStartProtocols(path)
 
-    generateCP(controlPoints, groups)
+    generateCP(controlPoints, groups,path)
     parseLogger.universalC(Colors.PURPLE._name, "some info about event: $event", 'i')
 }
 
@@ -69,12 +69,12 @@ fun phase2(path: String) {
     parseLogger.printMap(participantDistanceWithTime, Colors.YELLOW._name)
     setStatusForAllParticipants(groups, distances, participantDistanceWithTime)
     parseLogger.printCollection(groups, Colors.PURPLE._name)
-    makeResultProtocols(groups)
+    makeResultProtocols(groups,path)
 }
 
 fun phase3(path: String) {
     val teams = ResultsReader(path).getGroupsFromResultProtocols()
-    generateResultProtocolForCollectives(teams)
+    generateResultProtocolForCollectives(teams,path)
 }
 
 fun main(args: Array<String>) {

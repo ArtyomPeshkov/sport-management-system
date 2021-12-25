@@ -215,7 +215,7 @@ class Distance(name: String, type: DistanceTypeData) : Scrollable {
                             horizontalArrangement = Arrangement.spacedBy(5.dp)
                         ) {
                             Text(it.name, modifier = Modifier.weight(1f))
-                            Button(
+                           Button(
                                 onClick = {
                                     if (this@Distance.type.type == DistanceType.ALL_POINTS) this@Distance.type.numberOfPoints =
                                         this@Distance.type.numberOfPoints?.minus(1) ?: 0

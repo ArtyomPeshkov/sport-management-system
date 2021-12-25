@@ -304,10 +304,16 @@ fun groupsDataOnScreen(
 fun startProtocolsDataOnScreen(
     participantList: SnapshotStateList<ParticipantStart>,
     isDeletable: Boolean = true,
-    groupList: SnapshotStateList<Group>
+    groupList: SnapshotStateList<Group>,
+    event: MutableState<Event>,
+    configurationFolder: String
 ) {
     Column {
-        LazyScrollable(participantList, isDeletable, listOf(groupList))
+        LazyScrollable(
+            participantList.map { ParticipantStartProtocol(it) }.toMutableStateList(),
+            isDeletable,
+            listOf(groupList)
+        )
         if (isDeletable)
             Button(onClick = {
                 File("test.csv").createNewFile(); csvWriter().writeAll(
@@ -317,12 +323,15 @@ fun startProtocolsDataOnScreen(
             }) {
                 Text("Save")
             }
+        Button(onClick = {
+                event.value.getDistanceList().forEach {
+                    event.value.setNumbersAndTime(event.value.getGroupsByDistance(it.value))
+                }
+                event.value.makeStartProtocols("$configurationFolder/save/")
+        }) {
+            Text("Refresh")
+        }
     }
-}
-
-@Composable
-fun passingOfControlPointsDataOnScreen() {
-
 }
 
 @Composable
@@ -375,14 +384,31 @@ fun PhaseOneWindow(
             0 -> teamsDataOnScreen(teamList, configurationFolder, groupList, participantList)
             1 -> distancesDataOnScreen(distanceList, configurationFolder, groupList, participantList)
             2 -> groupsDataOnScreen(groupList, configurationFolder, participantList)
-            3 -> startProtocolsDataOnScreen(participantList, false, groupList)
+            3 -> {
+                groupList.toList().forEach { println(it.listParticipants.size) }
+                startProtocolsDataOnScreen(
+                participantList,
+                false,
+                groupList,
+                mutableStateOf(
+                    Event(
+                        eventData.value.name,
+                        eventData.value.date,
+                        groupList,
+                        distanceList.associateBy { it.name }
+                    )
+                ),
+                configurationFolder
+            )}
             4 -> {
                 val listWithCP = mutableStateMapOf<ParticipantStart, List<ControlPointWithTime>>()
-                generateCP(controlPoints, groupList)
+                generateCP(controlPoints, groupList, configurationFolder)
                 val allParticipants = groupList.flatMap { it.listParticipants }
                 listWithCP.putAll(
-                    ControlPointReader("csvFiles/configuration").getPoints()
-                        .mapKeys { entry -> allParticipants.find { it.number == entry.key } ?: throw UnexpectedValueException("") })
+                    ControlPointReader(configurationFolder).getPoints()
+                        .mapKeys { entry ->
+                            allParticipants.find { it.number == entry.key } ?: throw UnexpectedValueException("")
+                        })
                 controlPointsDataOnScreen(listWithCP)
             }
         }
@@ -391,7 +417,11 @@ fun PhaseOneWindow(
 
 @Composable
 fun controlPointsDataOnScreen(participantList: SnapshotStateMap<ParticipantStart, List<ControlPointWithTime>>) {
-    LazyScrollable(participantList.keys.toMutableStateList(), false, listOf(participantList.values.toMutableStateList()))
+    LazyScrollable(
+        participantList.keys.toMutableStateList(),
+        false,
+        listOf(participantList.values.toMutableStateList())
+    )
 }
 
 @Composable
@@ -407,7 +437,7 @@ fun PhaseTwoWindow(
         AllTopButtons(buttonStates, listOfTabs(currentPhase))
         eventDataOnScreen(eventData)
         when (buttonStates.value.indexOf(true)) {
-            0 -> startProtocolsDataOnScreen(participantList, true, SnapshotStateList())
+            //   0 -> startProtocolsDataOnScreen(participantList, true, SnapshotStateList())
             1 -> distancesDataOnScreen(distanceList, configurationFolder, SnapshotStateList(), participantList)
         }
     }
@@ -449,8 +479,9 @@ fun main() = application {
             event.getDistanceList().forEach {
                 event.setNumbersAndTime(event.getGroupsByDistance(it.value))
             }
-            event.makeStartProtocols()
-            generateCP(controlPoints, groups)
+            event.makeStartProtocols(configFolder)
+            //Кнопка для генерации
+            generateCP(controlPoints, groups, configFolder)
 
             Window(
                 onCloseRequest = ::exitApplication,
@@ -463,7 +494,15 @@ fun main() = application {
                 val participantList = remember { groupList.flatMap { it.listParticipants }.toMutableStateList() }
                 val eventData = remember { mutableStateOf(event) }
 
-                PhaseOneWindow(distanceList, groupList, teamList, eventData, configFolder, participantList, controlPoints.toMutableStateList())
+                PhaseOneWindow(
+                    distanceList,
+                    groupList,
+                    teamList,
+                    eventData,
+                    configFolder,
+                    participantList,
+                    controlPoints.toMutableStateList()
+                )
 
             }
 
@@ -481,7 +520,7 @@ fun main() = application {
                 ControlPointReader(configFolder).getPoints()
             setStatusForAllParticipants(groups, distances, participantDistanceWithTime)
 
-            makeResultProtocols(groups)
+            makeResultProtocols(groups, configFolder)
             Window(
                 onCloseRequest = ::exitApplication,
                 title = "Phase ${phase.value + 1}",
@@ -490,6 +529,7 @@ fun main() = application {
                 val distanceList = remember { distances.values.toMutableStateList() }
                 val participantList = remember { groups.flatMap { it.listParticipants }.toMutableStateList() }
                 val eventData = remember { mutableStateOf(event) }
+                val groupList = remember { groups.toMutableStateList() }
 
                 PhaseTwoWindow(distanceList, eventData, participantList, configFolder)
 

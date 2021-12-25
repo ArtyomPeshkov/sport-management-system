@@ -23,12 +23,12 @@ import exceptions.UnexpectedValueException
 import exceptions.emptyNameCheck
 import java.time.LocalDateTime
 
-class ParticipantStart(val participant: Participant) : Participant(participant) {
+open class ParticipantStart(val participant: Participant) : Participant(participant) {
+
     var number: Int = -1
         private set
     var startTime: Time = Time(0)
         private set
-
 
     fun setStart(num: Int, start: Time) {
         number = num
@@ -106,6 +106,34 @@ class ParticipantStart(val participant: Participant) : Participant(participant) 
                 }
             }
         }
+    }
+
+}
+
+class ParticipantStartProtocol(participant: ParticipantStart): ParticipantStart(participant.participant){
+
+    init{
+        this.setStart(participant.number,participant.startTime)
+    }
+
+    @Composable
+    override fun <T, E : Any> show(
+        list: SnapshotStateList<T>,
+        index: Int,
+        isDeletable: Boolean,
+        toDelete: List<SnapshotStateList<out E>>
+    ) {
+            Row(
+                modifier = Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                Text(this@ParticipantStartProtocol.number.toString(), modifier = Modifier.weight(1f))
+                Text(this@ParticipantStartProtocol.startTime.toString(), modifier = Modifier.weight(1f))
+                Text(this@ParticipantStartProtocol.participant.surname, modifier = Modifier.weight(1f))
+                Text(this@ParticipantStartProtocol.participant.name, modifier = Modifier.weight(1f))
+                Text(this@ParticipantStartProtocol.participant.wishGroup, modifier = Modifier.weight(1f))
+            }
     }
 
 }

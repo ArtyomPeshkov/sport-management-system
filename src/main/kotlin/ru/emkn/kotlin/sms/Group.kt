@@ -27,8 +27,6 @@ class Group(name: String, dist: Distance) : Scrollable {
     init {
         emptyNameCheck(name, "Имя группы пустое")
         groupName = name
-        if (dist.getPointsList().isEmpty())
-            throw UnexpectedValueException("У дистанции  $dist нет контрольных точек")
         distance = dist
     }
 

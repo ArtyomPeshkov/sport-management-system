@@ -92,7 +92,7 @@ class Team(name: String) : Scrollable {
                             toDelete[0].forEach { group ->
                                 group as Group
                                 group.listParticipants.removeIf {
-                                    it.wishGroup == group.groupName
+                                    it.team == this@Team.name
                                 }
                             }
                             toDelete[1].removeIf {

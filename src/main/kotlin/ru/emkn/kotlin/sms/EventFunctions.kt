@@ -26,11 +26,12 @@ fun getNameAndDate(configurationFolder: List<File>, path: String): NameDate {
         throw CSVStringWithNameException(path)
 }
 
-fun Event.makeStartProtocols() {
-    val startDir = File("csvFiles/configuration/starts/")
+fun Event.makeStartProtocols(configurationFolder: String) {
+    val startDir = File("$configurationFolder/starts")
+    startDir.deleteRecursively()
     startDir.mkdirs()
     groupList.filter { it.listParticipants.size > 0 }.forEach { group ->
-        val startGroupFile = File("csvFiles/configuration/starts/start_${group.groupName}.csv")
+        val startGroupFile = File("$configurationFolder/starts/start_${group.groupName}.csv")
         val helper = group.listParticipants[0]
         csvWriter().writeAll(
             listOf(
@@ -40,7 +41,7 @@ fun Event.makeStartProtocols() {
         )
         csvWriter().writeAll(group.listParticipants.map { it.toCSV() }, startGroupFile, append = true)
     }
-    parseLogger.universalC(Colors.BLUE._name, "you created start protocols in folder csvFiles/configuration/starts", 'i' )
+    parseLogger.universalC(Colors.BLUE._name, "you created start protocols in folder $configurationFolder/starts", 'i' )
 }
 
 fun Event.setNumbersAndTime(groups:List<Group>) {

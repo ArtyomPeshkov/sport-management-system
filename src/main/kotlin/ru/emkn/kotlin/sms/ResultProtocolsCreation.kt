@@ -22,9 +22,10 @@ fun setStatusForAllParticipants(
     }
 }
 
-fun makeResultProtocols(groups: List<Group>) {
+fun makeResultProtocols(groups: List<Group>, configurationFolder: String) {
     parseLogger.universalC(Colors.BLUE._name, "making result protocols", 'i')
-    val resultDir = File("csvFiles/configuration/results/")
+    val resultDir = File("$configurationFolder/results/")
+    resultDir.deleteRecursively()
     resultDir.mkdirs()
     groups.filter { it.listParticipants.size > 0 }.forEach { group ->
         val resultGroupFile = File("${resultDir.path}/result_${group.groupName}.csv")
@@ -71,8 +72,8 @@ fun makeResultProtocols(groups: List<Group>) {
     }
 }
 
-fun generateResultProtocolForCollectives(teams: MutableList<Team>) {
-    val file = File("csvFiles/configuration/teamsResults.csv")
+fun generateResultProtocolForCollectives(teams: MutableList<Team>,configurationFolder:String) {
+    val file = File("$configurationFolder/teamsResults.csv")
     file.writeText("")
     teams.forEach {
         csvWriter().writeAll(
