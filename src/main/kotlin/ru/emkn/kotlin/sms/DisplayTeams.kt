@@ -587,6 +587,7 @@ fun PhaseOneWindow(
     val isDateCorrect = remember { mutableStateOf(true) }
     val dateString = remember { mutableStateOf("") }
     dateString.value = eventData.value.date.toString()
+    var pathToCP by remember { mutableStateOf("") }
     Column {
         AllTopButtons(buttonStates, listOfTabs)
         eventDataOnScreen(eventData, isDateCorrect, dateString)
@@ -611,17 +612,39 @@ fun PhaseOneWindow(
                 )
             }
             4 -> {
-
-                controlPointsDataOnScreen(listWithCP)
-                Button(onClick = {
-                    val allParticipants = groupList.flatMap { it.listParticipants }
-                    listWithCP.putAll(
-                        ControlPointReader(configurationFolder).getPoints()
-                            .mapKeys { entry ->
-                                allParticipants.find { it.number == entry.key } ?: throw UnexpectedValueException("")
-                            })
-                    generateCP(controlPoints, groupList, configurationFolder)
-                }) {Text("Random results generator")}
+                Column {
+                    controlPointsDataOnScreen(listWithCP)
+                    Button(onClick = {
+                        val allParticipants = groupList.flatMap { it.listParticipants }
+                        listWithCP.putAll(
+                            ControlPointReader(configurationFolder).getPoints()
+                                .mapKeys { entry ->
+                                    allParticipants.find { it.number == entry.key }
+                                        ?: throw UnexpectedValueException("")
+                                })
+                        generateCP(controlPoints, groupList, configurationFolder)
+                    }) { Text("Random results generator") }
+                    OutlinedTextField(
+                        value = pathToCP,
+                        onValueChange = {
+                            pathToCP = it
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(0.dp),
+                        singleLine = true,
+                        shape = RoundedCornerShape(5.dp)
+                    )
+                    Button(onClick = {
+                        //TODO вот тут должен читать, путь  - pathToCP
+//                        val allParticipants = groupList.flatMap { it.listParticipants }
+//                        listWithCP.putAll(
+//                            ControlPointReader(configurationFolder).getPoints()
+//                                .mapKeys { entry ->
+//                                    allParticipants.find { it.number == entry.key }
+//                                        ?: throw UnexpectedValueException("")
+//                                })
+                        generateCP(controlPoints, groupList, configurationFolder)
+                    }) { Text("Read results") }
+                }
             }
             5 -> {
 
@@ -632,26 +655,11 @@ fun PhaseOneWindow(
 
 @Composable
 fun controlPointsDataOnScreen(participantList: SnapshotStateMap<ParticipantStart, List<ControlPointWithTime>>) {
-    Column {
-        LazyScrollable(
-            participantList.keys.toMutableStateList(),
-            false,
-            listOf(participantList.values.toMutableStateList())
-        )
-//        Button(onClick = {
-//            generateCP(
-//                controlPoints,
-//                groupList,
-//                configurationFolder
-//            )
-//        }) { Text("Случайные контрольные точки") }
-//        val allParticipants = groupList.flatMap { it.listParticipants }
-//        listWithCP.putAll(
-//            ControlPointReader(configurationFolder).getPoints()
-//                .mapKeys { entry ->
-//                    allParticipants.find { it.number == entry.key } ?: throw UnexpectedValueException("")
-//                })
-    }
+    LazyScrollable(
+        participantList.keys.toMutableStateList(),
+        false,
+        listOf(participantList.values.toMutableStateList())
+    )
 }
 
 fun main() = application {
