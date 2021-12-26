@@ -25,6 +25,9 @@ fun setStatusForAllParticipants(
 
 /** функция, используя собранные ранее данные, создает протоколы результатов для групп */
 fun makeResultProtocols(groups: List<Group>, configurationFolder: String) {
+
+    //Сделать так, чтобы оно вернуло список ParticipantResult для каждой группы
+
     parseLogger.universalC(Colors.BLUE._name, "making result protocols", 'i')
     val resultDir = File("$configurationFolder/results/")
     resultDir.deleteRecursively()

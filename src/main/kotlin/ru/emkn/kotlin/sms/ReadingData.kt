@@ -82,7 +82,7 @@ class GroupReader(configurationFolderName:String):Reader(configurationFolderName
         val groupStrings = csvReader().readAllWithHeader(groups)
         return groupStrings.map { groupData ->
             val groupName = groupData["Название"] ?: throw CSVFieldNamesException(groups.path)
-            val distance = distanceList[groupData["Дистанция"]] ?: throw CSVFieldNamesException(groups.path)
+            val distance = distanceList[groupData["Дистанция"]] ?: throw UnexpectedValueException("Нет такой дистанции ${groupData["Дистанция"]}")
 
             val group = Group(groupName, distance)
             if (currentPhase == Phase.FIRST) {

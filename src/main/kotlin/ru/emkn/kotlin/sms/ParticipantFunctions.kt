@@ -8,7 +8,7 @@ import java.io.File
 
 /** считывает участников из csv-файла */
 fun participantsParser(team: String, file: File): List<Participant> {
-    if (file.readLines().size < 3)
+    if (file.readLines().size < 2)
         throw ProblemWithCSVException(file.path)
     return csvReader().readAllWithHeader(file.readLines().drop(1).joinToString("\n"))
         .mapIndexed() { index, it -> makeParticipant(it, index, file.path,team) }

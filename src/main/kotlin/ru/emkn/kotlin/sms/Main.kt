@@ -8,6 +8,28 @@ import java.io.File
 
 val parseLogger: Logger = LoggerFactory.getLogger("Parse")
 
+fun newFileReader(): String {
+    println("Write path to your config folder")
+    var resultFile: String? = readLine()
+    while (resultFile == null || !File(resultFile).exists() || !File(resultFile).canRead() ) {
+        println("Please write existing file")
+        resultFile = readLine()
+    }
+    return resultFile
+}
+
+fun simpleAnswerForQuestion(): Boolean {
+    var ans = readLine()
+    while (true) {
+        when (ans) {
+            "Y", "y", "Yes", "yes", "YES" -> return true
+            "N", "n", "No", "no", "NO" -> return false
+            else -> println("Please write 'y' or 'n'")
+        }
+        ans = readLine()
+    }
+}
+
 /** функция считывающая файл */
 fun readFile(path: String): File {
     parseLogger.universalC(Colors.YELLOW._name, "Reading file: $path")
@@ -46,8 +68,10 @@ fun phase1(path: String) {
         event.setNumbersAndTime(event.getGroupsByDistance(it.value))
     }
     event.makeStartProtocols(path)
-
-    generateCP(controlPoints, groups,path)
+    println("Do you want to generate control points randomly?(y/n)")
+    if (simpleAnswerForQuestion()) {
+        generateCP(controlPoints, groups, path)
+    }
     parseLogger.universalC(Colors.PURPLE._name, "some info about event: $event", 'i')
 }
 
@@ -84,7 +108,7 @@ fun main(args: Array<String>) {
         "Hello, dear programmer. At your own peril and risk, you decided to work with this program.\nWell, this is very brave of you and very pleasant for us - creators.\nWe hope you will be satisfied with the work and everything will go according your plan.\nSo, let's begin our hunger games. Good luck))",
         'i'
     )
-    val path = "csvFiles/configuration"
+    val path = newFileReader()
     phase1(path)
     phase2(path)
     phase3(path)

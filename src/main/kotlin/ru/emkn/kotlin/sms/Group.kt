@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import exceptions.UnexpectedValueException
 import exceptions.emptyNameCheck
 
-class Group(name: String, dist: Distance) : Scrollable {
+open class Group(name: String, dist: Distance) : Scrollable {
     val groupName: String
     val distance: Distance
     var ageFrom: Int = 0
@@ -28,6 +28,12 @@ class Group(name: String, dist: Distance) : Scrollable {
         emptyNameCheck(name, "Имя группы пустое")
         groupName = name
         distance = dist
+    }
+
+    constructor(group: Group) : this(group.groupName, group.distance) {
+        ageFrom = group.ageFrom
+        ageTo = group.ageTo
+        sex = group.sex
     }
 
     val listParticipants: MutableList<ParticipantStart> = mutableListOf()
@@ -51,11 +57,6 @@ class Group(name: String, dist: Distance) : Scrollable {
         this.sex = sex
     }
 
-    fun toStringFull(): String {
-        val s = StringBuilder(this.toString())
-        s.append("Пол: $sex; Минимальный возраст: $ageFrom; Максимальный возраст: $ageTo")
-        return s.toString()
-    }
 
     @Composable
     override fun <T, E : Any> show(
@@ -76,7 +77,8 @@ class Group(name: String, dist: Distance) : Scrollable {
             Button(
                 onClick = {
                     list.removeAt(index)
-                    toDelete[0].removeIf{ it as ParticipantStart
+                    toDelete[0].removeIf {
+                        it as ParticipantStart
                         it.wishGroup == this@Group.groupName
                     }
                 },
@@ -95,7 +97,7 @@ class Group(name: String, dist: Distance) : Scrollable {
         }
     }
 
-    fun createCSVHeader() = mutableListOf("Название", "Дистанция", "Пол", "ВозрастОт", "ВозрастДо")
+   fun createCSVHeader() = mutableListOf("Название", "Дистанция", "Пол", "ВозрастОт", "ВозрастДо")
 
 
     fun createCSVString() = mutableListOf(groupName, distance.name, "$sex", "$ageFrom", "$ageTo")
