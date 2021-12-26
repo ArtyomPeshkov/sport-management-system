@@ -72,29 +72,6 @@ internal class ParseCollectiveTest {
         }
     }
 
-
-    @Test
-    fun `empty csv (participant)`() {
-        val path = "src/test/resources/participant-test/empty.csv"
-        assertFailsWith<ProblemWithCSVException> {
-            participantsParser(
-                csvReader().readAll(readFile(path))[0][0],
-                readFile(path)
-            )
-        }
-    }
-
-    @Test
-    fun `not enough strings (participant)`() {
-        val path = "src/test/resources/participant-test/notEnoughStrings.csv"
-        assertFailsWith<ProblemWithCSVException> {
-            participantsParser(
-                csvReader().readAll(readFile(path))[0][0],
-                readFile(path)
-            )
-        }
-    }
-
     @Test
     fun `correct input test (multiple participants)`() {
         val answer = listOf(
@@ -153,7 +130,7 @@ internal class ParseGroupTest {
         val answer = listOf(Group("М0304", purposeDistance))
         assertEquals(
             answer.toString(),
-            GroupReader(path).getGroups(DistanceReader(path).getDistances(), Phase.FIRST).toString()
+            GroupReader(path).getGroups(DistanceReader(path).getDistances()).toString()
         )
     }
 
@@ -162,8 +139,7 @@ internal class ParseGroupTest {
         val path = "src/test/resources/distances-test/incorrectField"
         assertFailsWith<UnexpectedValueException> {
             GroupReader(path).getGroups(
-                DistanceReader(path).getDistances(),
-                Phase.FIRST
+                DistanceReader(path).getDistances()
             ).toString()
         }
     }

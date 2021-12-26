@@ -235,7 +235,7 @@ open class Participant(
 
 
     override fun toString(): String {
-        return "Фамилия: $surname  Имя:$name  Группа: $wishGroup Статус: $status Год рождения: $yearOfBirth ||||| "
+        return "Фамилия: $surname  Имя:$name  Статус: $status Год рождения: $yearOfBirth ||||| "
     }
 
 }
