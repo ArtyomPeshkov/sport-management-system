@@ -51,7 +51,7 @@ open class ParticipantStart(val participant: Participant) : Participant(particip
         listOf("$number", surname, name, sex.toString(), "$yearOfBirth", team, rank, "$startTime")
 
     override fun toString(): String {
-        return "Группа: ${Colors.BLUE._name}$wishGroup${Colors.PURPLE._name}; Номер: ${Colors.GREEN._name}$number${Colors.PURPLE._name}; Статус: ${Colors.YELLOW._name}$status${Colors.PURPLE._name}"
+        return "Номер: $number " + super.toString()
     }
 
     @Composable
@@ -107,10 +107,10 @@ open class ParticipantStart(val participant: Participant) : Participant(particip
 
 }
 
-class ParticipantStartProtocol(participant: ParticipantStart): ParticipantStart(participant.participant){
+class ParticipantStartProtocol(participant: ParticipantStart) : ParticipantStart(participant.participant) {
 
-    init{
-        this.setStart(participant.number,participant.startTime)
+    init {
+        this.setStart(participant.number, participant.startTime)
     }
 
     @Composable
@@ -120,17 +120,17 @@ class ParticipantStartProtocol(participant: ParticipantStart): ParticipantStart(
         isDeletable: Boolean,
         toDelete: List<SnapshotStateList<out E>>
     ) {
-            Row(
-                modifier = Modifier.fillMaxHeight(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(5.dp)
-            ) {
-                Text(this@ParticipantStartProtocol.number.toString(), modifier = Modifier.weight(1f))
-                Text(this@ParticipantStartProtocol.startTime.toString(), modifier = Modifier.weight(1f))
-                Text(this@ParticipantStartProtocol.participant.surname, modifier = Modifier.weight(1f))
-                Text(this@ParticipantStartProtocol.participant.name, modifier = Modifier.weight(1f))
-                Text(this@ParticipantStartProtocol.participant.wishGroup, modifier = Modifier.weight(1f))
-            }
+        Row(
+            modifier = Modifier.fillMaxHeight(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            Text(this@ParticipantStartProtocol.number.toString(), modifier = Modifier.weight(1f))
+            Text(this@ParticipantStartProtocol.startTime.toString(), modifier = Modifier.weight(1f))
+            Text(this@ParticipantStartProtocol.participant.surname, modifier = Modifier.weight(1f))
+            Text(this@ParticipantStartProtocol.participant.name, modifier = Modifier.weight(1f))
+            Text(this@ParticipantStartProtocol.participant.wishGroup, modifier = Modifier.weight(1f))
+        }
     }
 
 }
@@ -235,10 +235,61 @@ open class Participant(
 
 
     override fun toString(): String {
-        return "Группа: ${Colors.BLUE._name}${Colors.PURPLE._name}; Статус: ${Colors.YELLOW._name}$status${Colors.PURPLE._name}"
+        return "Фамилия: $surname  Имя:$name  Статус: $status Год рождения: $yearOfBirth ||||| "
     }
-    fun fullToString(): String {
-        return this.toString() + "Пол: $sex; Год рождения: $yearOfBirth; Разряд: $rank"
+
+}
+
+class ParticipantResult(participant: ParticipantStart,val numberInList: Int,val place: Int,val otstav: String) : ParticipantStart(participant) {
+    fun createCSVHeaderRes() = mutableListOf(
+        listOf(
+            "Порядковый номер",
+            "Номер",
+            "Фамилия",
+            "Имя",
+            "Пол",
+            "Г.р.",
+            "Коллектив",
+            "Разр.",
+            "Результат",
+            "Место",
+            "Отставание"
+        )
+    )
+
+
+    fun createCSVStringRes(): MutableList<List<String>> = mutableListOf(
+        listOf(
+            "$numberInList", "$number", surname,
+            name, "$sex", "$yearOfBirth",
+            team, rank, status, "$place", otstav
+        )
+    )
+
+    @Composable
+    override fun <T, E : Any> show(
+        list: SnapshotStateList<T>,
+        index: Int,
+        isDeletable: Boolean,
+        toDelete: List<SnapshotStateList<out E>>
+    ) {
+        Row(
+            modifier = Modifier.fillMaxHeight(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            Text(this@ParticipantResult.numberInList.toString(), modifier = Modifier.weight(1f))
+            Text(this@ParticipantResult.number.toString(), modifier = Modifier.weight(1f))
+            Text(this@ParticipantResult.surname, modifier = Modifier.weight(1f))
+            Text(this@ParticipantResult.name, modifier = Modifier.weight(1f))
+            Text(this@ParticipantResult.sex.toString(), modifier = Modifier.weight(1f))
+            Text(this@ParticipantResult.yearOfBirth.toString(), modifier = Modifier.weight(1f))
+            Text(this@ParticipantResult.team, modifier = Modifier.weight(1f))
+            Text(this@ParticipantResult.rank, modifier = Modifier.weight(1f))
+            Text(this@ParticipantResult.status, modifier = Modifier.weight(1f))
+            Text(this@ParticipantResult.place.toString(), modifier = Modifier.weight(1f))
+            Text(this@ParticipantResult.otstav, modifier = Modifier.weight(1f))
+        }
     }
 
 }

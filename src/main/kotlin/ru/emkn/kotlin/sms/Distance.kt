@@ -255,7 +255,7 @@ class Distance(name: String, type: DistanceTypeData) : Scrollable {
 
 
     override fun toString(): String {
-        val s = StringBuilder("$name, Контрольные точки: $pointsList")
+        val s = StringBuilder("Название: $name, Контрольные точки: $pointsList")
         return s.toString()
     }
 }

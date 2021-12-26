@@ -12,9 +12,9 @@ abstract class Reader(configurationFolderPath: String){
         this.configurationFolder = File(configurationFolderPath).walk().toList()
     }
     fun universalParser(name: String): List<File> {
-        val folder = configurationFolder.find { it.path.contains("${configurationFolder[0]}\\$name") }
-            ?: throw NotEnoughConfigurationFiles(name)
-        parseLogger.universalC(Colors.BLUE._name, "reading from  ${configurationFolder[0]}\\$name", 'i')
+        val filePath = "${configurationFolder[0]}${File.separator}$name"
+        val folder = configurationFolder.find { it.path.contains(filePath) } ?: throw NotEnoughConfigurationFiles(name)
+        parseLogger.universalC(Colors.BLUE._name, "reading from  $filePath", 'i')
         return folder.walk().toList().filter { it.extension == "csv" }
     }
 }
@@ -82,7 +82,7 @@ class GroupReader(configurationFolderName:String):Reader(configurationFolderName
         val groupStrings = csvReader().readAllWithHeader(groups)
         return groupStrings.map { groupData ->
             val groupName = groupData["Название"] ?: throw CSVFieldNamesException(groups.path)
-            val distance = distanceList[groupData["Дистанция"]] ?: throw CSVFieldNamesException(groups.path)
+            val distance = distanceList[groupData["Дистанция"]] ?: throw UnexpectedValueException("Нет такой дистанции ${groupData["Дистанция"]}")
 
             val group = Group(groupName, distance)
                 group.modifyGroup(groupData, groups.path)

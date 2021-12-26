@@ -19,10 +19,6 @@ class Event(
     private val distanceList: Map<String, Distance>
 
     init {
-        if (groupList.isEmpty())
-            throw UnexpectedValueException("Пустой список групп у события")
-        if (distanceList.isEmpty())
-            throw UnexpectedValueException("Пустой список дистанций у события")
         this.groupList = groupList
         this.distanceList = distanceList
         parseLogger.printCollection(groupList, Colors.PURPLE._name)
@@ -35,8 +31,6 @@ class Event(
         distanceList: Map<String, Distance> /*MutableMap<String,String>*/,
         teams: List<Team>
     ) : this(name, date, groupList, distanceList) {
-        if (teams.any { it.athleteList.isEmpty() })
-            throw UnexpectedValueException("В коллективе нет участников")
         teamList = teams
         setupGroups()
     }
