@@ -65,6 +65,7 @@ fun eventDataOnScreen(
             OutlinedTextField(
                 value = dateString.value,
                 onValueChange = {
+                    //Сохранение
                     dateString.value = it
                     if (Regex("""[0-9]{4}-[0-9]{2}-[0-9]{2}""").matches(dateString.value) &&
                         dateString.value.substringAfter('-').substringBefore('-').toInt() in 1..12 &&
@@ -581,7 +582,7 @@ fun PhaseOneWindow(
     configurationFolder: String,
     participantList: SnapshotStateList<ParticipantStart>,
     controlPoints: SnapshotStateList<ControlPoint>,
-    listWithCP: SnapshotStateMap<ParticipantStart, List<ControlPointWithTime>>
+    listWithCP: SnapshotStateMap<ParticipantStart, List<ControlPointWithTime>>,
 ) {
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs.size) { it == 0 }) }
     val isDateCorrect = remember { mutableStateOf(true) }
@@ -615,6 +616,7 @@ fun PhaseOneWindow(
                 Column {
                     controlPointsDataOnScreen(listWithCP)
                     Button(onClick = {
+                        listWithCP.clear()
                         val allParticipants = groupList.flatMap { it.listParticipants }
                         listWithCP.putAll(
                             ControlPointReader(configurationFolder).getPoints()
@@ -635,29 +637,39 @@ fun PhaseOneWindow(
                     )
                     Button(onClick = {
                         val controlPointsMap = ControlPointReader(pathToCP).getPoints()
-
+                        listWithCP.clear()
                         listWithCP.putAll(controlPointsMap.filter { mapInput -> participantList.find { it.number == mapInput.key } != null }
                             .mapKeys { mapInput ->
                                 participantList.find { it.number == mapInput.key }
                                     ?: throw UnexpectedValueException("No such participant ${mapInput.key}")
                             })
-                        //TODO вот тут должен читать, путь  - pathToCP
-//                        val allParticipants = groupList.flatMap { it.listParticipants }
-//                        listWithCP.putAll(
-//                            ControlPointReader(configurationFolder).getPoints()
-//                                .mapKeys { entry ->
-//                                    allParticipants.find { it.number == entry.key }
-//                                        ?: throw UnexpectedValueException("")
-//                                })
-                        generateCP(controlPoints, groupList, configurationFolder)
                     }) { Text("Read results") }
                 }
             }
             5 -> {
-
+            //    groupResultsDataOnScreen()
+                Button(onClick = {
+                    val allParticipants = groupList.flatMap { it.listParticipants }
+                    listWithCP.putAll(
+                        ControlPointReader(configurationFolder).getPoints()
+                            .mapKeys { entry ->
+                                allParticipants.find { it.number == entry.key }
+                                    ?: throw UnexpectedValueException("")
+                            })
+                    generateCP(controlPoints, groupList, configurationFolder)
+                }) { Text("Generate results for groups") }
             }
         }
     }
+}
+
+@Composable
+fun groupResultsDataOnScreen(participantResultList: SnapshotStateMap<Group, List<ParticipantResult>>) {
+    LazyScrollable(
+        participantResultList.keys.toMutableStateList(),
+        false,
+        listOf(participantResultList.values.toMutableStateList())
+    )
 }
 
 @Composable
