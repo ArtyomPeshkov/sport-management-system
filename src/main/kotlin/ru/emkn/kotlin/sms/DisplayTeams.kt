@@ -580,7 +580,8 @@ fun PhaseOneWindow(
     eventData: MutableState<Event>,
     configurationFolder: String,
     participantList: SnapshotStateList<ParticipantStart>,
-    controlPoints: SnapshotStateList<ControlPoint>
+    controlPoints: SnapshotStateList<ControlPoint>,
+    listWithCP: SnapshotStateMap<ParticipantStart, List<ControlPointWithTime>>
 ) {
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs.size) { it == 0 }) }
     val isDateCorrect = remember { mutableStateOf(true) }
@@ -610,15 +611,17 @@ fun PhaseOneWindow(
                 )
             }
             4 -> {
-                val listWithCP = mutableStateMapOf<ParticipantStart, List<ControlPointWithTime>>()
-                generateCP(controlPoints, groupList, configurationFolder)
-                val allParticipants = groupList.flatMap { it.listParticipants }
-                listWithCP.putAll(
-                    ControlPointReader(configurationFolder).getPoints()
-                        .mapKeys { entry ->
-                            allParticipants.find { it.number == entry.key } ?: throw UnexpectedValueException("")
-                        })
+
                 controlPointsDataOnScreen(listWithCP)
+                Button(onClick = {
+                    val allParticipants = groupList.flatMap { it.listParticipants }
+                    listWithCP.putAll(
+                        ControlPointReader(configurationFolder).getPoints()
+                            .mapKeys { entry ->
+                                allParticipants.find { it.number == entry.key } ?: throw UnexpectedValueException("")
+                            })
+                    generateCP(controlPoints, groupList, configurationFolder)
+                }) {Text("Random results generator")}
             }
             5 -> {
 
@@ -629,12 +632,26 @@ fun PhaseOneWindow(
 
 @Composable
 fun controlPointsDataOnScreen(participantList: SnapshotStateMap<ParticipantStart, List<ControlPointWithTime>>) {
-        // Тут сортировки не будет, т.к. это мапа
+    Column {
         LazyScrollable(
             participantList.keys.toMutableStateList(),
             false,
             listOf(participantList.values.toMutableStateList())
         )
+//        Button(onClick = {
+//            generateCP(
+//                controlPoints,
+//                groupList,
+//                configurationFolder
+//            )
+//        }) { Text("Случайные контрольные точки") }
+//        val allParticipants = groupList.flatMap { it.listParticipants }
+//        listWithCP.putAll(
+//            ControlPointReader(configurationFolder).getPoints()
+//                .mapKeys { entry ->
+//                    allParticipants.find { it.number == entry.key } ?: throw UnexpectedValueException("")
+//                })
+    }
 }
 
 fun main() = application {
@@ -678,6 +695,7 @@ fun main() = application {
                 val teamList = remember { teams.toMutableStateList() }
                 val participantList = remember { groupList.flatMap { it.listParticipants }.toMutableStateList() }
                 val eventData = remember { mutableStateOf(event) }
+                val listWithCP = mutableStateMapOf<ParticipantStart, List<ControlPointWithTime>>()
 
                 PhaseOneWindow(
                     distanceList,
@@ -686,7 +704,8 @@ fun main() = application {
                     eventData,
                     configFolder,
                     participantList,
-                    controlPoints.toMutableStateList()
+                    controlPoints.toMutableStateList(),
+                    listWithCP
                 )
             }
         }
