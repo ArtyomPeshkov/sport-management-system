@@ -173,7 +173,7 @@ fun teamsDataOnScreen(
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Group Name")
+                    Text("Team Name")
                     OutlinedTextField(
                         value = groupName,
                         onValueChange = {
@@ -455,7 +455,74 @@ fun startProtocolsDataOnScreen(
     event: MutableState<Event>,
     configurationFolder: String
 ) {
+    var newList: List<ParticipantStart>
     Column {
+        Row(
+            modifier = Modifier.padding(start = 5.dp, end = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            Button(onClick = {
+                newList = participantList.sortedBy { it.name }
+                newList.forEachIndexed { index, participantStart ->
+                    participantList[index] = participantStart
+                }
+            }, modifier = Modifier.weight(1f)) { Text("По имени ^") }
+            Button(
+                onClick = {
+                    newList = participantList.sortedByDescending { it.name }
+                    newList.forEachIndexed { index, participantStart ->
+                        participantList[index] = participantStart
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) { Text("По имени v") }
+            Button(onClick = {
+                newList = participantList.sortedBy { it.surname }
+                newList.forEachIndexed { index, participantStart ->
+                    participantList[index] = participantStart
+                }
+            }, modifier = Modifier.weight(1f)) { Text("По фамилии ^") }
+            Button(
+                onClick = {
+                    newList = participantList.sortedByDescending { it.surname }
+                    newList.forEachIndexed { index, participantStart ->
+                        participantList[index] = participantStart
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) { Text("По фамилии v") }
+            Button(onClick = {
+                newList = participantList.sortedBy { it.number }
+                newList.forEachIndexed { index, participantStart ->
+                    participantList[index] = participantStart
+                }
+            }, modifier = Modifier.weight(1f)) { Text("По номеру ^") }
+            Button(
+                onClick = {
+                    newList = participantList.sortedByDescending { it.number }
+                    newList.forEachIndexed { index, group ->
+                        participantList[index] = group
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) { Text("По номеру v") }
+            Button(onClick = {
+                newList = participantList.sortedByDescending { it.yearOfBirth }
+                newList.forEachIndexed { index, participantStart ->
+                    participantList[index] = participantStart
+                }
+            }, modifier = Modifier.weight(1f)) { Text("По возр. ^") }
+            Button(
+                onClick = {
+                    newList = participantList.sortedBy { it.yearOfBirth }
+                    newList.forEachIndexed { index, participantStart ->
+                        participantList[index] = participantStart
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) { Text("По возр. v") }
+        }
         LazyScrollable(
             participantList.map { ParticipantStartProtocol(it) }.toMutableStateList(),
             isDeletable,
@@ -562,11 +629,12 @@ fun PhaseOneWindow(
 
 @Composable
 fun controlPointsDataOnScreen(participantList: SnapshotStateMap<ParticipantStart, List<ControlPointWithTime>>) {
-    LazyScrollable(
-        participantList.keys.toMutableStateList(),
-        false,
-        listOf(participantList.values.toMutableStateList())
-    )
+        // Тут сортировки не будет, т.к. это мапа
+        LazyScrollable(
+            participantList.keys.toMutableStateList(),
+            false,
+            listOf(participantList.values.toMutableStateList())
+        )
 }
 
 fun main() = application {

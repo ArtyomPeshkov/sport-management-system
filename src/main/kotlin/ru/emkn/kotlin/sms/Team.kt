@@ -252,9 +252,56 @@ class Team(name: String) : Scrollable {
                     }, enabled = isYearCorrect && isWishCorrect) { Text("Add part.") }
                 }
             }
-
+            var newList: List<Participant>
             AnimatedVisibility(isOpened) {
                 Column {
+                    Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        Button(onClick = {
+                            newList = listOfParticipant.sortedBy { it.name }
+                            newList.forEachIndexed { index, participant ->
+                                listOfParticipant[index] = participant
+                            }
+                        }, modifier = Modifier.weight(1f)) { Text("По имени ^") }
+                        Button(
+                            onClick = {
+                                newList = listOfParticipant.sortedByDescending { it.name }
+                                newList.forEachIndexed { index, participant ->
+                                    listOfParticipant[index] = participant
+                                }
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) { Text("По имени v") }
+                        Button(onClick = {
+                            newList = listOfParticipant.sortedBy { it.surname }
+                            newList.forEachIndexed { index, participant ->
+                                listOfParticipant[index] = participant
+                            }
+                        }, modifier = Modifier.weight(1f)) { Text("По фамилии ^") }
+                        Button(
+                            onClick = {
+                                newList = listOfParticipant.sortedByDescending { it.surname }
+                                newList.forEachIndexed { index, participant ->
+                                    listOfParticipant[index] = participant
+                                }
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) { Text("По фамилии v") }
+                        Button(onClick = {
+                            newList = listOfParticipant.sortedByDescending { it.yearOfBirth }
+                            newList.forEachIndexed { index, participant ->
+                                listOfParticipant[index] = participant
+                            }
+                        }, modifier = Modifier.weight(1f)) { Text("По возр. ^") }
+                        Button(
+                            onClick = {
+                                newList = listOfParticipant.sortedBy { it.yearOfBirth }
+                                newList.forEachIndexed { index, participant ->
+                                    listOfParticipant[index] = participant
+                                }
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) { Text("По возр. v") }
+                    }
                     listOfParticipant.forEachIndexed { i, it ->
                         Row(
                             modifier = Modifier.fillMaxHeight(),
