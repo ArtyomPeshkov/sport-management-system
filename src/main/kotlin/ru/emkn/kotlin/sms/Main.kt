@@ -9,7 +9,7 @@ import java.io.File
 val parseLogger: Logger = LoggerFactory.getLogger("Parse")
 
 fun newFileReader(): String {
-    println("Write path to your config folder")
+    println("Write path to your configuration folder")
     var resultFile: String? = readLine()
     while (resultFile == null || !File(resultFile).exists() || !File(resultFile).canRead() ) {
         println("Please write existing file")
@@ -108,10 +108,35 @@ fun main(args: Array<String>) {
         "Hello, dear programmer. At your own peril and risk, you decided to work with this program.\nWell, this is very brave of you and very pleasant for us - creators.\nWe hope you will be satisfied with the work and everything will go according your plan.\nSo, let's begin our hunger games. Good luck))",
         'i'
     )
-    val path = newFileReader()
-    phase1(path)
-    phase2(path)
-    phase3(path)
+    var path = newFileReader()
+      while(true){
+          println("Print 1,2 or 3 to choose phase, print all to start all 3 phases in a row, print path to set new path for configuration folder or print ext, to leave the program (description of phases you can find in DOCS.md)")
+          var ans = readLine()
+        when (ans){
+            "1"->{phase1(path)
+            println("Start protocols were generated")}
+            "2"-> {
+                phase2(path)
+                println("Result protocols for groups were generated")
+            }
+            "3"->{phase3(path)
+                println("Result protocols for teams were generated")}
+            "all","All","ALL" -> {
+                phase1(path)
+                phase2(path)
+                phase3(path)
+                println("Result protocols for teams were generated")
+            }
+            "path" -> path = newFileReader()
+            "ext" -> break
+            else -> {
+                println("Unknown command! Try again.")
+                ans = readLine()
+
+            }
+        }
+    }
+    println("Program finished!")
     parseLogger.universalC(
         Colors.GREEN._name,
         "Well, everything has gone according to your plan. You are very lucky, right?\nThank you for using our programm. Have a good day. Goodbye",
