@@ -51,7 +51,7 @@ open class ParticipantStart(val participant: Participant) : Participant(particip
         listOf("$number", surname, name, sex.toString(), "$yearOfBirth", team, rank, "$startTime")
 
     override fun toString(): String {
-        return "Номер: $number" + super.toString()
+        return "Номер: $number " + super.toString()
     }
 
     @Composable
@@ -235,7 +235,7 @@ open class Participant(
 
 
     override fun toString(): String {
-        return "Фамилия: $surname  Имя:$name  Группа: $wishGroup; Статус: $status Год рождения: $yearOfBirth"
+        return "Фамилия: $surname  Имя:$name  Группа: $wishGroup Статус: $status Год рождения: $yearOfBirth ||||| "
     }
 
 }
