@@ -58,7 +58,7 @@ fun phase1(path: String) {
     val controlPoints = mutableListOf<ControlPoint>()
     val distances = DistanceReader(path).getDistances(controlPoints)
 
-    val groups = GroupReader(path).getGroups(distances, Phase.FIRST)
+    val groups = GroupReader(path).getGroups(distances)
     val team = TeamReader(path).getTeams()
     val (name, date) = getNameAndDate(readFile(path).walk().toList(), path)
 
@@ -86,7 +86,7 @@ fun phase2(path: String) {
     parseLogger.printCollection(configurationFolder, Colors.GREEN._name)
     val distances =  DistanceReader(path).getDistances()
     parseLogger.printMap(distances, Colors.BLUE._name)
-    val groups = GroupReader(path).getGroups(distances, Phase.SECOND)
+    val groups = GroupReader(path).getGroups(distances)
     StartProtocolParse(path).getStartProtocolFolder(groups)
     val participantDistanceWithTime: Map<Int, List<ControlPointWithTime>> = ControlPointReader(path).getPoints()
     parseLogger.universalC(Colors.RED._name, "${participantDistanceWithTime.size}", 'd')

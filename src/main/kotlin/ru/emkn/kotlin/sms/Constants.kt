@@ -4,6 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import java.time.format.DateTimeFormatter
 
+val listOfTabs = listOf(
+    "Команды",
+    "Дистанции",
+    "Группы",
+    "Старт. прот.",
+    "Контр. точки",
+    "Групповые результаты",
+    "Командные результаты"
+)
+
 val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
 /** разряд, присуждаемый спортсмену */
