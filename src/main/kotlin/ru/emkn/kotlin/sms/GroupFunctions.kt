@@ -14,8 +14,8 @@ fun Group.modifyGroup(
     )
 }
 
-fun getGroupByName(name: String, groups: List<Group>): Group? {
-    return groups.find { it.groupName == name }
+fun getGroupByName(name: String, groups: List<Group>): Group {
+    return groups.find { it.groupName == name } ?: throw  UnexpectedValueException("Нет группы с именем $name")
 }
 
 fun getGroupIndexByName(name: String, groups: List<Group>): Int {

@@ -27,6 +27,7 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import exceptions.UnexpectedValueException
+import log.printCollection
 import java.io.File
 import java.time.LocalDate
 
@@ -583,12 +584,12 @@ fun PhaseOneWindow(
     participantList: SnapshotStateList<ParticipantStart>,
     controlPoints: SnapshotStateList<ControlPoint>,
     listWithCP: SnapshotStateMap<ParticipantStart, List<ControlPointWithTime>>,
+    participantResultMap:SnapshotStateMap<Group, List<ParticipantResult>>
 ) {
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs.size) { it == 0 }) }
     val isDateCorrect = remember { mutableStateOf(true) }
     val dateString = remember { mutableStateOf("") }
     dateString.value = eventData.value.date.toString()
-    var pathToCP by remember { mutableStateOf("") }
     Column {
         AllTopButtons(buttonStates, listOfTabs)
         eventDataOnScreen(eventData, isDateCorrect, dateString)
@@ -626,37 +627,25 @@ fun PhaseOneWindow(
                                 })
                         generateCP(controlPoints, groupList, configurationFolder)
                     }) { Text("Random results generator") }
-                    OutlinedTextField(
-                        value = pathToCP,
-                        onValueChange = {
-                            pathToCP = it
-                        },
-                        modifier = Modifier.fillMaxWidth().padding(0.dp),
-                        singleLine = true,
-                        shape = RoundedCornerShape(5.dp)
-                    )
                     Button(onClick = {
-                        val controlPointsMap = ControlPointReader(pathToCP).getPoints()
+                        val controlPointsMap = ControlPointReader(configurationFolder).getPoints()
                         listWithCP.clear()
                         listWithCP.putAll(controlPointsMap.filter { mapInput -> participantList.find { it.number == mapInput.key } != null }
                             .mapKeys { mapInput ->
                                 participantList.find { it.number == mapInput.key }
                                     ?: throw UnexpectedValueException("No such participant ${mapInput.key}")
                             })
-                    }) { Text("Read results") }
+                    }) { Text("Read results from configuration folder") }
                 }
             }
             5 -> {
-            //    groupResultsDataOnScreen()
+                groupResultsDataOnScreen(participantResultMap)
                 Button(onClick = {
-                    val allParticipants = groupList.flatMap { it.listParticipants }
-                    listWithCP.putAll(
-                        ControlPointReader(configurationFolder).getPoints()
-                            .mapKeys { entry ->
-                                allParticipants.find { it.number == entry.key }
-                                    ?: throw UnexpectedValueException("")
-                            })
-                    generateCP(controlPoints, groupList, configurationFolder)
+                    setStatusForAllParticipants(groupList, distanceList.associateBy { it.name }, listWithCP.mapKeys { it.key.number })
+                    makeResultProtocols(groupList,"$configurationFolder/save")
+                    val groupMap = GroupResultsReader("$configurationFolder/save").getGroupsFromResultProtocols()
+                    participantResultMap.clear()
+                    participantResultMap.putAll(groupMap.mapKeys { getGroupByName(it.key,groupList) })
                 }) { Text("Generate results for groups") }
             }
         }
@@ -664,11 +653,11 @@ fun PhaseOneWindow(
 }
 
 @Composable
-fun groupResultsDataOnScreen(participantResultList: SnapshotStateMap<Group, List<ParticipantResult>>) {
+fun groupResultsDataOnScreen(participantResultMap: SnapshotStateMap<Group, List<ParticipantResult>>) {
     LazyScrollable(
-        participantResultList.keys.toMutableStateList(),
+        participantResultMap.keys.toMutableStateList(),
         false,
-        listOf(participantResultList.values.toMutableStateList())
+        listOf(participantResultMap.values.toMutableStateList())
     )
 }
 
@@ -723,6 +712,7 @@ fun main() = application {
                 val participantList = remember { groupList.flatMap { it.listParticipants }.toMutableStateList() }
                 val eventData = remember { mutableStateOf(event) }
                 val listWithCP = mutableStateMapOf<ParticipantStart, List<ControlPointWithTime>>()
+                val participantResultMap = mutableStateMapOf<Group, List<ParticipantResult>>()
 
                 PhaseOneWindow(
                     distanceList,
@@ -732,7 +722,8 @@ fun main() = application {
                     configFolder,
                     participantList,
                     controlPoints.toMutableStateList(),
-                    listWithCP
+                    listWithCP,
+                    participantResultMap
                 )
             }
         }

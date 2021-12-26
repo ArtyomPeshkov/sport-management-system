@@ -74,7 +74,7 @@ open class Group(name: String, dist: Distance) : Scrollable {
             Text(this@Group.distance.name, modifier = Modifier.weight(1f))
             Text(this@Group.ageFrom.toString(), modifier = Modifier.weight(1f))
             Text(this@Group.ageTo.toString(), modifier = Modifier.weight(1f))
-            Button(
+            if (isDeletable)Button(
                 onClick = {
                     list.removeAt(index)
                     toDelete[0].removeIf {

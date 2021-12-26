@@ -287,7 +287,7 @@ class ParticipantResult(participant: ParticipantStart,val numberInList: Int,val 
             Text(this@ParticipantResult.team, modifier = Modifier.weight(1f))
             Text(this@ParticipantResult.rank, modifier = Modifier.weight(1f))
             Text(this@ParticipantResult.status, modifier = Modifier.weight(1f))
-            Text(this@ParticipantResult.place.toString(), modifier = Modifier.weight(1f))
+            Text(if (this@ParticipantResult.place != -1)this@ParticipantResult.place.toString() else "", modifier = Modifier.weight(1f))
             Text(this@ParticipantResult.otstav, modifier = Modifier.weight(1f))
         }
     }
