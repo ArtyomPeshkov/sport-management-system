@@ -96,7 +96,44 @@ fun teamsDataOnScreen(
     participantList: SnapshotStateList<ParticipantStart>
 ) {
     var isVisible by remember { mutableStateOf(false) }
+    var newList: List<Team>
     Column {
+        Row(
+            modifier = Modifier.padding(start = 5.dp, end = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            Button(onClick = {
+                newList = teamList.sortedBy { it.name }
+                newList.forEachIndexed { index, team ->
+                    teamList[index] = team
+                }
+            }, modifier = Modifier.weight(1f)) { Text("По имени ^") }
+            Button(
+                onClick = {
+                    newList = teamList.sortedByDescending { it.name }
+                    newList.forEachIndexed { index, team ->
+                        teamList[index] = team
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) { Text("По имени v") }
+            Button(onClick = {
+                newList = teamList.sortedBy { it.athleteList.size }
+                newList.forEachIndexed { index, team ->
+                    teamList[index] = team
+                }
+            }, modifier = Modifier.weight(1f)) { Text("По кол-ву ^") }
+            Button(
+                onClick = {
+                    newList = teamList.sortedByDescending { it.athleteList.size }
+                    newList.forEachIndexed { index, team ->
+                        teamList[index] = team
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) { Text("По кол-ву v") }
+        }
         LazyScrollable(teamList, false, listOf(groupList, participantList))
         Button(onClick = {
             // НЕ РАБОТАЕТ
@@ -165,8 +202,44 @@ fun distancesDataOnScreen(
     participantList: SnapshotStateList<ParticipantStart>
 ) {
     var isVisible by remember { mutableStateOf(false) }
-
+    var newList: List<Distance>
     Column {
+        Row(
+            modifier = Modifier.padding(start = 5.dp, end = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            Button(onClick = {
+                newList = distanceList.sortedBy { it.name }
+                newList.forEachIndexed { index, distance ->
+                    distanceList[index] = distance
+                }
+            }, modifier = Modifier.weight(1f)) { Text("По имени ^") }
+            Button(
+                onClick = {
+                    newList = distanceList.sortedByDescending { it.name }
+                    newList.forEachIndexed { index, distance ->
+                        distanceList[index] = distance
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) { Text("По имени v") }
+            Button(onClick = {
+                newList = distanceList.sortedBy { it.getPointsList().size }
+                newList.forEachIndexed { index, distance ->
+                    distanceList[index] = distance
+                }
+            }, modifier = Modifier.weight(1f)) { Text("По кол-ву ^") }
+            Button(
+                onClick = {
+                    newList = distanceList.sortedByDescending { it.getPointsList().size }
+                    newList.forEachIndexed { index, distance ->
+                        distanceList[index] = distance
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) { Text("По кол-ву v") }
+        }
         LazyScrollable(distanceList, true, listOf(groupList, participantList))
         Button(onClick = {
             //Создать функции для сохранения различных видов структур и обработать возможные ошибки (Например: удалили дистанцию D4000, значит с группой, которая отвечает за эту дистанцию надо что-то сделать)
@@ -307,7 +380,44 @@ fun groupsDataOnScreen(
     configurationFolder: String,
     participantList: SnapshotStateList<ParticipantStart>
 ) {
+    var newList: List<Group>
     Column {
+        Row(
+            modifier = Modifier.padding(start = 5.dp, end = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            Button(onClick = {
+                newList = groupList.sortedBy { it.groupName }
+                newList.forEachIndexed { index, group ->
+                    groupList[index] = group
+                }
+            }, modifier = Modifier.weight(1f)) { Text("По имени ^") }
+            Button(
+                onClick = {
+                    newList = groupList.sortedByDescending { it.groupName }
+                    newList.forEachIndexed { index, group ->
+                        groupList[index] = group
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) { Text("По имени v") }
+            Button(onClick = {
+                newList = groupList.sortedBy { it.ageFrom }
+                newList.forEachIndexed { index, group ->
+                    groupList[index] = group
+                }
+            }, modifier = Modifier.weight(1f)) { Text("По возрасту ^") }
+            Button(
+                onClick = {
+                    newList = groupList.sortedByDescending { it.ageTo }
+                    newList.forEachIndexed { index, group ->
+                        groupList[index] = group
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) { Text("По возрасту v") }
+        }
         LazyScrollable(groupList, true, listOf(participantList))
         Button(onClick = {
             File("$configurationFolder/save/").mkdirs()
