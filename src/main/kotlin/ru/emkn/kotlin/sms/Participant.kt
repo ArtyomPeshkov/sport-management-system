@@ -244,7 +244,6 @@ open class Participant(
     ) {
         //Тут нужна кнопочка по которой из participant вылезает прохождение им контрольных точек (условно при нажатии на номер участника, мы видим, как он прошёл дистанцию)
         var isOpened by remember { mutableStateOf(false) }
-
         Box(modifier = Modifier.fillMaxSize().clickable { isOpened = !isOpened }) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(5.dp)) {
                 //Где-то тут должно вызываться drop down menu
@@ -267,8 +266,11 @@ open class Participant(
 
 }
 
-class ParticipantResult(participant: ParticipantStart, val numberInList: Int, val place: Int, val otstav: String) :
-    ParticipantStart(participant) {
+class ParticipantResult(participant: ParticipantStart,val numberInList: Int,val place: Int,val otstav: String) : ParticipantStart(participant.participant) {
+    init {
+        setStart(participant.number,participant.startTime)
+    }
+
     fun createCSVHeaderRes() = mutableListOf(
         listOf(
             "Порядковый номер",

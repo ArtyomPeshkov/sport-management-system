@@ -584,7 +584,7 @@ fun PhaseOneWindow(
     participantList: SnapshotStateList<ParticipantStart>,
     controlPoints: SnapshotStateList<ControlPoint>,
     listWithCP: SnapshotStateMap<ParticipantStart, List<ControlPointWithTime>>,
-    participantResultMap:SnapshotStateMap<Group, List<ParticipantResult>>
+    participantResultMap:SnapshotStateMap<GroupResults, List<ParticipantResult>>
 ) {
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs.size) { it == 0 }) }
     val isDateCorrect = remember { mutableStateOf(true) }
@@ -645,7 +645,7 @@ fun PhaseOneWindow(
                     makeResultProtocols(groupList,"$configurationFolder/save")
                     val groupMap = GroupResultsReader("$configurationFolder/save").getGroupsFromResultProtocols()
                     participantResultMap.clear()
-                    participantResultMap.putAll(groupMap.mapKeys { getGroupByName(it.key,groupList) })
+                    participantResultMap.putAll(groupMap.mapKeys { GroupResults(getGroupByName(it.key,groupList)) })
                 }) { Text("Generate results for groups") }
             }
         }
@@ -653,7 +653,7 @@ fun PhaseOneWindow(
 }
 
 @Composable
-fun groupResultsDataOnScreen(participantResultMap: SnapshotStateMap<Group, List<ParticipantResult>>) {
+fun groupResultsDataOnScreen(participantResultMap: SnapshotStateMap<GroupResults, List<ParticipantResult>>) {
     LazyScrollable(
         participantResultMap.keys.toMutableStateList(),
         false,
@@ -712,7 +712,7 @@ fun main() = application {
                 val participantList = remember { groupList.flatMap { it.listParticipants }.toMutableStateList() }
                 val eventData = remember { mutableStateOf(event) }
                 val listWithCP = mutableStateMapOf<ParticipantStart, List<ControlPointWithTime>>()
-                val participantResultMap = mutableStateMapOf<Group, List<ParticipantResult>>()
+                val participantResultMap = mutableStateMapOf<GroupResults, List<ParticipantResult>>()
 
                 PhaseOneWindow(
                     distanceList,

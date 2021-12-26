@@ -1,14 +1,22 @@
 package ru.emkn.kotlin.sms
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import exceptions.UnexpectedValueException
@@ -106,5 +114,62 @@ open class Group(name: String, dist: Distance) : Scrollable {
     override fun toString(): String {
         val s = StringBuilder("Название: $groupName\nДистанция: $distance\nСписок участников: $listParticipants\n")
         return s.toString()
+    }
+}
+
+class GroupResults(group: Group):Group(group){
+
+    @Composable
+    override fun <T, E : Any> show(
+        list: SnapshotStateList<T>,
+        index: Int,
+        isDeletable: Boolean,
+        toDelete: List<SnapshotStateList<out E>>
+    ) {
+        var isOpened by remember { mutableStateOf(false) }
+        val angle: Float by animateFloatAsState(
+            targetValue = if (isOpened) 90F else 0F,
+            animationSpec = tween(
+                durationMillis = 500,
+                easing = FastOutSlowInEasing
+            )
+        )
+        Column {
+            Row(
+                modifier = Modifier.fillMaxHeight().clickable { isOpened = !isOpened },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                Icon(
+                    painter = painterResource("arrow.svg"),
+                    contentDescription = null,
+                    modifier = Modifier.width(10.dp).rotate(angle)
+                )
+                Text(this@GroupResults.groupName, modifier = Modifier.weight(1f))
+                Text(this@GroupResults.distance.name, modifier = Modifier.weight(1f))
+                Text(this@GroupResults.ageFrom.toString(), modifier = Modifier.weight(1f))
+                Text(this@GroupResults.ageTo.toString(), modifier = Modifier.weight(1f))
+            }
+            AnimatedVisibility(isOpened) {
+                Column {
+                    val list = toDelete[0][index] as List<ParticipantResult>
+                    list.forEach {
+                        Row{
+                        Text(it.numberInList.toString(), modifier = Modifier.weight(1f))
+                        Text(it.number.toString(), modifier = Modifier.weight(1f))
+                        Text(it.surname, modifier = Modifier.weight(1f))
+                        Text(it.name, modifier = Modifier.weight(1f))
+                        Text(it.sex.toString(), modifier = Modifier.weight(1f))
+                        Text(it.yearOfBirth.toString(), modifier = Modifier.weight(1f))
+                        Text(it.team, modifier = Modifier.weight(1f))
+                        Text(it.rank, modifier = Modifier.weight(1f))
+                        Text(it.status, modifier = Modifier.weight(1f))
+                        Text(if (it.place != -1)it.place.toString() else "", modifier = Modifier.weight(1f))
+                        Text(it.otstav, modifier = Modifier.weight(1f))}
+                    }
+                }
+            }
+        }
+
     }
 }

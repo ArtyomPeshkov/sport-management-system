@@ -212,7 +212,11 @@ class GroupResultsReader(configurationFolderName: String) : Reader(configuration
             }
             val collectiveName = it["Коллектив"] ?: throw CSVFieldNamesException(protocol.path)
             participant.setTeam(collectiveName)
+            participant.setParticipantStatus(it["Результат"]?: throw CSVFieldNamesException(protocol.path))
             val participantStart = ParticipantStart(participant)
+            participantStart.setStart(it["Номер"]?.toIntOrNull() ?: throw CSVFieldNamesException(protocol.path),
+                Time(0)
+            )
             val resultPart = ParticipantResult(
                 participantStart,
                 it["Порядковый номер"]?.toIntOrNull() ?: throw CSVFieldNamesException(protocol.path),
