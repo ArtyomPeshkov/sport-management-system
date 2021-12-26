@@ -77,7 +77,7 @@ class DistanceReader(configurationFolderName: String):Reader(configurationFolder
 /** считывает csv-файл со списком из групп и соответствующих каждой дистанцией */
 class GroupReader(configurationFolderName:String):Reader(configurationFolderName)
 {
-    fun getGroups(distanceList: Map<String, Distance>, currentPhase: Phase):List<Group> {
+    fun getGroups(distanceList: Map<String, Distance>):List<Group> {
         val groups =universalParser("groups.csv")[0]
         val groupStrings = csvReader().readAllWithHeader(groups)
         return groupStrings.map { groupData ->
@@ -85,9 +85,7 @@ class GroupReader(configurationFolderName:String):Reader(configurationFolderName
             val distance = distanceList[groupData["Дистанция"]] ?: throw CSVFieldNamesException(groups.path)
 
             val group = Group(groupName, distance)
-            if (currentPhase == Phase.FIRST) {
                 group.modifyGroup(groupData, groups.path)
-            }
 
             group
         }.toSet().toList()

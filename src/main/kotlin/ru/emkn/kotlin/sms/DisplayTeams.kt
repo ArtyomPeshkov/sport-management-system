@@ -1,13 +1,19 @@
 package ru.emkn.kotlin.sms
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.*
+import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
@@ -22,29 +28,61 @@ import androidx.compose.ui.window.rememberWindowState
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import exceptions.UnexpectedValueException
 import java.io.File
+import java.time.LocalDate
 
 val topRowHeight = 30.dp
 val separatorLineWidth = 1.dp
 
-fun listOfTabs(phase: Int): List<String> =
-    when (phase) {
-        1 -> listOf(
-            "Команды",
-            "Дистанции",
-            "Группы",
-            "Старт. прот.",
-            "Контр. точки",
-            "Групповые результаты",
-            "Командные результаты"
-        )
-        2 -> listOf("Старт. прот.", "Дистанции")
-        3 -> listOf("Результаты", "Общие")
-        else -> emptyList()
-    }
-
 @Composable
-fun eventDataOnScreen(eventData: MutableState<Event>) {
+fun eventDataOnScreen(
+    eventData: MutableState<Event>,
+    isDateCorrect: MutableState<Boolean>,
+    dateString: MutableState<String>
+) {
     Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Event name: ")
+            OutlinedTextField(
+                value = eventData.value.name,
+                onValueChange = {
+                    eventData.value.name = it
+                },
+                modifier = Modifier.fillMaxWidth().padding(0.dp),
+                singleLine = true,
+                shape = RoundedCornerShape(5.dp)
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Event data: ")
+            OutlinedTextField(
+                value = dateString.value,
+                onValueChange = {
+                    dateString.value = it
+                    if (Regex("""[0-9]{4}-[0-9]{2}-[0-9]{2}""").matches(dateString.value) &&
+                        dateString.value.substringAfter('-').substringBefore('-').toInt() in 1..12 &&
+                        dateString.value.substringAfterLast('-').toInt() in 1..28
+
+                    ) {
+                        eventData.value.date = LocalDate.parse(dateString.value)
+                        isDateCorrect.value = true
+                    } else
+                        isDateCorrect.value = false
+                },
+                modifier = Modifier.fillMaxWidth().padding(0.dp),
+                singleLine = true,
+                shape = RoundedCornerShape(5.dp),
+                isError = !isDateCorrect.value
+            )
+        }
+
         Text(eventData.value.name)
         Text(eventData.value.date.toString())
     }
@@ -131,7 +169,6 @@ fun distancesDataOnScreen(
     Column {
         LazyScrollable(distanceList, true, listOf(groupList, participantList))
         Button(onClick = {
-
             //Создать функции для сохранения различных видов структур и обработать возможные ошибки (Например: удалили дистанцию D4000, значит с группой, которая отвечает за эту дистанцию надо что-то сделать)
             // Возможное решение: находить все конфликты после попытки сохранить новые данные и если удалённая структура где-то использовалась предложить пользователю поменять эту структуру в этом месте или отказаться от изменений
             // Создать для каждой фазы отдельный класс, хранящий все данные фазы и через него проверять все конфликты после удаления
@@ -341,7 +378,6 @@ fun resultsOnScreen() {
 
 @Composable
 fun PhaseChoice(path: MutableState<String>, phase: MutableState<Int>) {
-//    val phaseFromDropDown = remember { mutableStateOf(-1) }
     Column(modifier = Modifier.padding(10.dp).fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -350,13 +386,6 @@ fun PhaseChoice(path: MutableState<String>, phase: MutableState<Int>) {
         ) {
             Text("Path to config folder: ")
             Box(modifier = Modifier.fillMaxWidth()) { PathField(path) }
-//            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-//                DropDownMenu(
-//                    phaseFromDropDown,
-//                    listOf(1, 2, 3),
-//                    "Phase"
-//                )
-//            }
         }
         Button(
             onClick = { phase.value = 0 },
@@ -376,11 +405,13 @@ fun PhaseOneWindow(
     participantList: SnapshotStateList<ParticipantStart>,
     controlPoints: SnapshotStateList<ControlPoint>
 ) {
-    val currentPhase = 1
-    val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
+    val buttonStates = remember { mutableStateOf(MutableList(listOfTabs.size) { it == 0 }) }
+    val isDateCorrect = remember { mutableStateOf(true) }
+    val dateString = remember { mutableStateOf("") }
+    dateString.value = eventData.value.date.toString()
     Column {
-        AllTopButtons(buttonStates, listOfTabs(currentPhase))
-        eventDataOnScreen(eventData)
+        AllTopButtons(buttonStates, listOfTabs)
+        eventDataOnScreen(eventData, isDateCorrect, dateString)
         when (buttonStates.value.indexOf(true)) {
             0 -> teamsDataOnScreen(teamList, configurationFolder, groupList, participantList)
             1 -> distancesDataOnScreen(distanceList, configurationFolder, groupList, participantList)
@@ -412,6 +443,9 @@ fun PhaseOneWindow(
                         })
                 controlPointsDataOnScreen(listWithCP)
             }
+            5 -> {
+
+            }
         }
     }
 }
@@ -423,34 +457,6 @@ fun controlPointsDataOnScreen(participantList: SnapshotStateMap<ParticipantStart
         false,
         listOf(participantList.values.toMutableStateList())
     )
-}
-
-@Composable
-fun PhaseTwoWindow(
-    distanceList: SnapshotStateList<Distance>,
-    eventData: MutableState<Event>,
-    participantList: SnapshotStateList<ParticipantStart>,
-    configurationFolder: String
-) {
-    val currentPhase = 2
-    val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
-    Column {
-        AllTopButtons(buttonStates, listOfTabs(currentPhase))
-        eventDataOnScreen(eventData)
-        when (buttonStates.value.indexOf(true)) {
-            //   0 -> startProtocolsDataOnScreen(participantList, true, SnapshotStateList())
-            1 -> distancesDataOnScreen(distanceList, configurationFolder, SnapshotStateList(), participantList)
-        }
-    }
-}
-
-@Composable
-fun PhaseThreeWindow() {
-    val currentPhase = 3
-    val buttonStates = remember { mutableStateOf(MutableList(listOfTabs(currentPhase).size) { it == 0 }) }
-    Column {
-        AllTopButtons(buttonStates, listOfTabs(currentPhase))
-    }
 }
 
 fun main() = application {
@@ -472,7 +478,7 @@ fun main() = application {
             val controlPoints = mutableListOf<ControlPoint>()
 
             val distances = DistanceReader(configFolder).getDistances(controlPoints)
-            val groups = GroupReader(configFolder).getGroups(distances, Phase.FIRST)
+            val groups = GroupReader(configFolder).getGroups(distances)
             val teams = TeamReader(configFolder).getTeams()
 
             val (name, date) = getNameAndDate(readFile(configFolder).walk().toList(), configFolder)
@@ -507,6 +513,11 @@ fun main() = application {
             }
         }
     }
+}
+
+@Composable
+fun GroupResultsOnScreen(groupList: SnapshotStateList<Group>) {
+
 }
 
 
