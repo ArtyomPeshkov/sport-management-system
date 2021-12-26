@@ -324,10 +324,10 @@ fun startProtocolsDataOnScreen(
                 Text("Save")
             }
         Button(onClick = {
-                event.value.getDistanceList().forEach {
-                    event.value.setNumbersAndTime(event.value.getGroupsByDistance(it.value))
-                }
-                event.value.makeStartProtocols("$configurationFolder/save/")
+            event.value.getDistanceList().forEach {
+                event.value.setNumbersAndTime(event.value.getGroupsByDistance(it.value))
+            }
+            event.value.makeStartProtocols("$configurationFolder/save/")
         }) {
             Text("Refresh")
         }
@@ -341,24 +341,25 @@ fun resultsOnScreen() {
 
 @Composable
 fun PhaseChoice(path: MutableState<String>, phase: MutableState<Int>) {
-    val phaseFromDropDown = remember { mutableStateOf(-1) }
+//    val phaseFromDropDown = remember { mutableStateOf(-1) }
     Column(modifier = Modifier.padding(10.dp).fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Box(modifier = Modifier.weight(4f)) { PathField(path) }
-            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                DropDownMenu(
-                    phaseFromDropDown,
-                    listOf(1, 2, 3),
-                    "Phase"
-                )
-            }
+            Text("Path to config folder: ")
+            Box(modifier = Modifier.fillMaxWidth()) { PathField(path) }
+//            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+//                DropDownMenu(
+//                    phaseFromDropDown,
+//                    listOf(1, 2, 3),
+//                    "Phase"
+//                )
+//            }
         }
         Button(
-            onClick = {/*TODO(отправить куда-то для проверки)*/ phase.value = phaseFromDropDown.value },
+            onClick = { phase.value = 0 },
             modifier = Modifier.fillMaxWidth()
         )
         { Text(text = "Результаты") }
@@ -503,40 +504,8 @@ fun main() = application {
                     participantList,
                     controlPoints.toMutableStateList()
                 )
-
-            }
-
-        }
-        1 -> {
-            val configFolder = path.value
-
-            val distances = DistanceReader(configFolder).getDistances()
-
-            val groups = GroupReader(configFolder).getGroups(distances, Phase.SECOND)
-            StartProtocolParse(configFolder).getStartProtocolFolder(groups)
-            val (name, date) = getNameAndDate(readFile(configFolder).walk().toList(), configFolder)
-            val event = Event(name, date, groups, distances)
-            val participantDistanceWithTime: Map<Int, List<ControlPointWithTime>> =
-                ControlPointReader(configFolder).getPoints()
-            setStatusForAllParticipants(groups, distances, participantDistanceWithTime)
-
-            makeResultProtocols(groups, configFolder)
-            Window(
-                onCloseRequest = ::exitApplication,
-                title = "Phase ${phase.value + 1}",
-                state = rememberWindowState(width = if (phase.value == -1) 600.dp else 850.dp, height = 400.dp)
-            ) {
-                val distanceList = remember { distances.values.toMutableStateList() }
-                val participantList = remember { groups.flatMap { it.listParticipants }.toMutableStateList() }
-                val eventData = remember { mutableStateOf(event) }
-                val groupList = remember { groups.toMutableStateList() }
-
-                PhaseTwoWindow(distanceList, eventData, participantList, configFolder)
-
-                println(participantList.size)
             }
         }
-        2 -> PhaseThreeWindow()
     }
 }
 
@@ -554,35 +523,6 @@ fun PathField(path: MutableState<String>) {
         singleLine = true,
         shape = RoundedCornerShape(5.dp)
     )
-}
-
-@Composable
-fun DropDownMenu(indexOfChoice: MutableState<Int>, items: List<Any>, text: String) {
-    var expanded by remember { mutableStateOf(false) }
-    //Column
-    Text(
-        if (indexOfChoice.value >= 0) items[indexOfChoice.value].toString() else text,
-        modifier = Modifier.border(3.dp, Color.Gray, RoundedCornerShape(6.dp))
-            .clickable(onClick = { expanded/*.value*/ = true })
-            .padding(top = 20.dp, start = 5.dp, end = 5.dp, bottom = 20.dp).fillMaxWidth(),
-        textAlign = TextAlign.Center,
-        color = if (indexOfChoice.value >= 0) Color.Black else Color.LightGray
-    )
-    DropdownMenu(
-        expanded = expanded/*.value*/,
-        onDismissRequest = { expanded/*.value*/ = false },
-        modifier = Modifier.padding(top = 5.dp).background(Color.White)
-            .border(3.dp, Color.Gray, RoundedCornerShape(6.dp))
-    ) {
-        items.forEachIndexed { index, s ->
-            DropdownMenuItem(onClick = {
-                indexOfChoice.value = index
-                expanded/*.value*/ = false
-            }) {
-                Text(s.toString())
-            }
-        }
-    }
 }
 
 @Composable
