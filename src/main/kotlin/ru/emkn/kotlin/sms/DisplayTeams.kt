@@ -634,6 +634,13 @@ fun PhaseOneWindow(
                         shape = RoundedCornerShape(5.dp)
                     )
                     Button(onClick = {
+                        val controlPointsMap = ControlPointReader(pathToCP).getPoints()
+
+                        listWithCP.putAll(controlPointsMap.filter { mapInput -> participantList.find { it.number == mapInput.key } != null }
+                            .mapKeys { mapInput ->
+                                participantList.find { it.number == mapInput.key }
+                                    ?: throw UnexpectedValueException("No such participant ${mapInput.key}")
+                            })
                         //TODO вот тут должен читать, путь  - pathToCP
 //                        val allParticipants = groupList.flatMap { it.listParticipants }
 //                        listWithCP.putAll(
