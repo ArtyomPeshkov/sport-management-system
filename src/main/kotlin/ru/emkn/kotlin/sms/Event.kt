@@ -45,7 +45,8 @@ class Event(
     private fun setupGroups() {
         teamList.forEach { collective ->
             collective.athleteList.forEach { participant ->
-                participant.chooseGroupByParams(groupList, yearOfCompetition
+                participant.chooseGroupByParams(
+                    groupList, yearOfCompetition
                 )?.addParticipant(ParticipantStart(participant))
 
                     ?: parseLogger.universalC(

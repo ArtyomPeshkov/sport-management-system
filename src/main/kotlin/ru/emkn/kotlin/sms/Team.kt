@@ -273,7 +273,13 @@ class Team(name: String) : Scrollable {
                                         it as Group
                                         it.listParticipants.removeIf { it.participant == listOfParticipant[i] }
                                     }
-                                    toDelete[1].removeIf{
+                                    toDelete[0].forEach { group ->
+                                        group as Group
+                                        group.listParticipants.removeIf {
+                                            it.participant == listOfParticipant[i]
+                                        }
+                                    }
+                                    toDelete[1].removeIf {
                                         it as ParticipantStart
                                         it.participant == listOfParticipant[i]
                                     }

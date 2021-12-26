@@ -18,10 +18,10 @@ class Time {
 
     constructor(time: String) {
         val newTime = time.split(':').toMutableList()
-        when (newTime.size){
+        when (newTime.size) {
             1 -> throw IllegalTimeFormatException(time)
-            2-> newTime.add(0,"0")
-            3-> run{}
+            2 -> newTime.add(0, "0")
+            3 -> run {}
             else -> throw IllegalTimeFormatException(time)
         }
 

@@ -386,19 +386,20 @@ fun PhaseOneWindow(
             2 -> groupsDataOnScreen(groupList, configurationFolder, participantList)
             3 -> {
                 startProtocolsDataOnScreen(
-                participantList,
-                false,
-                groupList,
-                mutableStateOf(
-                    Event(
-                        eventData.value.name,
-                        eventData.value.date,
-                        groupList,
-                        distanceList.associateBy { it.name }
-                    )
-                ),
-                configurationFolder
-            )}
+                    participantList,
+                    false,
+                    groupList,
+                    mutableStateOf(
+                        Event(
+                            eventData.value.name,
+                            eventData.value.date,
+                            groupList,
+                            distanceList.associateBy { it.name }
+                        )
+                    ),
+                    configurationFolder
+                )
+            }
             4 -> {
                 val listWithCP = mutableStateMapOf<ParticipantStart, List<ControlPointWithTime>>()
                 generateCP(controlPoints, groupList, configurationFolder)

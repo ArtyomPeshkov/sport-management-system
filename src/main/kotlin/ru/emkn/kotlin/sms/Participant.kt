@@ -235,7 +235,7 @@ open class Participant(
 
 
     override fun toString(): String {
-        return "Группа: ${Colors.BLUE._name}$wishGroup${Colors.PURPLE._name}; Статус: ${Colors.YELLOW._name}$status${Colors.PURPLE._name}"
+        return "Группа: ${Colors.BLUE._name}${Colors.PURPLE._name}; Статус: ${Colors.YELLOW._name}$status${Colors.PURPLE._name}"
     }
     fun fullToString(): String {
         return this.toString() + "Пол: $sex; Год рождения: $yearOfBirth; Разряд: $rank"
