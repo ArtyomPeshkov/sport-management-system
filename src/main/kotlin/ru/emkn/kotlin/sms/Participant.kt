@@ -62,6 +62,7 @@ open class ParticipantStart(val participant: Participant) : Participant(particip
         toDelete: List<SnapshotStateList<out E>>
     ) {
         var isOpened by remember { mutableStateOf(false) }
+        var typeOfSort by remember { mutableStateOf(0) }
         val angle: Float by animateFloatAsState(
             targetValue = if (isOpened) 90F else 0F,
             animationSpec = tween(
@@ -96,8 +97,34 @@ open class ParticipantStart(val participant: Participant) : Participant(particip
 
             AnimatedVisibility(isOpened) {
                 Column {
-                    val cp = toDelete[0][index] as List<ControlPointWithTime> //Да я отвечаю все норм
-                    cp.sortedBy { it.time.timeInSeconds }.forEach {
+                    var cp = toDelete[0][index] as List<ControlPointWithTime> //Да я отвечаю все норм
+                    cp = when(typeOfSort) {
+                        1 -> cp.sortedBy { it.point.name }
+                        2 -> cp.sortedByDescending { it.point.name }
+                        3 -> cp.sortedBy { it.time.timeInSeconds }
+                        4 -> cp.sortedByDescending { it.time.timeInSeconds }
+                        else -> cp
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                        Button(onClick = { typeOfSort = 1 }, modifier = Modifier.weight(1f)) {
+                            Text(
+                                "По имени ^"
+                            )
+                        }
+                        Button(
+                            onClick = { typeOfSort = 2 },
+                            modifier = Modifier.weight(1f)
+                        ) { Text("По имени v") }
+                        Button(
+                            onClick = { typeOfSort = 3 },
+                            modifier = Modifier.weight(1f)
+                        ) { Text("По времени ^") }
+                        Button(
+                            onClick = { typeOfSort = 4 },
+                            modifier = Modifier.weight(1f)
+                        ) { Text("По времени v") }
+                    }
+                    cp.forEach {
                         Text("${it.point.name}: ${it.time}")
                     }
                 }
@@ -240,7 +267,8 @@ open class Participant(
 
 }
 
-class ParticipantResult(participant: ParticipantStart,val numberInList: Int,val place: Int,val otstav: String) : ParticipantStart(participant) {
+class ParticipantResult(participant: ParticipantStart, val numberInList: Int, val place: Int, val otstav: String) :
+    ParticipantStart(participant) {
     fun createCSVHeaderRes() = mutableListOf(
         listOf(
             "Порядковый номер",
