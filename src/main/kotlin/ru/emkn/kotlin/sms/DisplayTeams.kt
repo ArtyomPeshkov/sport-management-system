@@ -47,9 +47,11 @@ fun eventDataOnScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Event name: ")
+            var textState = remember { mutableStateOf(eventData.value.name) }
             OutlinedTextField(
-                value = eventData.value.name,
+                value = textState.value,
                 onValueChange = {
+                    textState.value = it
                     eventData.value.name = it
                 },
                 modifier = Modifier.fillMaxWidth().padding(0.dp),
@@ -71,7 +73,7 @@ fun eventDataOnScreen(
                     if (Regex("""[0-9]{4}-[0-9]{2}-[0-9]{2}""").matches(dateString.value) &&
                         dateString.value.substringAfter('-').substringBefore('-').toInt() in 1..12 &&
                         dateString.value.substringAfterLast('-').toInt() in 1..28
-
+                        //Нужна нормальная проверка месяца
                     ) {
                         eventData.value.date = LocalDate.parse(dateString.value)
                         isDateCorrect.value = true
@@ -540,10 +542,12 @@ fun startProtocolsDataOnScreen(
                 Text("Save")
             }
         Button(onClick = {
+            //Не обновляются стартовые протоколы
             event.value.getDistanceList().forEach {
                 event.value.setNumbersAndTime(event.value.getGroupsByDistance(it.value))
             }
             event.value.makeStartProtocols("$configurationFolder/save/")
+
         }) {
             Text("Refresh")
         }
@@ -620,6 +624,7 @@ fun PhaseOneWindow(
                         listWithCP.clear()
                         val allParticipants = groupList.flatMap { it.listParticipants }
                         listWithCP.putAll(
+                            //Возможное место ошибки!
                             ControlPointReader(configurationFolder).getPoints()
                                 .mapKeys { entry ->
                                     allParticipants.find { it.number == entry.key }
@@ -738,7 +743,7 @@ fun GroupResultsOnScreen(groupList: SnapshotStateList<Group>) {
 
 @Composable
 fun PathField(path: MutableState<String>) {
-    var textState by remember { mutableStateOf("") }
+    var textState by remember { mutableStateOf(path.value) }
     OutlinedTextField(
         value = textState,
         onValueChange = {
