@@ -200,6 +200,7 @@ fun teamsDataOnScreen(
 
 @Composable
 fun distancesDataOnScreen(
+    eventData: MutableState<Event>,
     distanceList: SnapshotStateList<Distance>,
     configurationFolder: String,
     groupList: SnapshotStateList<Group>,
@@ -542,10 +543,12 @@ fun startProtocolsDataOnScreen(
                 Text("Save")
             }
         Button(onClick = {
+            groupList.size
             //Не обновляются стартовые протоколы
             event.value.getDistanceList().forEach {
                 event.value.setNumbersAndTime(event.value.getGroupsByDistance(it.value))
             }
+
             event.value.makeStartProtocols("$configurationFolder/save/")
 
         }) {
@@ -553,6 +556,8 @@ fun startProtocolsDataOnScreen(
         }
     }
 }
+
+
 
 @Composable
 fun resultsOnScreen() {
@@ -592,14 +597,13 @@ fun PhaseOneWindow(
 ) {
     val buttonStates = remember { mutableStateOf(MutableList(listOfTabs.size) { it == 0 }) }
     val isDateCorrect = remember { mutableStateOf(true) }
-    val dateString = remember { mutableStateOf("") }
-    dateString.value = eventData.value.date.toString()
+    val dateString = remember { mutableStateOf(eventData.value.date.toString()) }
     Column {
         AllTopButtons(buttonStates, listOfTabs)
         eventDataOnScreen(eventData, isDateCorrect, dateString)
         when (buttonStates.value.indexOf(true)) {
             0 -> teamsDataOnScreen(teamList, configurationFolder, groupList, participantList)
-            1 -> distancesDataOnScreen(distanceList, configurationFolder, groupList, participantList)
+            1 -> distancesDataOnScreen(eventData, distanceList, configurationFolder, groupList, participantList)
             2 -> groupsDataOnScreen(groupList, configurationFolder, participantList)
             3 -> {
                 startProtocolsDataOnScreen(
@@ -612,7 +616,7 @@ fun PhaseOneWindow(
                             eventData.value.date,
                             groupList,
                             distanceList.associateBy { it.name }
-                        )
+                        )//Стрёмное место
                     ),
                     configurationFolder
                 )
@@ -620,18 +624,23 @@ fun PhaseOneWindow(
             4 -> {
                 Column {
                     controlPointsDataOnScreen(listWithCP)
+
+
                     Button(onClick = {
+                        generateCP(controlPoints, groupList, "$configurationFolder/save")
                         listWithCP.clear()
                         val allParticipants = groupList.flatMap { it.listParticipants }
+
                         listWithCP.putAll(
                             //Возможное место ошибки!
-                            ControlPointReader(configurationFolder).getPoints()
-                                .mapKeys { entry ->
-                                    allParticipants.find { it.number == entry.key }
+                            ControlPointReader("$configurationFolder/save").getPoints()
+                                .mapKeys { partisNumber ->
+                                    allParticipants.find { it.number == partisNumber.key }
                                         ?: throw UnexpectedValueException("")
                                 })
-                        generateCP(controlPoints, groupList, configurationFolder)
                     }) { Text("Random results generator") }
+
+
                     Button(onClick = {
                         val controlPointsMap = ControlPointReader(configurationFolder).getPoints()
                         listWithCP.clear()
