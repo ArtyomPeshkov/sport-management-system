@@ -47,15 +47,15 @@ fun Event.makeStartProtocols(configurationFolder: String) {
 }
 
 /** функция подбирает каждому участнику в каждой группе номер и время старта */
-fun Event.setNumbersAndTime(groups:List<Group>) {
+fun setNumbersAndTime(groupsByCertainDistance:List<Group>, listOfAllGroups:List<Group>) {
     parseLogger.universalC(Colors.BLUE._name, "the start time is selected for each participant", 'i' )
-    val numberOfParticipants = groups.sumOf { it.listParticipants.size }
-    var numbers = List(numberOfParticipants) { it + 1 }
-    numbers = numbers.shuffled()
+    val numberOfParticipants = groupsByCertainDistance.sumOf { it.listParticipants.size }
+    val numbers = List(numberOfParticipants) { it + 1 }.shuffled()
     var competitionsStart = Time(12, 0, 0)
     var index = 0
-    groups.forEach { group ->
-        val groupNum = "${groupList.indexOf(group) + 1}"
+    groupsByCertainDistance.forEach { group ->
+        //Может быть тут можно использовать groups вместо groupList?
+        val groupNum = "${listOfAllGroups.indexOf(group) + 1}"
         val pref: Int = (groupNum.padEnd(groupNum.length + numberOfParticipants.toString().length, '0')).toInt()
         group.listParticipants.forEach { participant ->
             participant.setStart(pref + numbers[index++], Time(competitionsStart.timeInSeconds + 60))

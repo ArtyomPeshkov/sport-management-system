@@ -207,6 +207,7 @@ open class Participant(
         this.points = participant.points
     }
 
+    /** функция подбирает подходящую участнику группу, исходя из его возраста, пола и желаемой группы */
     fun chooseGroupByParams(groupList: List<Group>, yearOfCompetition: Int): Group? {
         val age = yearOfCompetition - yearOfBirth
         val wish = getGroupByName(wishGroup, groupList)

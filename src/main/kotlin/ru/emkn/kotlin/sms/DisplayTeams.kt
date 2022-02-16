@@ -27,7 +27,6 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import exceptions.UnexpectedValueException
-import log.printCollection
 import java.io.File
 import java.time.LocalDate
 
@@ -159,6 +158,8 @@ fun teamsDataOnScreen(
         }
         Button(
             onClick = {
+                teamList.size
+                groupList.size
                 isVisible = !isVisible
             },
             colors = ButtonDefaults.buttonColors(
@@ -543,10 +544,10 @@ fun startProtocolsDataOnScreen(
                 Text("Save")
             }
         Button(onClick = {
-            groupList.size
             //Не обновляются стартовые протоколы
+            //Почему-то тут нет setupgroups, хотя кажется, что должен быть...
             event.value.getDistanceList().forEach {
-                event.value.setNumbersAndTime(event.value.getGroupsByDistance(it.value))
+                setNumbersAndTime(getGroupsByDistance(it.value,groupList),groupList)
             }
 
             event.value.makeStartProtocols("$configurationFolder/save/")
@@ -584,7 +585,7 @@ fun PhaseChoice(path: MutableState<String>, phase: MutableState<Int>) {
 }
 
 @Composable
-fun PhaseOneWindow(
+fun MainWindow(
     distanceList: SnapshotStateList<Distance>,
     groupList: SnapshotStateList<Group>,
     teamList: SnapshotStateList<Team>,
@@ -708,8 +709,9 @@ fun main() = application {
 
             val (name, date) = getNameAndDate(readFile(configFolder).walk().toList(), configFolder)
             val event = Event(name, date, groups, distances, teams)
+            Setup.setupGroups(teams, groups, event.yearOfCompetition)
             event.getDistanceList().forEach {
-                event.setNumbersAndTime(event.getGroupsByDistance(it.value))
+                setNumbersAndTime(getGroupsByDistance(it.value,groups),groups)
             }
             event.makeStartProtocols(configFolder)
             //Кнопка для генерации
@@ -728,7 +730,7 @@ fun main() = application {
                 val listWithCP = mutableStateMapOf<ParticipantStart, List<ControlPointWithTime>>()
                 val participantResultMap = mutableStateMapOf<GroupResults, List<ParticipantResult>>()
 
-                PhaseOneWindow(
+                MainWindow(
                     distanceList,
                     groupList,
                     teamList,

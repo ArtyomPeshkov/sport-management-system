@@ -18,6 +18,11 @@ fun getGroupByName(name: String, groups: List<Group>): Group {
     return groups.find { it.groupName == name } ?: throw  UnexpectedValueException("Нет группы с именем $name")
 }
 
+/** позволяет найти группы, проходящие определенную дистанцию */
+fun getGroupsByDistance(distance: Distance, groupList: List<Group>): List<Group> {
+    return groupList.filter { it.distance == distance }
+}
+
 fun getGroupIndexByName(name: String, groups: List<Group>): Int {
     val group = getGroupByName(name, groups)
     return if (group != null) {

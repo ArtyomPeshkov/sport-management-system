@@ -63,9 +63,9 @@ fun phase1(path: String) {
     val (name, date) = getNameAndDate(readFile(path).walk().toList(), path)
 
     val event = Event(name, date, groups, distances, team)
-
+    Setup.setupGroups(team,groups,event.yearOfCompetition)
     event.getDistanceList().forEach {
-        event.setNumbersAndTime(event.getGroupsByDistance(it.value))
+        setNumbersAndTime(getGroupsByDistance(it.value,groups),groups)
     }
     event.makeStartProtocols(path)
     println("Do you want to generate control points randomly?(y/n)")
